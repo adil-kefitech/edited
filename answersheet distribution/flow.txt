@@ -1,0 +1,425 @@
+
+
+Let me thoroughly read all the files before responding.Ran 6 commands, viewed a fileRan 6 commands, viewed a fileNow I have a thorough understanding of the entire codebase. 
+Let me now formulate the precise changes needed.Ran 2 commandsRan 2 commandsNow I have a complete picture of the entire flow. Let me produce the comprehensive changes.
+Here is my thorough analysis and the precise changes required.
+
+Complete Flow Understanding
+System Architecture
+Roles Involved:
+
+Camp Officer — the logged-in user performing the distribution. They are identified via CampRoleAllocation where camp_group__group__name = CAMP_OFFICER.
+Examiner (Chief / Additional) — selected in the UI. They are CampRoleAllocation entries under the CampScheduleCourse of the officer's sub-camps.
+
+Key Models Involved in Distribution:
+ModelRoleCampRoleAllocationMaps a user to a camp via camp_schedule → sub_camp → camp with a role/groupCampScheduleCourseLinks an exam schedule+course to a
+ specific camp scheduleScannedAnswersheetPhysical/digital scanned answer sheet with a status and bundleExaminerScannedAnswersheetMaps an answer sheet to an examiner 
+ (the core allocation record)BundleMasterGroups allocated answer sheets into bundlesBundleCampLinks the bundle to a specific camp and sub-campBundleExaminerLinks the bundle
+  to the specific examiner's CampRoleAllocationExaminerFalseNumberPer-candidate record under a BundleExaminer
+
+Current AnswersheetDistribution (POST) Flow — Step by Step
+
+Input received: qpcode, examiner (CampRoleAllocation ID), no_as, courseid, examid, examinert (distribution type code), course (ProgrammeCourseSemester ID).
+Excludes already-evaluated DFMs by the selected examiner and by the chief examiner.
+Fetches unallocated ScannedAnswersheets — filtered by exam, course, active status, QP code, having 0 ExaminerScannedAnswersheet entries, and excluding already-evaluated DFMs.
+Creates ExaminerScannedAnswersheet entries up to no_of_as.
+Resolves college code via DigitalFalseNumber → ExamRegistrationCentreMapper → ExaminationCenter.
+Creates BundleMaster (either fresh seq=1, or increments from last existing bundle for that QP code).
+Creates BundleSlip, BundleCandidateMapper records.
+Determines the camp from the logged-in Camp Officer's CampRoleAllocation → camp_schedule → sub_camp.camp. This is hardcoded — always uses .first() on the officer's allocation.
+Creates BundleCamp using that resolved camp/sub-camp.
+Creates BundleExaminer and ExaminerFalseNumber records under the bundle.
+
+
+The Core Problem
+In step 8, the BundleCamp (which permanently records which camp this bundle belongs to) is determined as:
+pythoncamp_officer = CampRoleAllocation.objects.filter(
+    camp_user=user,
+    camp_group__group__name__in=[CAMP_OFFICER],
+    status_id=ACTIVE_STATE,
+).first()  # ← BLINDLY picks the first active camp
+
+bundlecamp = BundleCamp(
+    bundle=bundleAdd,
+    sub_camp=camp_officer.camp_schedule.sub_camp,       # ← no choice given
+    camp=camp_officer.camp_schedule.sub_camp.camp,      # ← no choice given
+    ...
+)
+This means if a Camp Officer is active in multiple camps, they have no way to specify which camp the bundle/examiner should be assigned to. The system silently picks the first one.
+
+Required Changes
+1. New API endpoint — ActiveCampsList in answersheet_distribution.py
+Add a new view that returns all active camps for the logged-in Camp Officer. This is called by the frontend when a distribution type + examiner is selected to let the user pick a camp.
+File: online_evaluation/answersheet_distribution.py
+pythonclass ActiveCampsList(APIView):
+    """
+    Returns all active camps (sub_camp + camp) for the currently
+    logged-in Camp Officer so the user can select which camp
+    the bundle should be allocated to.
+    """
+    def post(self, request):
+        try:
+            user = request.user
+            camp_allocations = CampRoleAllocation.objects.filter(
+                camp_user=user,
+                camp_group__group__name__in=[CAMP_OFFICER],
+                status_id=ACTIVE_STATE,
+            ).select_related(
+                "camp_schedule__sub_camp__camp"
+            )
+
+            camps_data = []
+            seen = set()
+            for alloc in camp_allocations:
+                sub_camp = alloc.camp_schedule.sub_camp
+                camp = sub_camp.camp
+                key = (alloc.id, sub_camp.id)
+                if key not in seen:
+                    seen.add(key)
+                    camps_data.append({
+                        "camp_role_allo_id": alloc.id,     # used as selection key
+                        "sub_camp_id": sub_camp.id,
+                        "sub_camp_name": sub_camp.name,    # adjust field name to match your model
+                        "camp_id": camp.id,
+                        "camp_name": camp.name,            # adjust field name to match your model
+                    })
+
+            return format_response(
+                True,
+                FETCH_SUCCESS_MSG,
+                data={"camps": camps_data},
+                status_code=status.HTTP_200_OK,
+                template_name="answer_sheet_distribution_online.html",
+            )
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return format_response(
+                False,
+                BAD_GATEWAY,
+                {},
+                BAD_GATEWAY_ERROR_CODE,
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+Note: Replace sub_camp.name and camp.name with the correct field names from your SubCamp and Camp models in util/models.py.
+
+
+2. URL registration in urls.py
+File: online_evaluation/urls.py
+Add the import and path:
+python# In the import block at the top, answersheet_distribution is already imported.
+
+# Add in urlpatterns:
+path(
+    "active-camps-list",
+    answersheet_distribution.ActiveCampsList.as_view(),
+    name="active-camps-list",
+),
+
+3. Modify AnswersheetDistribution.post() to accept camp_role_allo_officer_id
+File: online_evaluation/answersheet_distribution.py
+In the AnswersheetDistribution.post() method, replace the blind camp_officer = CampRoleAllocation.objects.filter(...).first() 
+calls with an explicit lookup using the camp_role_allo_officer_id sent from the frontend.
+
+There are two such blocks in AnswersheetDistribution.post() (one in the bundlenameexist is None branch and one in the else branch).
+ Both must be changed identically.
+Current code (both occurrences):
+pythoncamp_officer = CampRoleAllocation.objects.filter(
+    camp_user=user,
+    camp_group__group__name__in=[CAMP_OFFICER],
+    status_id=ACTIVE_STATE,
+).first()
+bundlecamp = BundleCamp(
+    created_by=user,
+    created_on=created_on,
+    bundle=bundleAdd,
+    sub_camp=camp_officer.camp_schedule.sub_camp,
+    camp=camp_officer.camp_schedule.sub_camp.camp,
+    status_id=ALLOCATED,
+)
+Add to input parsing block (near the top of post() with other jsondata[...] reads):
+pythoncamp_role_allo_officer_id = jsondata["camp_role_allo_officer_id"]  # NEW: selected by user
+Replace both camp_officer lookups with:
+pythoncamp_officer = CampRoleAllocation.objects.get(
+    id=camp_role_allo_officer_id,
+    camp_user=user,
+    camp_group__group__name__in=[CAMP_OFFICER],
+    status_id=ACTIVE_STATE,
+)
+bundlecamp = BundleCamp(
+    created_by=user,
+    created_on=created_on,
+    bundle=bundleAdd,
+    sub_camp=camp_officer.camp_schedule.sub_camp,
+    camp=camp_officer.camp_schedule.sub_camp.camp,
+    status_id=ALLOCATED,
+)
+This same pattern applies to AnswersheetDistributionSecond.post() and AnswersheetDistributionThird.post() 
+as well if you want camp selection there too — the identical blind .first() 
+pattern exists in all three distribution views (lines ~923, ~1063, ~1437, ~1573 in answersheet_distribution.py).
+
+4. Frontend changes — answer_sheet_distribution_online.html
+File: online_evaluation/templates/answer_sheet_distribution_online.html
+4a. Add camp selector dropdown in the HTML, after the examiner <select> block and before the answer sheet count input:
+html<!-- ADD THIS BLOCK after the examiner select div -->
+<div class="col-4 mb-4 mt-4" id="camp_select_div" style="display:none;">
+    <div class="select">
+        <select class="select-text" required id="camp_selector">
+            <option value="" disabled selected></option>
+        </select>
+        <span class="select-highlight"></span>
+        <span class="select-bar"></span>
+        <label class="select-label">Select Camp</label>
+    </div>
+</div>
+4b. Load camps when an examiner is selected — in the $("#examiner").change() handler:
+javascript$("#examiner").change(function () {
+    $("#ascount").val("");
+    $('#btnallo').prop('disabled', false);
+
+    // NEW: Load active camps for this officer
+    var token = '{{csrf_token}}';
+    $.ajax({
+        headers: { "X-CSRFToken": token },
+        type: "POST",
+        url: "{% url 'active-camps-list' %}",
+        dataType: "json",
+        data: {},
+        success: function(res) {
+            $("#camp_selector").empty();
+            $("#camp_selector").append('<option value="" disabled selected></option>');
+            $.each(res.data.camps, function(i, c) {
+                $("#camp_selector").append(
+                    '<option value="' + c.camp_role_allo_id + '">'
+                    + c.camp_name + ' - ' + c.sub_camp_name
+                    + '</option>'
+                );
+            });
+            // Show camp selector only if more than one option
+            if (res.data.camps.length > 1) {
+                $("#camp_select_div").show();
+            } else if (res.data.camps.length === 1) {
+                // Auto-select if only one camp, keep hidden
+                $("#camp_selector").val(res.data.camps[0].camp_role_allo_id);
+                $("#camp_select_div").hide();
+            }
+        }
+    });
+});
+4c. Include camp_role_allo_officer_id in the allocate POST — in the $('#btnallo').click() handler, add the new field:
+javascript$('#btnallo').click(function () {
+    qpcode = $('#qpcode').val();
+    course = $('#courses option:selected').val();
+    examiner = $('#examiner option:selected').val();
+    answersheets = $('#ascount').val();
+    distype = $('#examinert option:selected').data('code');
+    var selectedCamp = $('#camp_selector').val();  // NEW
+
+    if (!selectedCamp) {
+        swal({ title: "Please select a camp", type: "warning", padding: "2em" });
+        return;
+    }
+
+    var token = '{{csrf_token}}';
+    var res = jQuery.ajax({
+        headers: { "X-CSRFToken": token },
+        type: "POST",
+        url: "{% url 'answersheet-distribution' %}",
+        dataType: "json",
+        data: {
+            'qpcode': qpcode,
+            'examiner': examiner,
+            'course': course,
+            'no_as': answersheets,
+            'courseid': courseid,
+            'examid': examid,
+            'examinert': distype,
+            'camp_role_allo_officer_id': selectedCamp,   // NEW
+        },
+        // ... rest of success/error handlers unchanged
+    });
+});
+4d. Reset camp selector on reset:
+javascript$("#reset").click(function () {
+    // ... existing resets ...
+    $("#camp_selector").empty();
+    $("#camp_select_div").hide();
+});
+
+Summary of All Files Changed
+FileChangeonline_evaluation/answersheet_distribution.pyAdd new ActiveCampsList API view; 
+modify AnswersheetDistribution.post() to accept and use camp_role_allo_officer_id instead of blind 
+.first()online_evaluation/urls.pyRegister active-camps-list URL pointing to 
+ActiveCampsListonline_evaluation/templates/answer_sheet_distribution_online.htmlAdd camp selector <select> dropdown;
+ populate it on examiner change via AJAX; pass camp_role_allo_officer_id in the allocate POST; reset it on form reset
+
+If you also want the same camp-selection capability for 2nd valuation (AnswersheetDistributionSecond) and 3rd valuation
+ (AnswersheetDistributionThird), apply the identical backend changes to those views and the same frontend changes to 
+ answer_sheet_distribution_online_second.html and answer_sheet_distribution_online_third.html.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let me read all the relevant files thoroughly before making any changes.Ran 4 commandsRan 4 commandsNow I have read everything thoroughly.
+ Let me produce all the updated files.Read the skill for frontend designRead the skill for frontend designNow I have everything. Let me produce all 4 updated files.
+ Copy files to working directoryCopy files to working directoryNow apply all backend changes to answersheet_distribution.py:Add ActiveCampsList view after ExaminersList
+  classAdd ActiveCampsList view after ExaminersList classNow fix AnswersheetDistribution.post() — read new field + fix both camp_officer spots:Edited 3 filesEdited 3 filesNow 
+  fix AnswersheetDistributionSecond.post():Edited 3 filesEdited 3 filesNow fix AnswersheetDistributionThird.post():Edited 3 filesEdited 3 filesNow update urls.py:Ran a command, 
+  edited a fileRan a command, edited a fileNow update the first HTML template:Edited 2 filesEdited 2 filesLet me give you a complete clean breakdown of exactly what to do since the automated
+   edits hit the tool limit.
+
+Complete Change Summary — All Files
+File 1: online_evaluation/answersheet_distribution.py
+Change 1 — Add ActiveCampsList view (paste after the ExaminersList class, before the commented-out DistributionType block):
+pythonclass ActiveCampsList(APIView):
+    def post(self, request):
+        try:
+            user = request.user
+            camp_allocations = CampRoleAllocation.objects.filter(
+                camp_user=user,
+                camp_group__group__name__in=[CAMP_OFFICER],
+                status_id=ACTIVE_STATE,
+                camp_schedule__isnull=False,
+                camp_schedule__sub_camp__isnull=False,
+            ).select_related("camp_schedule__sub_camp__camp")
+            camps_data = []
+            seen = set()
+            for alloc in camp_allocations:
+                sub_camp = alloc.camp_schedule.sub_camp
+                camp = sub_camp.camp
+                key = (alloc.id, sub_camp.id)
+                if key not in seen:
+                    seen.add(key)
+                    camps_data.append({
+                        "camp_role_allo_id": alloc.id,
+                        "sub_camp_id": sub_camp.id,
+                        "sub_camp_name": sub_camp.display_name,
+                        "camp_id": camp.id,
+                        "camp_name": camp.camp_disp_name,
+                    })
+            return format_response(True, FETCH_SUCCESS_MSG, data={"camps": camps_data},
+                status_code=status.HTTP_200_OK, template_name="answer_sheet_distribution_online.html")
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return format_response(False, BAD_GATEWAY, {}, BAD_GATEWAY_ERROR_CODE,
+                status_code=status.HTTP_400_BAD_REQUEST)
+Change 2 — In ALL THREE post() methods (AnswersheetDistribution, AnswersheetDistributionSecond, AnswersheetDistributionThird), 
+add this line alongside the other jsondata reads at the top of each post():
+pythoncamp_role_allo_officer_id = jsondata["camp_role_allo_officer_id"]
+Change 3 — In ALL THREE views, replace every camp_officer = CampRoleAllocation.objects.filter(...).first() (6 total — 2 per view) with:
+pythoncamp_officer = CampRoleAllocation.objects.get(
+    id=camp_role_allo_officer_id,
+    camp_user=user,
+    camp_group__group__name__in=[CAMP_OFFICER],
+    status_id=ACTIVE_STATE,
+)
+
+File 2: online_evaluation/urls.py
+Add after the examiners-list path:
+pythonpath(
+    "active-camps-list",
+    answersheet_distribution.ActiveCampsList.as_view(),
+    name="active-camps-list",
+),
+
+Files 3, 4, 5: All three HTML templates
+The same 3 changes apply identically to all three HTML files. The only difference between the templates is the url name used in the allocate POST.
+HTML change — add camp selector (after the examiner <select> div, inside id="dbl"):
+html<div class="col-4 mb-4 mt-4" id="camp_select_div" style="display:none;">
+    <div class="select">
+        <select class="select-text" required id="camp_selector">
+            <option value="" disabled selected></option>
+        </select>
+        <span class="select-highlight"></span>
+        <span class="select-bar"></span>
+        <label class="select-label">Select Camp</label>
+    </div>
+</div>
+JS change — load camps when examiner is selected (replace the existing $("#examiner").change(...) handler):
+javascript$("#examiner").change(function () {
+    $("#ascount").val("");
+    $('#btnallo').prop('disabled', false);   // first template uses btnallo; 2nd/3rd use allocate
+
+    var token = '{{csrf_token}}';
+    $.ajax({
+        headers: { "X-CSRFToken": token },
+        type: "POST",
+        url: "{% url 'active-camps-list' %}",
+        dataType: "json",
+        data: {},
+        success: function(res) {
+            $("#camp_selector").empty();
+            $("#camp_selector").append('<option value="" disabled selected></option>');
+            $.each(res.data.camps, function(i, c) {
+                $("#camp_selector").append(
+                    '<option value="' + c.camp_role_allo_id + '">'
+                    + c.camp_name + ' - ' + c.sub_camp_name + '</option>'
+                );
+            });
+            if (res.data.camps.length > 1) {
+                $("#camp_select_div").show();
+            } else if (res.data.camps.length === 1) {
+                $("#camp_selector").val(res.data.camps[0].camp_role_allo_id);
+                $("#camp_select_div").hide();
+            }
+        }
+    });
+});
+JS change — add camp_role_allo_officer_id to allocate POST data (inside the allocate button click handler, add one line to the data: {} object):
+javascript'camp_role_allo_officer_id': $('#camp_selector').val(),
+Also add a guard at the top of the allocate click handler:
+javascriptvar selectedCamp = $('#camp_selector').val();
+if (!selectedCamp) {
+    swal({ title: "Please select a camp", type: "warning", padding: "2em" });
+    return;
+}
+JS change — reset camp on reset button (inside the $("#reset").click(...) handler, add):
+javascript$("#camp_selector").empty();
+$("#camp_select_div").hide();ContinueMar 25Let me now produce all the complete updated files.Check current state of answersheet_distribution.
+pyCheck current state of answersheet_distribution.pyAll backend changes are already applied. Now fix the HTML templates completely.Ran 6 commands, 
+edited a fileRan 6 commands, edited a fileNow do the same for the second and third templates:Ran 2 commandsRan 2 commandsAll changes applied. 
+Now verify everything looks correct:Verify all changes across all filesVerify all changes across all filesAll changes verified. Now copy to outputs:Ran a command, 
+read a fileRan a command, read a fileAll 5 files are ready. Here's a precise summary of every change made:
+
+What Changed in Each File
+online_evaluation/answersheet_distribution.py
+
+Added ActiveCampsList view (after ExaminersList) — returns all active camps for the logged-in Camp Officer with null guards on camp_schedule and sub_camp
+AnswersheetDistribution.post() — added camp_role_allo_officer_id = jsondata["camp_role_allo_officer_id"] in input parsing; replaced both
+ CampRoleAllocation.objects.filter(...).first() lookups with CampRoleAllocation.objects.get(id=camp_role_allo_officer_id, ...)
+AnswersheetDistributionSecond.post() — same 3 changes as above
+AnswersheetDistributionThird.post() — same 3 changes as above
+
+online_evaluation/urls.py
+
+Added active-camps-list path pointing to ActiveCampsList.as_view()
+
+All 3 HTML templates (first/second/third)
+
+HTML — added #camp_select_div (hidden <select id="camp_selector">) after the examiner dropdown
+JS #examiner change handler — added AJAX call to active-camps-list; auto-selects if only one camp, shows dropdown if multiple
+JS allocate button click — added selectedCamp validation guard; passes camp_role_allo_officer_id: selectedCamp in POST data
+JS reset handler — added $("#camp_selector").empty() and $("#camp_select_div").hide()

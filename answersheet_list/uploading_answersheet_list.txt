@@ -1,0 +1,1548 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block additional_styles %}
+<!-- END THEME GLOBAL STYLES -->
+<!--  BEGIN CUSTOM STYLE FILE  -->
+<link href="{%static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="{%static 'plugins/jquery-step/jquery.steps.css ' %}">
+<link rel="stylesheet" type="text/css" href="{%static 'assets/css/forms/theme-checkbox-radio.css' %}" />
+<link href="{%static 'plugins/flatpickr/custom-flatpickr.css' %}" rel="stylesheet" type="text/css">
+<link href="{%static 'plugins/noUiSlider/custom-nouiSlider.css' %}" rel="stylesheet" type="text/css">
+<link href="{%static 'plugins/bootstrap-range-Slider/bootstrap-slider.css' %}" rel="stylesheet" type="text/css">
+
+<style>
+    #dbl {
+        display: none;
+    }
+
+    #dblz {
+        display: none;
+    }
+
+    #add {
+        display: none;
+    }
+
+    .clipboard {
+        background-color: #f1f2f3;
+        padding: 20px;
+        border-radius: 6px;
+    }
+</style>
+<!--  END CUSTOM STYLE FILE  -->
+<style>
+    input[type=date]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=date]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+
+    input[type=month]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=month]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+</style>
+<!-- BEGIN PAGE LEVEL STYLES -->
+<link rel="stylesheet" type="text/css" href="{%static 'plugins/table/datatable/datatables.css' %}">
+<link rel="stylesheet" type="text/css" href="{%static 'plugins/table/datatable/dt-global_style.css' %}">
+<!-- END PAGE LEVEL STYLES -->
+
+<!-- END THEME GLOBAL STYLES -->
+<link href="{%static 'assets/css/components/custom-modal.css' %}" rel="stylesheet" type="text/css" />
+<link href="{%static 'assets/css/components/custom-media_object.css' %}" rel="stylesheet" type="text/css" />
+<!--  END SIDEBAR  -->
+{% endblock additional_styles %}
+
+{% block content %}
+
+<!--  BEGIN CONTENT AREA  -->
+
+<div class="row layout-top-spacing" id="cancel-row">
+    <div class="d-flex justify-content-between w-100">
+        <div id="date_time_picker" class=" layout-top-spacing">
+            <div class="seperator-header mx-3">
+                <h4 class="">Uploading Answer Sheet List </h4>
+            </div>
+        </div>
+        <div>
+            <nav class="breadcrumb-one" aria-label="breadcrumb">
+                <ol class="breadcrumb bg-white mt-3">
+                    <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page"><span>Uploading Answer Sheet List </span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="container">
+        <div class="pl-4">
+            <div class="col mb-4" style="margin: auto;">
+                <div class="filterz" id="filterz">
+                    <div class="row form-sec">
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="pgmt">
+                                    <option value="" disabled selected></option>
+
+                                    {% for i in data.pgmt %}
+                                    <option value="{{ i.id }}">{{ i.title }}
+                                    </option>
+                                    {% endfor %}
+
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Programme Type</label>
+
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="pgmg">
+                                    <option value="" disabled selected></option>
+
+                                    {% for i in data.pgmg %}
+                                    <option value="{{ i.id }}">{{ i.title }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Programme Group</label>
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="pgmc">
+                                    <option value="" disabled selected></option>
+
+                                    {% for i in data.pgmc %}
+                                    <option value="{{ i.id }}">{{ i.title }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Programme Class</label>
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="pgm" name="pgm">
+                                    <option value="" disabled selected></option>
+
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Programme</label>
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="sem" name="sem">
+                                    <option value="" disabled selected></option>
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Sem</label>
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="scheme">
+                                    <option value="" disabled selected></option>
+
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Scheme</label>
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="exam">
+                                    <option value="" disabled selected></option>
+
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Exam Code</label>
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="college">
+                                    <option value="" disabled selected></option>
+
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">College</label>
+                            </div>
+                        </div>
+                        <div class="col-4 mb-4 mt-1">
+                            <div class="select">
+                                <select class="select-text" required id="bundle">
+                                    <option value="" disabled selected></option>
+
+                                </select>
+                                <span class="select-highlight"></span>
+                                <span class="select-bar"></span>
+                                <label class="select-label">Bundle</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12" style="text-align: right; padding: 0px;">
+                        <button class="mt-1 btn btn-danger mb-1" type="reset" id="btnres">Reset</button>
+                        <button class="mt-1 btn btn-primary mb-1" type="button" id="btnsub">Submit</button>
+                    </div>
+
+                </div>
+                <div class="row layout-top-spacing">
+                    <div class="col-xl-12 col-lg-12 col-sm-12 pl-0 pr-0">
+                        <div class="widget-content br-6">
+                            <div class="table-responsive mb-4" style="overflow-x: visible;">
+                                <table id="style-2" class="table style-2">
+                                    <thead>
+                                        <!--<label class="new-control new-checkbox checkbox-outline-primary m-auto">
+                                                            <input type="checkbox" class="new-control-input chk-parent as-info" id="customer-all-info">
+                                                            <span class="new-control-indicator"></span><span style="visibility:hidden">c</span>
+                                                        </label> -->
+                                        <tr>
+                                            <th class="pl-2"><label
+                                                    class="new-control new-checkbox checkbox-outline-primary m-auto"><input
+                                                        type="checkbox" class="new-control-input chk-parent as-info"
+                                                        id="customer-all-info"><span
+                                                        class="new-control-indicator"></span><span
+                                                        style="visibility:hidden">c</span></label></th>
+                                            <th class="text-center pl-0">Sl.No.</th>
+                                            <th class="text-center">Sequence Number</th>
+                                            <th class="text-center">Answer Sheet Link</th>
+                                            <th>Status</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                                <div class="col" style="text-align: center; margin-top: 30px">
+                                    <button class="btn mb-4 btn-primary" id="btnv">Verify & Approve</button>
+                                </div>
+                            </div>
+                            <!-- Begin modal -->
+                            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+                                aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-xl" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary">
+                                            <div class="col row" style="text-align: center;">
+                                                <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                    <span style="margin: auto; font-size: 18px;"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="filterz" id="filterz">
+                                                <div class="row">
+                                                    <div class="col-6 pt-3 pb-3">
+                                                        <span>Scan&nbsp;QR&nbsp;Code<img class="col"
+                                                                src="{%static 'assets/img/qr_06.png'%}"
+                                                                style="max-width: 50px;"></span><br>
+                                                        <!-- <small>Sample instruction for scaninng QR code</small> -->
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <img src="{%static 'assets/img/code-qr.gif'%}" width="75"
+                                                            height="75" alt="avatar">
+                                                    </div>
+                                                    <input id="consoleTextField" type="hidden" required="required">
+                                                    <input id="asid" type="hidden" required="required">
+                                                </div>
+                                                <!-- SCANNER -->
+                                                <div style="display: none;">
+                                                    <div class="row">
+                                                        <div class="col-12 col-xs-12">
+                                                            <h3>Methods</h3>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-12 col-xs-12 col-md-5">
+                                                            <div style="margin: 5px 5px 0 5px" class="input-group mb-3">
+                                                                <input id="iTestInput" class="form-control"
+                                                                    placeholder="Enter scan code or [key,key,...]"
+                                                                    title="Scan code as string or [keyCode,keyCode,...]" />
+                                                                <div class="input-group-append input-group-btn">
+                                                                    <input type="button" class="btn btn-primary"
+                                                                        id="bFireTestInput" onclick="fireTestInput()"
+                                                                        value="simulate()">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12 col-xs-12 col-md-7">
+                                                            <input style="margin: 5px 5px 0 5px" type="button"
+                                                                id="bGenerateonScan" class="btn btn-primary"
+                                                                onclick="initOnScan()" value="attachTo(document)" />
+                                                            <input style="margin: 5px 5px 0 5px" type="button"
+                                                                id="bDestroyonScan" class="btn btn-primary"
+                                                                onclick="destroyOnScan()"
+                                                                value="detachFrom(document)" />
+                                                            <input style="margin: 5px 5px 0 5px" type="button"
+                                                                id="bGgetonScanSettings" class="btn btn-primary"
+                                                                onclick="getonScanSettings()" value="getOptions()" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-12 col-xs-12 col-md-6">
+                                                            <h3>Mode</h3>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">reactToKeydown:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iAcceptKeyInput" type="checkbox"
+                                                                        checked="checked" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">reactToPaste:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iAcceptPasteInput" type="checkbox"
+                                                                        checked="checked" />
+                                                                </div>
+                                                            </div>
+                                                            <h3>Events / Callbacks</h3>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">onScan:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iOnComplete" type="checkbox"
+                                                                        checked="checked" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">onScanButtonLongPress:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iOnScanButtonLongPressed"
+                                                                        type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">onScanError:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iOnError" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">onKeyDetect:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iOnKeyDetect" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">onKeyProcess:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iOnKeyProcessed" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">onPaste:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iOnPaste" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">Use
+                                                                    event handlers, not callbacks:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iCompleteHandler" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12 col-xs-12 col-md-6">
+                                                            <h3>Options</h3>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">timeBeforeScanTest:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iTimeBeforeScanTest" class="form-control"
+                                                                        value="100" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">avgTimeByChar:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iAvgTimeByChar" class="form-control"
+                                                                        value="30" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">minLength:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iMinLength" class="form-control"
+                                                                        value="6" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">suffixKeyCodes:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iEndChar" class="form-control"
+                                                                        value="9,13" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">prefixKeyCodes:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iStartChar" class="form-control"
+                                                                        value="" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">ignoreIfFocusOn:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <div class="input-group">
+                                                                        <div
+                                                                            class="input-group-prepend input-group-addon">
+                                                                            <div class="input-group-text">
+                                                                                <input id="iIgnoreIfFocusOn"
+                                                                                    type="checkbox" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <input id="iIgnoreIfFocusOnSelector"
+                                                                            class="form-control" value="input" />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">scanButtonKeyCode:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iScanButtonKeyCode" class="form-control"
+                                                                        value="" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">scanButtonLongPressTime:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iScanButtonLongPressThreshold"
+                                                                        class="form-control" value="500" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-12 col-xs-12 col-sm-7 col-lg-6">singleScanQty:</label>
+                                                                <div class="col-12 col-xs-12 col-sm-5">
+                                                                    <input id="iSingleScanQty" class="form-control"
+                                                                        value="1" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">keyCodeMapper:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="ikeyCodeMapper" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">stopPropagation:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iStopPropagation" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group row">
+                                                                <label
+                                                                    class="control-label col-9 col-xs-9 col-sm-7 col-lg-6">preventDefault:</label>
+                                                                <div
+                                                                    class="col-3 col-xs-3 col-sm-5 checkbox form-check">
+                                                                    <input id="iPreventDefault" type="checkbox" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- SCANNER -->
+                                            </div>
+                                            <h6 class="mb-3 mt-4">Scanned Results</h6>
+                                            <div class="table-responsive">
+                                                <table class="table mb-4">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center">Sl.No.</th>
+                                                            <th class="text-center">Sequence Number</th>
+                                                            <th class="text-center">Answer Sheet Link</th>
+                                                            <th>Status</th>
+                                                            <!-- <th class="text-center">Action</th> -->
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                        <tr>
+                                                            <td class="text-center">1</td>
+                                                            <td class="text-center" id="sequence"></td>
+                                                            <td class="text-center"><a href="" target="_blank"
+                                                                    id="answersheet"></a></td>
+                                                            <td id="sts"></td>
+                                                            <!-- <td class="text-center">
+                                                                                <div class="dropdown custom-dropdown">
+                                                                                    <a class="dropdown-toggle" href="#" role="button"
+                                                                                        id="dropdownMenuLink5" data-toggle="dropdown"
+                                                                                        aria-haspopup="true" aria-expanded="false">
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                                                                            height="24" viewBox="0 0 24 24" fill="none"
+                                                                                            stroke="currentColor" stroke-width="2"
+                                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                                            class="feather feather-more-horizontal">
+                                                                                            <circle cx="12" cy="12" r="1"></circle>
+                                                                                            <circle cx="19" cy="12" r="1"></circle>
+                                                                                            <circle cx="5" cy="12" r="1"></circle>
+                                                                                        </svg>
+                                                                                    </a>
+                                                                                    <div class="dropdown-menu widget-content"
+                                                                                        aria-labelledby="dropdownMenuLink5"
+                                                                                        style="will-change: transform;">
+                                                                                        <a class="dropdown-item warning confirm"href="javascript:void(0);">Delete</a>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td> -->
+                                                            <!-- </tr>
+                                                                        <tr>
+                                                                            <td class="text-center" >2</td>
+                                                                            <td class="text-center">AB123123</td>
+                                                                            <td class="text-center"><a href="#">Answeersheet2022may.pdf</a></td>
+                                                                            <td>
+                                                                                <div style="display: inline-flex;">
+                                                                                    <div class="t-dot bg-danger mt-1"></div>
+                                                                                    &nbsp;Pending
+                                                                                </div>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <div class="dropdown custom-dropdown">
+                                                                                    <a class="dropdown-toggle" href="#" role="button"
+                                                                                        id="dropdownMenuLink5" data-toggle="dropdown"
+                                                                                        aria-haspopup="true" aria-expanded="false">
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                                                                            height="24" viewBox="0 0 24 24" fill="none"
+                                                                                            stroke="currentColor" stroke-width="2"
+                                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                                            class="feather feather-more-horizontal">
+                                                                                            <circle cx="12" cy="12" r="1"></circle>
+                                                                                            <circle cx="19" cy="12" r="1"></circle>
+                                                                                            <circle cx="5" cy="12" r="1"></circle>
+                                                                                        </svg>
+                                                                                    </a>
+                                                                                    <div class="dropdown-menu widget-content"
+                                                                                        aria-labelledby="dropdownMenuLink5"
+                                                                                        style="will-change: transform;">
+                                                                                        <a class="dropdown-item warning confirm"href="javascript:void(0);">Delete</a>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td class="text-center" >3</td>
+                                                                            <td class="text-center">AB123123</td>
+                                                                            <td class="text-center"><a href="#">Answeersheet2022may.pdf</a></td>
+                                                                            <td>
+                                                                                <div style="display: inline-flex;">
+                                                                                    <div class="t-dot bg-success mt-1"></div>
+                                                                                    &nbsp;Mapped
+                                                                                </div>
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                <div class="dropdown custom-dropdown">
+                                                                                    <a class="dropdown-toggle" href="#" role="button"
+                                                                                        id="dropdownMenuLink5" data-toggle="dropdown"
+                                                                                        aria-haspopup="true" aria-expanded="false">
+                                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                                                                            height="24" viewBox="0 0 24 24" fill="none"
+                                                                                            stroke="currentColor" stroke-width="2"
+                                                                                            stroke-linecap="round" stroke-linejoin="round"
+                                                                                            class="feather feather-more-horizontal">
+                                                                                            <circle cx="12" cy="12" r="1"></circle>
+                                                                                            <circle cx="19" cy="12" r="1"></circle>
+                                                                                            <circle cx="5" cy="12" r="1"></circle>
+                                                                                        </svg>
+                                                                                    </a>
+                                                                                    <div class="dropdown-menu widget-content"
+                                                                                        aria-labelledby="dropdownMenuLink5"
+                                                                                        style="will-change: transform;">
+                                                                                        <a class="dropdown-item warning confirm"href="javascript:void(0);">Delete</a>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr> -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" data-dismiss="modal"
+                                                id="mmpclose">Close</button>
+                                            <!-- <button type="button" class="btn btn-primary" data-dismiss="modal">Save</button> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Modal -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- END MAIN CONTAINER -->
+
+{% endblock content %}
+
+{% block head %}
+
+
+
+
+<!-- <script>
+        $(document).ready(function () {
+            //$('#pgmt').empty()
+            App.init();
+        });
+    </script> -->
+
+
+<!-- END GLOBAL MANDATORY SCRIPTS -->
+
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+<script src="{%static 'assets/js/scrollspyNav.js ' %}"></script>
+<script src="{%static 'plugins/noUiSlider/nouislider.min.js' %}"></script>
+
+<script src="{%static 'plugins/noUiSlider/custom-nouiSlider.js' %}"></script>
+<script src="{%static 'plugins/bootstrap-range-Slider/bootstrap-rangeSlider.js ' %}"></script>
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+
+<script>
+    function check() {
+        var x = document.getElementById("dbl");
+        x.style.display = "flex";
+    }
+</script>
+
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+
+<script src="{%static 'plugins/table/datatable/datatables.js' %}"></script>
+<script>
+    // var e;
+    c1 = $('#style-1').DataTable({
+        headerCallback: function (e, a, t, n, s) {
+            e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+        },
+        createdRow: function (row, data, dataIndex) {
+            if (data[2] == `NA`) {
+                $(row).css("background-color", "red");
+            }
+        },
+        columnDefs: [{
+            targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            }
+        }],
+        "oLanguage": {
+            "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+            "sInfo": "Showing page _PAGE_ of _PAGES_",
+            "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            "sSearchPlaceholder": "Search...",
+            "sLengthMenu": "Results :  _MENU_",
+        },
+        "lengthMenu": [10, 20, 50, 100],
+        "pageLength": 10
+    });
+
+    multiCheck(c1);
+
+    c2 = $('#style-2').DataTable({
+        /*headerCallback:function(e, a, t, n, s) {
+            e.getElementsByTagName("th")[0].innerHTML='<label class="new-control new-checkbox checkbox-outline-primary m-auto"><input type="checkbox" class="new-control-input chk-parent as-info" id="customer-all-info"><span class="new-control-indicator"></span><span style="visibility:hidden">c</span></label>'
+        },
+        columnDefs:[ {
+            targets:0, width:"30px", className:"", orderable:!1, render:function(e, a, t, n) {
+                return'<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk as-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            }
+        }],*/
+        "oLanguage": {
+            "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+            "sInfo": "Showing page _PAGE_ of _PAGES_",
+            "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            "sSearchPlaceholder": "Search...",
+            "sLengthMenu": "Results :  _MENU_",
+        },
+        createdRow: function (row, data, dataIndex) {
+
+        if (data[2] == `NA`) {
+
+            $(row).css("background-color", "orange");
+
+        }
+
+        },
+        "lengthMenu": [10, 20, 50, 100],
+        "pageLength": 10
+    });
+
+    multiCheck(c2);
+
+    c3 = $('#style-3').DataTable({
+        "oLanguage": {
+            "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+            "sInfo": "Showing page _PAGE_ of _PAGES_",
+            "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            "sSearchPlaceholder": "Search...",
+            "sLengthMenu": "Results :  _MENU_",
+        },
+        "stripeClasses": [],
+        "lengthMenu": [10, 20, 50, 100],
+        "pageLength": 10
+    });
+
+    multiCheck(c3);
+
+</script>
+<!-- END PAGE LEVEL SCRIPTS -->
+<!-- BEGIN THEME GLOBAL STYLE -->
+<script src="{%static 'plugins/sweetalerts/sweetalert2.min.js' %}"></script>
+<script src="{%static 'plugins/sweetalerts/custom-sweetalert.js' %}"></script>
+<!-- END THEME GLOBAL STYLE -->
+<script>
+    $('.widget-content .warning.confirm').on('click', function () {
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Delete!',
+            padding: '2em'
+        }).then(function (result) {
+            if (result.value) {
+                swal(
+                    'Deleted!',
+                    'Question Paper Deleted.',
+                    'success'
+                )
+            }
+        })
+    })
+
+    $('.widget-content .warnings.confirms').on('click', function () {
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Approve!',
+            padding: '2em'
+        }).then(function (result) {
+            if (result.value) {
+                swal(
+                    'Approved!',
+                    'Question Paper Approved.',
+                    'success'
+                )
+            }
+        })
+    })
+</script>
+<!-- SCANNER -->
+<script src="{% static 'assets/js/onscan.js'%}"></script>
+<script type="text/javascript">
+
+    if (typeof console != "undefined")
+        if (typeof console.log != 'undefined')
+            console.olog = console.log;
+        else
+            console.olog = function () { };
+
+    console.log = function (message, error) {
+        console.olog(message);
+        var oOutput = document.getElementById('consoleTextField');
+        if (error) {
+            oOutput.value += "ERROR: " + message + '\n';
+        } else {
+            oOutput.value += (message);
+            scan(message);
+        }
+        oOutput.scrollTop = oOutput.scrollHeight;
+    };
+    console.error = console.debug = console.info = console.log;
+
+    window.onerror = function (msg) {
+        console.log(msg, true);
+    }
+
+    function initOnScan() {
+
+
+        var prop;
+        var array;
+        var suffixKeyCodes = [];
+        var prefixKeyCodes = [];
+
+
+        if (document.getElementById("iEndChar").value) {
+            array = document.getElementById("iEndChar").value.split(",");
+            for (prop in array)
+                suffixKeyCodes.push(parseInt(array[prop]));
+            // suffixKeyCodes.push(parseInt(prop));
+        }
+        if (document.getElementById("iStartChar").value) {
+            array = document.getElementById("iStartChar").value.split(",")
+            for (prop in document.getElementById("iStartChar").value.split(","))
+                prefixKeyCodes.push(parseInt(array[prop]));
+        }
+
+        var options = {
+            timeBeforeScanTest: parseInt(document.getElementById("iTimeBeforeScanTest").value),
+            avgTimeByChar: parseInt(document.getElementById("iAvgTimeByChar").value),
+            minLength: parseInt(document.getElementById("iMinLength").value),
+            suffixKeyCodes: suffixKeyCodes,
+            prefixKeyCodes: prefixKeyCodes,
+            scanButtonLongPressTime: parseInt(document.getElementById("iScanButtonLongPressThreshold").value),
+            stopPropagation: document.getElementById("iStopPropagation").checked,
+            preventDefault: document.getElementById("iPreventDefault").checked,
+            reactToPaste: document.getElementById("iAcceptPasteInput").checked,
+            reactToKeyDown: document.getElementById("iAcceptKeyInput").checked,
+            singleScanQty: parseInt(document.getElementById("iSingleScanQty").value)
+        }
+
+        if (document.getElementById("iOnComplete").checked) {
+            options.onScan = function (barcode, qty) {
+                document.getElementById('consoleTextField').value = "";
+                console.log(barcode);
+            };
+        } else {
+            options.onScan = function () { };
+        }
+
+        if (document.getElementById("iOnError").checked) {
+            options.onScanError = function (err) {
+                var sFormatedErrorString = "Error Details: {\n";
+                for (var i in err) {
+                    sFormatedErrorString += '    ' + i + ': ' + err[i] + ",\n";
+                }
+                sFormatedErrorString = sFormatedErrorString.trim().replace(/,$/, '') + "\n}";
+                console.log("[onScanError]: " + sFormatedErrorString);
+            };
+        } else {
+            options.onScanError = function () { };
+        }
+
+
+        if (document.getElementById("iOnKeyProcessed").checked) {
+            options.onKeyProcess = function (sChar, oEvent) {
+                console.log('[onKeyProcess]: Processed character "' + sChar + '"');
+            };
+        } else {
+            options.onKeyProcess = function () { };
+        }
+
+
+        if (document.getElementById("iOnKeyDetect").checked) {
+            options.onKeyDetect = function (iKey, oEvent) {
+                var oEventProps = ''
+                    + 'key:"' + oEvent.key + '", '
+                    + 'ctrlKey:' + oEvent.ctrlKey + ', '
+                    + 'altKey:' + oEvent.altKey + ', '
+                    + 'shiftKey:' + oEvent.shiftKey + ', '
+                    + 'metaKey:' + oEvent.metaKey + ', '
+                    + 'keyCode:' + oEvent.keyCode + ', '
+                    + 'charCode:' + oEvent.charCode + ', ';
+                console.log('[onKeyDetect]: Detected key code "' + iKey + '". Event dump: ' + oEventProps);
+            };
+        } else {
+            options.onKeyDetect = function () { };
+        }
+
+        if (document.getElementById("iIgnoreIfFocusOn").checked) {
+            document.getElementById("iIgnoreIfFocusOnSelector").removeAttribute("disabled");
+            options.ignoreIfFocusOn = document.getElementById("iIgnoreIfFocusOnSelector").value;
+        } else {
+            options.ignoreIfFocusOn = false;
+            document.getElementById("iIgnoreIfFocusOnSelector").disabled = "disabled";
+        }
+
+        if (document.getElementById("iScanButtonKeyCode").value) {
+            options.scanButtonKeyCode = parseInt(document.getElementById("iScanButtonKeyCode").value);
+        } else {
+            options.scanButtonKeyCode = false;
+        }
+
+        if (document.getElementById("iOnScanButtonLongPressed").checked) {
+            options.onScanButtonLongPress = function () {
+                console.log("[onScanButtonLongPress]: ScanButton has been long-pressed");
+            };
+        } else {
+            options.onScanButtonLongPress = function () { };
+        }
+
+        if (document.getElementById("iOnPaste").checked) {
+            options.onPaste = function (sPasteString) {
+                console.log("[onPaste]: Data has been pasted: " + sPasteString);
+            }
+        } else {
+            options.onPaste = function () { };
+        }
+
+        if (document.getElementById("iCompleteHandler").checked) {
+            document.addEventListener('scan', scanHandler);
+        } else {
+            document.removeEventListener('scan', scanHandler);
+        }
+
+        if (document.getElementById("iCompleteHandler").checked) {
+            document.addEventListener('scanError', scanErrorHandler);
+        } else {
+            document.removeEventListener('scanError', scanErrorHandler);
+        }
+
+        if (document.getElementById("ikeyCodeMapper").checked) {
+            options.keyCodeMapper = function (e) {
+                var iKeyCode = e.which;
+                var sChar = onScan.decodeKeyEvent(e);
+                console.log('[keyCodeMapper]: Decoding key code "' + iKeyCode + '" to "' + sChar + '"')
+                return sChar;
+            }
+        }
+
+        try {
+            onScan.attachTo(document, options);
+            // console.log("onScan Started!");
+        } catch (e) {
+            onScan.setOptions(document, options);
+            // console.log("onScansettings changed!");
+        }
+
+
+    }
+
+    function destroyOnScan() {
+        // console.log("onScan destroyed!");
+        onScan.detachFrom(document);
+    }
+
+    function clearTextArea() {
+        document.getElementById('consoleTextField').value = "";
+    }
+
+    function scanHandler(e) {
+        console.log("[scanHandler]: Code: " + e.detail.code);
+    }
+
+    function scanErrorHandler(e) {
+        var sFormatedErrorString = "Error Details: {\n";
+        for (var i in e.detail) {
+            sFormatedErrorString += '    ' + i + ': ' + e.detail[i] + ",\n";
+        }
+        sFormatedErrorString = sFormatedErrorString.trim().replace(/,$/, '') + "\n}";
+        console.log("[scanErrorHandler]: " + sFormatedErrorString);
+    }
+
+    function getonScanSettings() {
+        var sFormatedErrorString = "Scanner Settings: \n";
+        var aJSONArray = JSON.stringify(onScan.getOptions(document)).split(",");
+        for (prop = 0; prop < aJSONArray.length - 1; prop++) {
+            if (aJSONArray[prop + 1][0] == '\"') {
+                sFormatedErrorString += aJSONArray[prop] + "," + "\n";
+            } else {
+                sFormatedErrorString += aJSONArray[prop] + ",";
+            }
+        }
+        sFormatedErrorString += aJSONArray[aJSONArray.length - 1];
+
+        console.log(sFormatedErrorString);
+
+
+    }
+
+    function fireTestInput() {
+        var sInput = (document.getElementById("iTestInput").value || '').trim();
+        if (sInput.startsWith('[') && sInput.endsWith(']')) {
+            onScan.simulate(document, JSON.parse(sInput));
+        } else {
+            onScan.simulate(document, sInput);
+        }
+    }
+
+    (function () {
+        initOnScan();
+        document.querySelectorAll("#playground input").forEach(function (oInput) {
+            if (oInput.type == 'button' || oInput.readonly) {
+                return;
+            }
+
+            oInput.addEventListener('change', function () {
+                console.log('onScan configuration updated');
+                onScan.detachFrom(document);
+                initOnScan();
+            });
+        });
+    })();
+</script>
+
+<script>
+    $('#pgmc').change(function () {
+        $('pgm').empty();
+        pgmc = $(this).val();
+        pgmg = $('#pgmg option:selected').val();
+        pgmt = $('#pgmt option:selected').val();
+        var token = '{{csrf_token}}'
+        var r = jQuery.ajax({
+            headers: { "X-CSRFToken": token },
+            type: "POST",
+            url: "{% url 'pgmlist' %}?format=json",
+            dataType: "json",
+            data: {
+                "pgmc": pgmc,
+                'pgmg': pgmg,
+                'pgmt': pgmt,
+            },
+            success: renderlist,
+        });
+        function renderlist(res) {
+
+            $("#pgm").empty()
+
+            $("#pgm").append('<option value=""></option>')
+            $.each(res.data.pgml, function (j, value) {
+                //var examnme=value.code +" ("+value.title+")"
+                $("#pgm").append('<option value="' + value.id + '">' + value.title + '</option>');
+            });
+
+        }
+    });
+
+    $('#pgm').change(function () {
+        $('#sem').empty();
+        $('#scheme').empty();
+        $('#exam').empty();
+        pgm = $('#pgm option:selected').val();
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax({
+            headers: { "X-CSRFToken": token },
+            type: "GET",
+            url: "{% url 'semlist' %}",
+            dataType: "json",
+            data: {
+                "pgm": pgm,
+
+            },
+            success: renderlist,
+        });
+        function renderlist(res) {
+
+            $("#sem").empty()
+            //console.log(res.data.seml)
+            var data = res.data
+            //alert(data)
+            var sem = data.seml
+            $("#sem").append('<option value=""></option>')
+            $.each(sem, function (j, value) {
+                //var examnme=value.code +" ("+value.title+")"
+                $("#sem").append('<option value="' + value.id + '">' + value.title + '</option>');
+            });
+
+        }
+    });
+
+    $('#sem').change(function () {
+        pgm = $('#pgm option:selected').val();
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax({
+            headers: { "X-CSRFToken": token },
+            type: "GET",
+            url: "{% url 'schemelist' %}",
+            dataType: "json",
+            data: {
+                "pgm": pgm,
+
+            },
+            success: renderlist,
+        });
+        function renderlist(res) {
+
+            $("#scheme").empty()
+
+            $("#scheme").append('<option value=""></option>')
+            $.each(res.data.scheme, function (j, value) {
+                //var examnme=value.code +" ("+value.title+")"
+                $("#scheme").append('<option value="' + value.id + '">' + value.title + '</option>');
+            });
+
+        }
+    });
+
+    $('#scheme').change(function () {
+        pgm = $('#pgm option:selected').val();
+        sem = $('#sem option:selected').val();
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax({
+            headers: { "X-CSRFToken": token },
+            type: "GET",
+            url: "{% url 'examclist' %}",
+            dataType: "json",
+            data: {
+                "pgm": pgm,
+                "sem": sem,
+            },
+            success: renderlist,
+        });
+        function renderlist(res) {
+
+            $("#exam").empty()
+
+            $("#exam").append('<option value=""></option>')
+            $.each(res.data.exam, function (j, value) {
+                //var examnme=value.code +" ("+value.title+")"
+                $("#exam").append('<option value="' + value.id + '">' + value.code + '</option>');
+            });
+
+        }
+    });
+
+
+    $('#exam').change(function () {
+        exam = $('#exam option:selected').val();
+
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax({
+            headers: { "X-CSRFToken": token },
+            type: "GET",
+            url: "{% url 'ecollegelist' %}",
+            dataType: "json",
+            data: {
+                "exam": exam,
+
+            },
+            success: renderlist,
+        });
+        function renderlist(res) {
+
+            $("#college").empty()
+
+            $("#college").append('<option value=""></option>')
+            $.each(res.data.college, function (j, value) {
+                var collgename = value.code + " -" + value.name
+                $("#college").append('<option value="' + value.id + '">' + collgename + '</option>');
+            });
+
+        }
+    });
+
+
+    $('#college').change(function () {
+        // alert("Y")
+        college = $('#college option:selected').val();
+        pgm = $('#pgm option:selected').val();
+        exm = $('#exam option:selected').val();
+        // prg_cors_sem=$("#")
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax({
+            headers: { "X-CSRFToken": token },
+            type: "GET",
+            url: "{% url 'ebundlelist' %}",
+            dataType: "json",
+            data: {
+                "college": college,
+                'pgm': pgm,
+                'exam': exm
+            },
+            success: renderlist,
+        });
+        function renderlist(res) {
+
+            $("#bundle").empty()
+
+            $("#bundle").append('<option value=""></option>')
+            $.each(res.data.bundle, function (j, value) {
+                //var collgename=value.code +" -"+value.name
+                $("#bundle").append('<option value="' + value.id + '">' + value.code + '</option>');
+            });
+
+        }
+    });
+    $("#bundle").change(function () {
+        $("#btnsub").prop('disabled', false);
+
+    });
+
+    $('#btnres').click(function () {
+        $("#pgmt").val('');
+        $("#pgmc").val('');
+        $("#pgmg").val('');
+        $("#pgm").empty();
+        $("#sem").empty();
+        $("#exam").empty();
+        $("#college").empty();
+        $("#bundle").empty();
+        var table = $('#style-2').DataTable();
+        $('#style-2').dataTable().fnClearTable();
+        $("#btnsub").prop('disabled', true);
+
+
+    })
+
+    $('#btnsub').click(function () {
+
+        college = $('#college option:selected').val();
+        pgm = $('#pgm option:selected').val();
+        bundle = $('#bundle option:selected').val();
+
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax({
+            headers: { "X-CSRFToken": token },
+            type: "POST",
+            url: "{% url 'answersheet-list' %}",
+            dataType: "json",
+            data: {
+                "college": college,
+                'pgm': pgm,
+                "bundle": bundle
+            },
+            success: renderlist,
+        });
+        function renderlist(res) {
+
+            // console.log(res);
+
+            var table = $('#style-2').DataTable();
+            $('#style-2').dataTable().fnClearTable();
+
+            for (i = 0; i < res.data.al.length; i++) {
+                //<div class="bg-warning"
+                if (res.data.al[i].status == 'ACTIVE') {
+
+                    var y = '<td> <div style="display: inline-flex;"> <div class="t-dot bg-success mt-1"></div> &nbsp ' + res.data.al[i].status + '</div> </td>';
+                }
+                else {
+                    var x = 'PENDING'
+                    var y = '<td> <div style="display: inline-flex;"> <div class="t-dot bg-warning mt-1"></div> &nbsp ' + res.data.al[i].status + '</div> </td>';
+
+                }
+                var x = res.data.al[i].answersheetUrl
+                var j = x.split("/")
+                var z = j[(j.length) - 1]
+
+                tr = $('<tr> <td ><label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk as-info" ansid=' + res.data.al[i].id + ' id="customer-all-info" value=' + res.data.al[i].id + '>\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label></td> <td class="text-center" >' + (i + 1) + '</td> <td class="text-center">' + res.data.al[i].sqno + '</td> <td class="text-center"><a href="#">' + z + '</a></td> ' + y + ' <td class="text-center"> <div class="dropdown custom-dropdown"> <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink5" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"> <circle cx="12" cy="12" r="1"></circle> <circle cx="19" cy="12" r="1"></circle> <circle cx="5" cy="12" r="1"></circle> </svg> </a> <div class="dropdown-menu widget-content" aria-labelledby="dropdownMenuLink5" style="will-change: transform;"> <a class="dropdown-item  manual_button" ansid=' + res.data.al[i].id + ' dataans=' + res.data.al[i].answersheetUrl + ' href="javascript:void(0);"data-toggle="modal"data-target=".bd-example-modal-lg">Manual Mapping</a> <a class="dropdown-item del_button" ansid=' + res.data.al[i].id + ' href="javascript:void(0);">Delete</a> </div> </div> </td> </tr>')
+                table.row.add(tr[0]).draw();
+            }
+        }
+
+
+
+
+    });
+
+    /*$('#customer-all-select').change(function () {
+        alert("TH")
+        $('.as-info:enabled').prop('checked',$this.prop('checked'));   
+    });*/
+
+    /*$('.as-info').click(function () {
+        alert("You clicked the " + this.name);
+        //xid=$('.as-info').attr('xid').val()
+        //alert(xid)
+        if(this.prop("checked")==true){
+            alert("You clicked the " + this.name);
+            $('#btnv').prop('enabled',true);
+        }
+      
+    })*/
+
+
+    $('#btnv').click(function () {
+
+        checked = $(".as-info:checked").length;
+
+        if (!checked) {
+
+            swal({
+
+                "title": "Nothing Selected",
+
+                type: 'error',
+
+                "text": 'select answersheet',
+
+                padding: '2em'
+
+            })
+
+        }
+
+
+
+        else {
+
+            swal({
+
+                title: 'Are you sure?',
+
+                text: "You won't be able to revert this!",
+
+                type: 'warning',
+
+                showCancelButton: true,
+
+                confirmButtonText: 'Yes, Approve!',
+
+                padding: '2em'
+
+            }).then(function (result) {
+
+                if (result.value) {
+
+
+
+                    allapprove();
+
+
+
+                }
+
+            })
+        }
+        function allapprove() {
+            toppings = $(".as-info:checked").map(function () {
+
+                return $(this).val();
+
+            }).get().join();
+
+            var token = '{{csrf_token}}'
+            var res = jQuery.ajax({
+                headers: { "X-CSRFToken": token },
+                type: "POST",
+                url: "{% url 'verify_answersheet' %}",
+                dataType: "json",
+                data: {
+                    'ver': toppings,
+                },
+                success: renderlist,
+            });
+            function renderlist(res) {
+                swal({
+
+                    "title": "Verified & Approved Succcefully",
+
+                    type: 'success',
+
+                    // "text": 'A',
+
+                    padding: '2em'
+
+                }).then(function (data) {
+
+                    location.reload()
+                })
+            }
+
+        }
+    })
+
+</script>
+<script>
+    $(document).on('click', "a.manual_button", function () {
+        ans = $(this).attr("dataans")
+        answid = $(this).attr("ansid")
+
+        var token = '{{csrf_token}}'
+
+        var res = jQuery.ajax({
+            url: "{% url 'manual_mapping'%}",
+            type: 'GET',
+            dataType: 'json',
+            headers: { "X-CSRFToken": token },
+
+
+            data: {
+                'ansl': ans, 'ansr': answid
+            },
+            success: renderlist,
+            error: function (err) {
+            }
+        });
+        function renderlist(res) {
+            $('#sts').empty();
+            var x = res.data.ansl
+            var j = x.split("/")
+
+            var z = "answer-sheet-printing.pdf"//j[(j.length)-3]+'/'+j[(j.length)-2]+'/'+j[(j.length)-1]
+            $('#answersheet').attr('href', x)
+            $('#answersheet').text(z)
+            $('#sequence').text(res.data.seqn)
+            $('#asid').val(res.data.id)
+            $('#sts').val(res.data.stats)
+
+            if (res.data.stats == 'PENDING') {
+
+                $('#sts').append('<td> <div style="display: inline-flex;"> <div class="t-dot bg-warning mt-1"></div> &nbsp ' + res.data.stats + '</div> </td>');
+            }
+            else {
+                $('#sts').append('<td> <div style="display: inline-flex;"> <div class="t-dot bg-success mt-1"></div> &nbsp ' + res.data.stats + '</div> </td>');
+
+
+            }
+        }
+    })
+</script>
+
+
+<script>
+    function scan() {
+        encr = $('#consoleTextField').val();
+        answid = $("#asid").val();
+        var token = '{{csrf_token}}'
+
+        var res = jQuery.ajax({
+            url: "{% url 'encrypted'%}",
+            type: 'POST',
+            dataType: 'json',
+            headers: { "X-CSRFToken": token },
+
+
+            data: {
+                'enc': encr,
+                'id': answid
+            },
+            success: renderlist,
+
+        });
+        function renderlist(res) {
+            $('#sts').empty();
+            var x = "MAPPED"
+            $('#sts').append('<td> <div style="display: inline-flex;"> <div class="t-dot bg-success mt-1"></div> &nbsp ' + x + '</div> </td>');
+
+
+
+        }
+
+    }
+
+
+
+</script>
+
+
+
+<script>
+    $(document).on('click', "a.del_button", function () {
+        ans = $(this).attr("ansid")
+
+        var token = '{{csrf_token}}'
+
+        swal({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            padding: '2em'
+        }).then(function (result) {
+
+            if (result.value) {
+
+                blockUI();
+                fetch("{% url 'delete_ans' %}", {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json', "X-CSRFToken": token
+                    },
+                    body: JSON.stringify({
+                        "ansi": ans,
+
+                    })
+                }).then(function (res) { return res.json(); })
+                    .then(function (data) {
+
+                        unblockUI();
+                        if (data.success == true) {
+
+                            swal({
+                                title: 'Done!',
+                                text: 'Answer deleted successfully',
+                                type: 'success',
+                                padding: '2em',
+
+
+                            })
+                                .then(() => {
+                                    location.reload();
+                                });
+
+                        }
+                        else {
+                            Swal({
+                                title: "Oops!",
+                                type: 'error',
+                                text: 'Answer delete failed',
+
+                                padding: '2em'
+                            }
+
+                            )
+                        }
+
+                    });
+            }
+        })
+    });
+    $(document).ready(function () {
+        $('#mmpclose').click(function () {
+            $('#btnsub').trigger('click')
+        });
+        $('#btnsub').attr('disabled', true);
+    });
+</script>
+
+<script>
+    /*function pdfopen() {
+        var myWindow = window.open("{{ answersheet }}", "", "width=1800,height=1600");
+
+    }*/
+</script>
+
+{% endblock head %}

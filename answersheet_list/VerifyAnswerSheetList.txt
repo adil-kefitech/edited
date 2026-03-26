@@ -1,0 +1,226 @@
+
+### original ###
+
+class VerifyAnswerSheetList(APIView):
+    def post(self, request):
+        try:
+            updated_by_id = request.user
+            ver = request.data["ver"]
+            verl = ver.split(",")
+            # verl.remove('on')
+            if verl[0] == "on":
+                del verl[0]
+            x = State.objects.get(label=ACTIVE)
+
+            for i in verl:
+                appl = ScannedAnswersheet.objects.get(pk=int(i))
+                if appl.status.label == "PENDING":
+                    appl.status = x
+                    appl.save()
+            return format_response(
+                True,
+                FETCH_SUCCESS_MSG,
+                data={},
+                status_code=status.HTTP_201_CREATED,
+                template_name="uploading_answer_sheet_list.html",
+            )
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return format_response(
+                False,
+                BAD_GATEWAY,
+                {},
+                BAD_GATEWAY_ERROR_CODE,
+                status_code=status.HTTP_400_BAD_REQUEST,
+                template_name="uploading_answer_sheet_list.html",
+            )
+
+
+
+
+
+
+
+
+
+### updated  ###
+
+
+
+class VerifyAnswerSheetList(APIView):
+    def get(self, request):
+        """
+        Returns the list of active camps (CampSchedule) for the logged-in user.
+        The frontend uses this to render the camp selection dropdown before
+        calling POST /online-evaluation/verify_answersheet.
+
+        Pattern follows ExaminerCamp.get() in answersheet_allocate.py:
+          - CampRoleAllocation filtered by camp_user, camp_schedule__status__label=ACTIVE,
+            start_date__lte=today, end_date__gte=today
+        """
+        try:
+            user = request.user
+            today = timezone.now().date()
+
+            # Match the pattern used in ExaminerCamp.get() — filter by camp_schedule status label
+            # and date range to find schedules that are currently running for this user.
+            camp_allocations = CampRoleAllocation.objects.filter(
+                camp_user=user,
+                camp_schedule__status__label__iexact="ACTIVE",
+                camp_schedule__start_date__lte=today,
+                camp_schedule__end_date__gte=today,
+            ).select_related(
+                "camp_schedule",
+                "camp_schedule__sub_camp",
+                "camp_schedule__sub_camp__camp",
+            )
+            
+
+            camp_list = []
+            seen = set()
+            for alloc in camp_allocations:
+                sched = alloc.camp_schedule
+                if sched.id not in seen:
+                    seen.add(sched.id)
+                    camp_list.append(
+                        {
+                            "camp_schedule_id": sched.id,
+                            "display_name": sched.camp_display_name,
+                            "sub_camp_id": sched.sub_camp.id,
+                            "sub_camp_name": sched.sub_camp.name,
+                            "camp_id": sched.sub_camp.camp.id,
+                            "camp_name": sched.sub_camp.camp.camp_name,
+                        }
+                    )
+
+            return format_response(
+                True,
+                FETCH_SUCCESS_MSG,
+                data={"active_camps": camp_list},
+                status_code=status.HTTP_200_OK,
+                template_name="uploading_answer_sheet_list.html",
+            )
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return format_response(
+                False,
+                BAD_GATEWAY,
+                {},
+                BAD_GATEWAY_ERROR_CODE,
+                status_code=status.HTTP_400_BAD_REQUEST,
+                template_name="uploading_answer_sheet_list.html",
+            )
+
+    def post(self, request):
+        """
+        Verifies and approves a list of scanned answersheets (changes status from
+        PENDING to ACTIVE) and allocates them to a specific camp chosen by the user.
+
+        Required POST fields:
+            ver              (str) – comma-separated ScannedAnswersheet IDs (existing field)
+            camp_schedule_id (int) – ID of the CampSchedule to allocate bundles to (NEW field)
+        """
+        try:
+            updated_by = request.user
+            today = timezone.now().date()
+
+            # ---------- 1. Parse answersheet IDs (existing logic, unchanged) ----------
+            ver = request.data.get("ver", "")
+            verl = ver.split(",")
+            if verl and verl[0] == "on":
+                del verl[0]
+
+            # ---------- 2. Validate the selected camp (NEW) ----------
+            camp_schedule_id = request.data.get("camp_schedule_id")
+            if not camp_schedule_id:
+                return format_response(
+                    False,
+                    "Please select a camp before approving the answersheets.",
+                    {},
+                    BAD_GATEWAY_ERROR_CODE,
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    template_name="uploading_answer_sheet_list.html",
+                )
+
+            # Confirm the requesting user is allocated to this camp and it is active today.
+            # Uses camp_schedule__status__label=ACTIVE consistent with ExaminerCamp.get().
+            camp_role_alloc = CampRoleAllocation.objects.filter(
+                camp_user=updated_by,
+                camp_schedule_id=camp_schedule_id,
+                camp_schedule__status__label=ACTIVE,
+                camp_schedule__start_date__lte=today,
+                camp_schedule__end_date__gte=today,
+            ).select_related(
+                "camp_schedule__sub_camp__camp"
+            ).first()
+
+            if not camp_role_alloc:
+                return format_response(
+                    False,
+                    "Selected camp is not active or you are not allocated to it.",
+                    {},
+                    BAD_GATEWAY_ERROR_CODE,
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    template_name="uploading_answer_sheet_list.html",
+                )
+
+            # Resolve the full camp chain from the CampSchedule
+            selected_camp_schedule = camp_role_alloc.camp_schedule
+            selected_sub_camp = selected_camp_schedule.sub_camp   # SubCampMaster instance
+            selected_camp = selected_sub_camp.camp                # CampMaster instance
+
+            # ---------- 3. Approve each answersheet and link bundle to the camp (UPDATED) ----------
+            # State.objects.get(label=ACTIVE) — same pattern used throughout answersheet_list.py
+            active_state = State.objects.get(label=ACTIVE)
+            approved_count = 0
+
+            for i in verl:
+                i = i.strip()
+                if not i:
+                    continue
+                try:
+                    appl = ScannedAnswersheet.objects.get(pk=int(i))
+                except (ScannedAnswersheet.DoesNotExist, ValueError):
+                    continue
+
+                if appl.status.label == "PENDING":
+                    # Approve: PENDING → ACTIVE (existing behaviour)
+                    appl.status = active_state
+                    appl.updated_by = updated_by
+                    appl.save()
+                    approved_count += 1
+
+                    # NEW: link the bundle to the selected camp via BundleCamp.
+                    # The bundle is reached through DFM → BundleCandidateMapper → BundleMaster.
+                    # get_or_create ensures idempotency if the same bundle appears
+                    # in multiple answersheets within the same approval batch.
+                    if appl.dfm:
+                        bundle_cand = BundleCandidateMapper.objects.filter(
+                            digital_false_no=appl.dfm
+                        ).select_related("bundle").first()
+
+                        if bundle_cand:
+                            bundle = bundle_cand.bundle
+                            BundleCamp.objects.get_or_create(
+                                bundle=bundle,
+                                camp=selected_camp,
+                                defaults={"sub_camp": selected_sub_camp},
+                            )
+
+            return format_response(
+                True,
+                FETCH_SUCCESS_MSG,
+                data={"approved_count": approved_count},
+                status_code=status.HTTP_201_CREATED,
+                template_name="uploading_answer_sheet_list.html",
+            )
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return format_response(
+                False,
+                BAD_GATEWAY,
+                {},
+                BAD_GATEWAY_ERROR_CODE,
+                status_code=status.HTTP_400_BAD_REQUEST,
+                template_name="uploading_answer_sheet_list.html",
+                )

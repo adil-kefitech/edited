@@ -1,0 +1,175 @@
+
+#=================================================================#
+#                  EXAM LIST API START                            #
+# ================================================================#
+
+
+class ExamList(ListAPIView):
+    filter_backends =(DjangoFilterBackend,OrderingFilter)
+    filter_fields = ('title', 'code','month','year','season__title','exam_type__name','question_paper_delivery_type__name','prgm_details__scheme__name')
+    
+
+    def get(self,request): #getting the data from the table
+        try:
+           
+            states=[ACTIVE_STATE,PENDING_STATE]
+            staffbase=StaffBase.objects.filter(user=request.user).first()
+           
+            staffsection=StaffSection.objects.filter(staff=staffbase)
+         
+            subsection=[]
+            for  subsect in staffsection:
+                subsection.append(subsect.sub_section)
+                
+            subsectionprg=SubsectionProgramme.objects.filter(sub_section_id__in=subsection)
+           
+            prgm=[]
+            for subsectprg in subsectionprg:
+                if subsectprg.programme not in prgm:
+                    prgm.append(subsectprg.programme)
+            
+            prpg_sem = ProgrammeSemester.objects.filter(programme__in=prgm).all()
+            exam_prgm = ExamProgrammeSemesterMapping.objects.filter(programme_semester__in=prpg_sem).all()
+            
+            exam_list = []
+            for exm in exam_prgm:
+                exam_list.append(exm.exam.id)
+            # print(exam_list)
+            exam_obj=Examination.objects.select_related("exam_type","season","question_paper_delivery_type").prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list','schedule_list').filter(id__in=exam_list,status_id__in=states).all()
+
+            # exam_obj=Examination.objects.select_related("exam_type","season","question_paper_delivery_type").prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list','schedule_list').filter(status_id__in=states).all()
+            serialize_data=ExamListSerializer(exam_obj,many=True)
+            exam_data = serialize_data.data
+
+            dup_typ = []
+            dup_grp = []
+            dup_cls = []
+            dup_prgm = []
+            dup_schm = []
+            dup_sem = []
+            dup_status = []
+           
+
+            for exam in exam_data:
+                dup_status.append({"status":exam["status"]})
+              
+                for prgm in exam["prgm_details"]:
+                    
+                    prg_typ = prgm["programme_type"]
+                    prg_grp = prgm["programme_group"]
+                    prg_cls = prgm["programme_class"]
+                    prgmm = prgm["programme"]
+                    sem = prgm["semester"]
+                    schema = prgm["scheme"]
+
+                    dup_prgm.append({"programme":prgmm})
+                    dup_typ.append({"prgtyp":prg_typ})
+                    dup_grp.append({"prggrp":prg_grp})
+                    dup_cls.append({"prgcls":prg_cls})
+                    dup_sem.append({"semester":sem})
+                    dup_schm.append({"schema":schema})
+           
+            programme_type = list(unique_everseen(dup_typ))
+            programme_group = list(unique_everseen(dup_grp))
+            programme_class = list(unique_everseen(dup_cls))
+            programme = list(unique_everseen(dup_prgm))
+            semester = list(unique_everseen(dup_sem))
+            schema = list(unique_everseen(dup_schm))
+            exam_status = list(unique_everseen(dup_status))
+
+           
+            return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_list":serialize_data.data,"prg":programme,"prg_typ":programme_type,"prg_cls":programme_class,"prg_grp":programme_group,"sem":semester,"status":exam_status,"schema":schema},status_code=status.HTTP_200_OK,template_name="exam_list.html")
+
+        except Examination.DoesNotExist:
+            return format_response(False,PRGM_NOT_FOUND_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+           logger.error(e,exc_info=True)
+           return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    def post(self,request):
+        try: 
+            states=[ACTIVE_STATE,PENDING_STATE]
+            queryset=Examination.objects.select_related("exam_type","season","question_paper_delivery_type").prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list','schedule_list').filter(status_id__in=states).all()     
+            # query = self.request.GET.get("search")
+            # srch=request.data.getlist('search')
+            srch = request.data.get('search')
+            # date_sr = request.data.getlist('date_search')
+            date_sr = request.data["date_search"]
+            start_data,end_date = date_sr         
+            for n in request.data.get('search'):
+              
+                query=n
+                if query!=None:
+                    queryset=queryset.filter(
+                        Q(prgm_details__programme_semester__programme__programme_type__title__icontains=query)|
+                        Q(prgm_details__programme_semester__programme__programme_group__title__icontains=query)|
+                        Q(prgm_details__programme_semester__programme__programme_class__title__icontains=query)|
+                        # Q(prgm_details__programme_semester__semester__title__icontains=query)|
+                        # Q(prgm_details__programme_semester__programme__title__icontains=query)|
+
+                        Q(prgm_details__programme_semester__semester__title__icontains=query) |
+                        # If semester is stored as a number/short name, also try:
+                        Q(prgm_details__semester__title__icontains=query)|
+
+                        Q(prgm_details__scheme__name__icontains=query)|
+                        Q(status__label__icontains=query)
+                    ).distinct()
+
+            if start_data and end_date :
+               
+                queryset=queryset.filter(
+                         Q(created_on__date__range=(start_data,end_date))
+                    ).distinct()
+
+            queryset=self.filter_queryset(queryset)  
+            serializer_class = ExamListSerializer(queryset,many=True)   
+         
+
+            # states=[ACTIVE_STATE,PENDING_STATE]
+            # exam_obj=Examination.objects.select_related("exam_type","season","question_paper_delivery_type").prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list','schedule_list').filter(status_id__in=states).all()
+            # serialize_data=ExamListSerializer(exam_obj,many=True)
+            # exam_data = serialize_data.data
+            # dup_typ = []
+            # dup_grp = []
+            # dup_cls = []
+            # dup_prgm = []
+            # dup_schm = []
+            # dup_sem = []
+            # dup_status = []
+           
+
+            # for exam in exam_data:
+            #     dup_status.append({"status":exam["status"]})
+            #     for prgm in exam["prgm_details"]:
+                    
+            #         prg_typ = prgm["programme_type"]
+            #         prg_grp = prgm["programme_group"]
+            #         prg_cls = prgm["programme_class"]
+            #         prgmm = prgm["programme"]
+            #         sem = prgm["semester"]
+            #         schema = prgm["scheme"]
+
+            #         dup_prgm.append({"programme":prgmm})
+            #         dup_typ.append({"prgtyp":prg_typ})
+            #         dup_grp.append({"prggrp":prg_grp})
+            #         dup_cls.append({"prgcls":prg_cls})
+            #         dup_sem.append({"semester":sem})
+            #         dup_schm.append({"schema":schema})
+           
+            # programme_type = list(unique_everseen(dup_typ))
+            # programme_group = list(unique_everseen(dup_grp))
+            # programme_class = list(unique_everseen(dup_cls))
+            # programme = list(unique_everseen(dup_prgm))
+            # semester = list(unique_everseen(dup_sem))
+            # schema = list(unique_everseen(dup_schm))
+            # exam_status = list(unique_everseen(dup_status))
+
+            return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_list":serializer_class.data},status_code=status.HTTP_200_OK,template_name="exam_list.html")
+            # return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_list":serializer_class.data,"prg":programme,"prg_typ":programme_type,"prg_cls":programme_class,"prg_grp":programme_group,"sem":semester,"status":exam_status,"schema":schema},status_code=status.HTTP_200_OK,template_name="exam_list.html")
+
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+ 
