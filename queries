@@ -1,0 +1,99 @@
+--for first level distribution qp codes
+SELECT 
+    b.qp_code,
+    sc.id AS sub_camp_id,
+    sc.display_name AS sub_camp_name,
+    COUNT(DISTINCT sa.id) AS unallocated_sheets,
+    g.name AS required_distribution_type
+FROM uok.pgd_on_val_scn_as sa
+JOIN uok.pgd_bund_mstr b ON sa.bundle_id = b.id
+JOIN uok.pgd_exam_schdl es ON sa.exam_schedule_id = es.id
+JOIN uok.river_state s ON sa.status_id = s.id
+LEFT JOIN uok.pgd_on_val_exr_scn_as esa ON sa.id = esa.answersheet_id
+
+JOIN uok.pgd_camp_schedule_course csc ON csc.exam_schedule_id = es.id
+JOIN uok.pgd_camp_schedule cs ON csc.camp_schedule_id = cs.id
+JOIN uok.pgd_camp_sub_mstr sc ON cs.sub_camp_id = sc.id
+
+JOIN uok.pgd_camp_role_allocation cra ON cra.camp_course_id = csc.id
+JOIN uok.pgd_desig_hierarchy dh ON cra.camp_group_id = dh.id
+JOIN uok.auth_group g ON dh.group_id = g.id
+JOIN uok.river_state cra_s ON cra.status_id = cra_s.id
+WHERE 
+                           
+    sa.dfm_id IS NOT NULL                 
+    AND esa.id IS NULL                        
+    AND sc.id IN (529, 515, 564, 614, 643)    
+    AND cra_s.label = 'ACTIVE'                
+    AND (g.name ILIKE '%Additional Examiner%' OR g.name ILIKE '%Chief Examiner%')
+GROUP BY 
+    b.qp_code, sc.id, sc.display_name, g.name
+ORDER BY 
+    unallocated_sheets DESC;
+
+-- for the second level disribution qp codes
+
+SELECT 
+    bm.qp_code, 
+    csm.title AS course_name,
+    csch.camp_display_name,
+    COUNT(sas.id) AS sheets_ready_for_second_level
+FROM uok.pgd_on_val_scn_as sas
+JOIN uok.pgd_bund_mstr bm ON sas.bundle_id = bm.id
+JOIN uok.pgd_prg_cours_mstr pcs ON bm.programme_course_semester_id = pcs.id
+JOIN uok.pgd_cors_mstr csm ON pcs.course_id = csm.id
+JOIN uok.pgd_camp_schedule_course csc ON csc.exam_schedule_id = sas.exam_schedule_id
+JOIN uok.pgd_camp_schedule csch ON csc.camp_schedule_id = csch.id
+JOIN uok.pgd_camp_role_allocation cra ON cra.camp_schedule_id = csch.id
+WHERE 
+  sas.dfm_id IS NOT NULL 
+  AND cra.camp_user_id = 79609 
+  AND csch.start_date <= CURRENT_DATE 
+  AND csch.end_date >= CURRENT_DATE
+  AND csch.status_id = 1
+  AND (
+      SELECT COUNT(*) 
+      FROM uok.pgd_on_val_exr_scn_as exr 
+      WHERE exr.answersheet_id = sas.id
+  ) = 1
+GROUP BY 
+    bm.qp_code, 
+    csm.title,
+    csch.camp_display_name
+ORDER BY 
+    sheets_ready_for_second_level DESC;
+
+
+-- for the third level disribution qp codes
+
+SELECT 
+    nle.qp_code, 
+    csm.title AS course_name,
+    csch.camp_display_name,
+    COUNT(nle.id) AS sheets_ready_for_third_level
+FROM uok.pgd_mrk_nxt_eval nle
+JOIN uok.pgd_digital_false_no dfm ON nle.digital_false_no_id = dfm.id
+JOIN uok.pgd_exam_reg_cors_mapping ercm ON dfm.exam_registration_course_id = ercm.id
+JOIN uok.pgd_stud_prgm_sem_cours spsc ON ercm.student_semester_course_id = spsc.id
+JOIN uok.pgd_prg_cours_mstr pcs ON spsc.prgm_sem_course_id = pcs.id
+JOIN uok.pgd_cors_mstr csm ON pcs.course_id = csm.id
+JOIN uok.pgd_exam_schdl es ON es.programme_semester_course_id = pcs.id AND es.exam_id = nle.exam_id
+JOIN uok.pgd_camp_schedule_course csc ON csc.exam_schedule_id = es.id
+JOIN uok.pgd_camp_schedule csch ON csc.camp_schedule_id = csch.id
+JOIN uok.pgd_camp_role_allocation cra ON cra.camp_schedule_id = csch.id
+JOIN auth_user u ON cra.camp_user_id = u.id 
+LEFT JOIN uok.pgd_mrk_exr_dfm exr_dfm 
+    ON exr_dfm.digital_false_no_id = nle.digital_false_no_id 
+    AND exr_dfm.evaluation_type_id = 3
+WHERE 
+    exr_dfm.id IS NULL 
+    AND (u.username = '2000' OR cra.camp_user_id = 79609)
+    AND csch.start_date <= CURRENT_DATE 
+    AND csch.end_date >= CURRENT_DATE
+    AND csch.status_id = 1
+GROUP BY 
+    nle.qp_code, 
+    csm.title,
+    csch.camp_display_name
+ORDER BY 
+    sheets_ready_for_third_level DESC;

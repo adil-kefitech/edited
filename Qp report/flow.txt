@@ -1,0 +1,33 @@
+
+Feature 1 — Search by Exam Code:
+
+    User enters Exam Code (e.g. EX2024001)
+            ↓
+    Examination table → finds the exam
+            ↓
+    ExaminationSchedule → finds all courses 
+    whose end_date < today (exam already finished)
+            ↓
+    ProgrammeCourseSemester → CourseMaster
+    gets course name & code
+            ↓
+    QuestionPaperExamMapper → QuestionPaper
+    gets the QP code assigned to that course
+            ↓
+    Returns table: Course Name | Course Code | Exam End Date | QP Code(s)
+
+
+
+Feature 2 — Search by QP Code:
+
+    User enters QP Code
+            ↓
+    QuestionPaper table → finds the paper
+            ↓
+    QuestionPaperExamMapper → finds all 
+    Examinations that used this QP
+            ↓
+    ExaminationSchedule → finds all courses 
+    under each of those exams
+            ↓
+    Returns table: Examination | Exam Code | Course Codes
