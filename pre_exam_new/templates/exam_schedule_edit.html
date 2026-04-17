@@ -1,0 +1,887 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block additional_styles %}
+<!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM STYLES -->
+   
+    
+<!-- END PAGE LEVEL PLUGINS/CUSTOM STYLES -->
+<link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css" type="image/x-icon">
+<!-- BEGIN THEME GLOBAL STYLES -->
+<link href="{% static 'plugins/flatpickr/flatpickr.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'plugins/noUiSlider/nouislider.min.css' %}" rel="stylesheet" type="text/css">
+<!-- END THEME GLOBAL STYLES -->
+<!--  BEGIN CUSTOM STYLE FILE  -->
+<link href="{% static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-step/jquery.steps.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'assets/css/forms/theme-checkbox-radio.css' %}">
+<link href="{% static 'plugins/flatpickr/custom-flatpickr.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'plugins/noUiSlider/custom-nouiSlider.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'plugins/bootstrap-range-Slider/bootstrap-slider.css' %}" rel="stylesheet" type="text/css">
+<style>
+    #formValidate .wizard>.content {
+        min-height: 25em;
+    }
+
+    #example-vertical.wizard>.content {
+        min-height: 24.5em;
+    }
+
+    #dbl {
+        display: none;
+    }
+    .history {
+        color: crimson;
+        font-weight: 800;
+        font-size: 14px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-align: center;
+    }
+</style>
+<!--  END CUSTOM STYLE FILE  -->
+<style>
+    input[type=date]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=date]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+    input[type=month]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=month]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+    input[type=time]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=time]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+</style>
+<!-- BEGIN PAGE LEVEL STYLES -->
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/datatables.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/dt-global_style.css' %}">
+<!-- END PAGE LEVEL STYLES -->
+<style>
+    .preview-th{
+        color: #000000;
+        font-weight: 700;
+        font-size: 13px;
+        border: none;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+    .preview-td{
+        color: #000000;
+        font-weight: 500;
+        font-size: 13px;
+        border: none;
+        letter-spacing: 2px;
+    }
+    .preview-head{
+        color: #87119c;
+        font-weight: 700;
+        font-size: 15px;
+        border: none;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+</style>
+<style>
+    .input-text2{
+    background-color: #fff !important;
+    border-bottom: 2px solid rgb(241, 6, 6) !important;
+    }
+    .input-text2:focus{
+    border-bottom: 2px solid #8c12a2 !important;
+    }
+</style>
+<style>
+    .select-text2
+        {
+            position: relative;
+            font-family: inherit;
+            background-color: transparent;
+            width: 100%;
+            padding: 10px 10px 10px 0;
+            font-size: 14px;
+            border-radius: 0;
+            border: none;
+            border-bottom: 2px solid red;
+        }
+                /* Remove focus */
+        .select-text2:focus {
+            outline: none;
+            border-bottom: 2px solid #8c12a2 !important;
+        }
+
+            /* Use custom arrow */
+        .select .select-text2 {
+            appearance: none;
+            -webkit-appearance:none
+        }
+       code {
+           user-select: none;
+       }
+</style>
+<!--  BEGIN SWITCH STYLE FILE  -->
+<style>
+    .switch {
+        position: relative;
+        display: block;
+        vertical-align: top;
+        width: 100px;
+        height: 30px;
+        padding: 3px;
+        margin:0;
+        background: linear-gradient(to bottom, #eeeeee, #FFFFFF 25px);
+        background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF 25px);
+        border-radius: 18px;
+        box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+    box-sizing:content-box;
+    }
+    .switch-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+    box-sizing:content-box;
+    }
+    .switch-label {
+        position: relative;
+        display: block;
+        height: inherit;
+        font-size: 10px;
+        text-transform: uppercase;
+        background: #eceeef;
+        border-radius: inherit;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.15);
+    box-sizing:content-box;
+    }
+    .switch-label:before, .switch-label:after {
+        position: absolute;
+        top: 50%;
+        margin-top: -.5em;
+        line-height: 1;
+        -webkit-transition: inherit;
+        -moz-transition: inherit;
+        -o-transition: inherit;
+        transition: inherit;
+    box-sizing:content-box;
+    }
+    .switch-label:before {
+        content: attr(data-off);
+        right: 11px;
+        color: #FFFFFF;
+        text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+    }
+    .switch-label:after {
+        content: attr(data-on);
+        left: 11px;
+        color: #FFFFFF;
+        text-shadow: 0 1px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+    }
+    .switch-input:checked ~ .switch-label {
+        background: #E1B42B;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 3px rgba(0, 0, 0, 0.2);
+    }
+    .switch-input:checked ~ .switch-label:before {
+        opacity: 0;
+    }
+    .switch-input:checked ~ .switch-label:after {
+        opacity: 1;
+    }
+    .switch-handle {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(to bottom, #FFFFFF 40%, #f0f0f0);
+        background-image: -webkit-linear-gradient(top, #FFFFFF 40%, #f0f0f0);
+        border-radius: 100%;
+        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
+    .switch-handle:before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -6px 0 0 -6px;
+        width: 12px;
+        height: 12px;
+        background: linear-gradient(to bottom, #eeeeee, #FFFFFF);
+        background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF);
+        border-radius: 6px;
+        box-shadow: inset 0 1px rgba(0, 0, 0, 0.02);
+    }
+    .switch-input:checked ~ .switch-handle {
+        left: 74px;
+        box-shadow: -1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
+    /* Switch Left Right
+    ==========================*/
+    .switch-left-right .switch-label {
+        overflow: hidden;
+    }
+    .switch-left-right .switch-label:before, .switch-left-right .switch-label:after {
+        width: 20px;
+        height: 20px;
+        top: 4px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 11px 0 0 0;
+        text-indent: -37px;
+        border-radius: 20px;
+        box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.2), inset 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+    .switch-left-right .switch-label:before {
+        background: #87CEEB;
+        text-align: left;
+        padding-left: 80px;
+    }
+    .switch-left-right .switch-label:after {
+        text-align: left;
+        text-indent: 9px;
+        background: #FF7F50;
+        left: -100px;
+        opacity: 1;
+        width: 100%;
+    }
+    .switch-left-right .switch-input:checked ~ .switch-label:before {
+        opacity: 1;
+        left: 100px;
+    }
+    .switch-left-right .switch-input:checked ~ .switch-label:after {
+        left: 0;
+    }
+    .switch-left-right .switch-input:checked ~ .switch-label {
+        background: inherit;
+    }
+</style>
+<!--  END SWITCH STYLE FILE  -->
+<!-- BEGIN THEME GLOBAL STYLES -->
+<link href="{% static 'plugins/animate/animate.css' %}" rel="stylesheet" type="text/css" />
+<script src="{% static 'plugins/sweetalerts/promise-polyfill.js' %}"></script>
+<link href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'plugins/sweetalerts/sweetalert.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'assets/css/components/custom-sweetalert.css' %}" rel="stylesheet" type="text/css" />
+<!-- END THEME GLOBAL STYLES -->
+<!--  BEGIN CUSTOM STYLE FILE  -->
+<link href="{% static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/select2/select2.min.css' %}">
+<!--  END CUSTOM STYLE FILE  -->
+{% endblock additional_styles %}
+
+{% block content %}
+
+
+<!--  BEGIN CONTENT AREA  -->
+<div class="layout-px-spacing">
+
+    
+
+    <div class="row layout-top-spacing" id="cancel-row">
+        <div class="d-flex justify-content-between w-100" id="anchor_nav">
+            <div id="date_time_picker" class=" layout-top-spacing">
+                <div class="seperator-header mx-3">
+                    <h4 class="">Exam Schedule Configuration</h4>
+                </div>
+            </div>
+            <div>
+                <nav class="breadcrumb-one" aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-white mt-3">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page"><span>Exam Schedule Config</span>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="container" id="pgm_type_div">
+            <div class="pl-4">
+            <!-- <form name="dform" action="{% url 'exam-add' %}" method="POST"> -->
+            <form name="dform" >
+                {% csrf_token %}
+                <div class="col mb-4" style="margin: auto;">
+                    <div class="" id="dbl56">
+                        <!-- <div class="border border-primary col"
+                                            style="border-radius: 5px; padding: 4% 5% 1% 5%; margin: auto;"> -->
+                            
+                            <br>
+                            <div class="row form-sec">
+                                
+                                
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" id="Exam_data">
+
+                                           
+                                            <option value="" selected>{{data.exam_name}}</option>
+                                            
+
+                                        </select>
+                                
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Exam</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" id="Programme_data">
+                                            
+                                            {% with i=data.schedule_list|first %}
+                                            <option value="" selected>{{i.prgm}}</option>
+                                            {% endwith %}
+
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" id="Semester_data">
+                                            {% with i=data.schedule_list|first %}
+                                            <option value="" selected>{{i.sem}}</option>
+                                            {% endwith %}
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Semester</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-1 table-responsive">
+                                <table class="table mb-4" id="courses">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Sl.No.</th>
+                                            <th style="width: 20%;">Course / Project</th>
+                                            <th>Start&nbsp;Date</th>
+                                            <th>Final&nbsp;Date</th>
+                                            <th>Start&nbsp;Time</th>
+                                            <th>End&nbsp;Time</th>
+                                            <th>Exam Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                      
+                                        {% for j in data.schedule_list %}
+                                        
+                                         <tr class="tr_class">
+                                            <td class="text-center">{{forloop.counter}}</td>
+                                            <td data_pk="{{j.prgm_sem_cours_id}}" ><input type="text" value="{{j.prgm_sem_cours_id}}" class="course_name_td" hidden>{{j.course}}</td>
+                                            <td><input style="border: none" type="date" value="{{j.start_date}}" class="course_start_date"></td>
+                                            <td><input style="border: none" value="{{j.end_date}}" type="date" class="course_end_date"></td>
+                                            <td><input style="border: none"  value="{{j.start_time}}" type="time" class="course_start_time"></td>
+                                            <td><input style="border: none"  value="{{j.end_time}}"  type="time" class="course_end_time"></td>
+                                            <td class="">
+                                                <label class="switch switch-left-right">
+                                                   
+                                                    {% if j.course_exam_type == "Online" %}
+                                                    <input class="switch-input course_examType" type="checkbox" checked>
+                                                    <span class="switch-label" data-on="Online"  data-off="Offline"></span> 
+                                                     {% else %}  
+                                                     <input class="switch-input course_examType" type="checkbox" >
+                                                     <span class="switch-label" data-on="Online" data-off="Offline" ></span>
+                                                      {% endif %}
+                                                    <!-- data-off="Offline"  -->
+                                                    <span class="switch-handle"></span> 
+                                                </label>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                        
+
+
+                                    </tbody>
+                                </table>
+                                <code id="course_valid"></code>
+                            </div>
+                        <!-- </div> -->
+                        <div class="col-12" id="ca_datediv">
+                            <blockquote class="blockquote">
+
+                                <div class="row form-sec">
+                                    <div class="col-md-6 col-lg-6 col-sm-12 mb-2 mt-4 pt-2">
+                                        
+                                        <p class="d-inline" >Last date for submission of CA Marks.</p>
+
+                                    </div>
+                                    <div class="col-md-6 col-lg-6 col-sm-12 mb-2 mt-4 ">
+                                        <input class="input-text reshedule_start_date"  value="{{data.internal_mark_entry_date}}" id="ca_last_date" autocomplete="off" type="date"
+                                        placeholder=" " onfocus="(this.type='date')"
+                                        onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                        name="reshedule_start_date" aria-describedby="emailHelp" required="required">
+                                        <label>Last Date</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                </div>
+                            </blockquote>
+                        </div>                    
+
+                        <div class="col-12 mt-4" style="text-align: center; padding-bottom: 30px;">
+                            <input type="text" value="{{data.penality}}" id="penality_date" hidden>
+                            <input type="text" value="{{data.exam_code}}" id="exam_code" hidden>
+                            <input type="text" value="{{data.exam_name}}" id="exam_name" hidden>
+                            <input type="text" value="{{data.exam_id}}" id="exam_id" hidden>
+                            {% with i=data.schedule_list|first %}
+                            <input type="text" value="{{i.prgm}}" id="prgm_data" hidden>
+                            <input type="text" value="{{i.sem}}" id="sem_data" hidden>
+                            {% endwith %}
+                            <button class="mt-3 btn btn-danger mb-3" type="reset" id="clrBtn">Reset</button>
+                            <button class="mt-3 btn btn-primary mb-3" type="button" data-toggle="modal"  data-target="#myModal" id="preview_button">Preview</button>
+                        </div><hr>
+                    </div>
+
+
+
+                    <!-- Begin modal -->
+                    <div class="modal fade bd-example-modal-lg-1-update" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="myModal">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary">
+                                    <div class="col row" style="text-align: center;">
+                                        <div class="col" style="padding: 1% 0px 1% 0px;">
+                                            <span style="margin: auto; font-size: 18px;"
+                                                id="exam"></span>
+                                        </div>
+                                     </div>  
+                                </div> 
+                                <div class="modal-body">
+                                    <h6>Exam Details</h6>
+                                    <div class="table-responsive mb-1">
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-primary">Exam</td>
+                                                    <td id="exam_name_data"></td>
+                                                </tr>
+                                                
+                                                <tr>
+                                                    <td class="text-primary">Exam Code</td>
+                                                    <td id="exam_code_name"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-primary">Programme</td>
+                                                    <td id="programme"></td>
+                                                </tr>
+                                               
+                                                <tr>
+                                                    <td class="text-primary">Semester</td>
+                                                    <td id="semstr"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-primary">Last date for submission of CA Marks.</td>
+                                                    <td id="lastdate"></td>
+                                                </tr>
+
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+
+                                    <h6>Exam Schedule</h6>
+                                    <div class="table-responsive mb-1">
+                                        <table class="table" id="exam-schedule">
+                                            <thead>
+                                                <tr>
+                                                    <!-- <th class="text-center">Sl.No.</th> -->
+                                                    <th style="width: 20%;">Course / Project</th>
+                                                    <th>Start Date</th>
+                                                    <th>Final Date</th>
+                                                    <th>Start Time</th>
+                                                    <th>End Time</th>
+                                                    <th>Exam Type</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="courses_modal">
+                                                <tr class="text-center">
+                                                    <td valign="top" colspan="7" class="dataTables_empty">No data available</td>
+                                                </tr>
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn" data-dismiss="modal">Back to Edit</button>
+                                    <button type="button" class="btn btn-primary"  id=update_button data-pk="{{i.id}}">Update</button>
+                                
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+                    <!-- End modal -->
+                </div>
+                
+            </form>
+            </div>
+        </div>
+
+
+
+    </div>
+
+</div>
+
+
+<!--  END CONTENT AREA  -->
+
+{% endblock content %}
+
+{% block head %}
+
+
+<script src="{%static 'assets/js/custom.js'%}"></script>
+<!-- END GLOBAL MANDATORY SCRIPTS -->
+<!-- BEGIN PAGE LEVEL PLUGINS/CUSTOM SCRIPTS -->
+
+  
+     
+<script>
+
+    // Check browser support
+    if (typeof (Storage) !== "undefined") {
+        // Store   
+        sessionStorage.setItem("Token", "{{data.token}}");
+    
+        document.getElementById("result").innerHTML = sessionStorage.getItem("Token");
+    } else {
+        document.getElementById("result").innerHTML = "Sorry, your browser does not support Web Storage...";
+    }
+</script>
+<script src="{% static 'plugins/highlight/highlight.pack.js' %}"></script>
+<script src="{% static 'assets/js/custom.js' %}"></script>
+<!-- END GLOBAL MANDATORY SCRIPTS -->
+
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/noUiSlider/nouislider.min.js' %}"></script>
+
+<script src="{% static 'plugins/noUiSlider/custom-nouiSlider.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-range-Slider/bootstrap-rangeSlider.js' %}"></script>
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/jquery-step/jquery.steps.min.js' %}"></script>
+<script src="{% static 'plugins/jquery-step/custom-jquery.steps.js' %}"></script>
+<script src="{% static 'assets/js/date.time.picker.js' %}"></script>
+<script src="{% static 'assets/js/jquery.dateFormat.js' %}"></script>>
+<!-- <script>
+    var dateSelect = $('#flight-datepicker');
+    var dateDepart = $('#start-date');
+    var dateReturn = $('#end-date');
+    var spanDepart = $('.date-depart');
+    var spanReturn = $('.date-return');
+    var spanDateFormat = 'ddd, MMMM D yyyy';
+
+    dateSelect.datepicker({
+        autoclose: true,
+        format: "mm/dd",
+        maxViewMode: 0,
+        startDate: "now"
+    }).on('change', function () {
+        var start = $.format.date(dateDepart.datepicker('getDate'), spanDateFormat);
+        var end = $.format.date(dateReturn.datepicker('getDate'), spanDateFormat);
+        spanDepart.text(start);
+        spanReturn.text(end);
+    });
+</script> -->
+<!-- END PAGE LEVEL SCRIPTS -->
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+
+<!-- END PAGE LEVEL SCRIPTS -->
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+<script src="{% static 'plugins/table/datatable/datatables.js' %}"></script>
+<script>        
+    $('#default-ordering').DataTable( {
+        "oLanguage": {
+            "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+            "sInfo": "Showing page _PAGE_ of _PAGES_",
+            "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            "sSearchPlaceholder": "Search...",
+           "sLengthMenu": "Results :  _MENU_",
+        },
+        "order": [[ 0, "asc" ]],
+        "stripeClasses": [],
+        "lengthMenu": [7, 10, 20, 50],
+        "pageLength": 7,
+        drawCallback: function () { $('.dataTables_paginate > .pagination').addClass(' pagination-style-13 pagination-bordered mb-5'); }
+    } );
+
+    $('#zero-configs').DataTable({
+        "oLanguage": {
+            "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+            "sInfo": "Showing page _PAGE_ of _PAGES_",
+            "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            "sSearchPlaceholder": "Search...",
+           "sLengthMenu": "Results :  _MENU_",
+        },
+        "stripeClasses": [],
+        "lengthMenu": [7, 10, 20, 50],
+        "pageLength": 7
+    });
+</script>
+<!-- END PAGE LEVEL SCRIPTS -->
+<script>
+    function check() {
+        var x = document.getElementById("dbl");
+        x.style.display = "block";
+        var y = document.getElementById("add");
+        y.style.display = "none";
+    }
+</script>
+<script>
+
+function getCookie(name) {
+let cookieValue = null;
+if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+        }
+    }
+}
+return cookieValue;
+}
+sem = $('#semester').val() 
+function course_filter(value){
+return value.semId == sem;
+}
+const csrftoken = getCookie('csrftoken');
+
+
+
+
+</script> 
+
+
+
+<!-- BEGIN THEME GLOBAL STYLE -->
+<script src="{% static 'plugins/sweetalerts/sweetalert2.min.js' %}"></script>
+<script src="{% static 'plugins/sweetalerts/custom-sweetalert.js' %}"></script>
+
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/select2/select2.min.js' %}"></script>
+<script src="{% static 'plugins/select2/custom-select2.js' %}"></script>
+
+<!--  BEGIN CUSTOM SCRIPTS FILE  -->
+<script>
+ 
+$(document).ready(function(){
+
+    var penality_date = $("#penality_date").val()
+    var today = new Date(penality_date)
+    // console.log(today)
+    
+    $(".course_start_date").attr('min',today.toISOString().split("T")[0]);
+    $(".course_end_date").attr('min',today.toISOString().split("T")[0]);
+  
+ 
+});
+ </script>
+
+
+
+
+<script>
+    $('#myModal').on('shown.bs.modal', function (event) // view more preview
+        {
+
+            $("#exam_name_data").html($("#exam_name").val());
+            $("#exam_code_name").html($("#exam_code").val());
+            $("#programme").html($("#prgm_data").val());
+            $("#semstr").html($("#sem_data").val());
+            var ca_last_date=document.getElementById('ca_last_date').value
+            var format_date=ca_last_date.split("-").reverse().join("-")
+            $('#lastdate').html(format_date)
+            
+            $('#courses_modal').empty()
+            $('input[name="examType"]').each(function (index, element) {
+                name = $(this).data("name")
+                value = $(this).val()
+                exam_type_dic[name] = value;
+            });
+            $('#courses tr').each(function (index, tr) {
+                if (index != 0) {
+                    var self = $(this);
+                    var course = self.find("td:eq(1)").text().trim()
+                    var start_date = self.find("td:eq(2) input").val()
+                    var start_datearray = start_date.split("-");
+                    var new_startdate = start_datearray[2] + '-' + start_datearray[1] + '-' + start_datearray[0];
+                    var end_date = self.find("td:eq(3) input").val()
+                    var end_datearray = end_date.split("-");
+                    var new_enddate = end_datearray[2] + '-' + end_datearray[1] + '-' + end_datearray[0];
+                    var start_time = self.find("td:eq(4) input").val()
+                    var timeSplit1 = start_time.split(':'),
+                        hours,
+                        minutes,
+                        meridian;
+                    hours = timeSplit1[0];
+                    minutes = timeSplit1[1];
+                    if (hours > 12) {
+                        meridian = 'PM';
+                        hours -= 12;
+                    } else if (hours < 12) {
+                        meridian = 'AM';
+                        if (hours == 0) {
+                            hours = 12;
+                        }
+                    } else {
+                        meridian = 'PM';
+                    }
+                    final_start_date = hours + ':' + minutes + ' ' + meridian
+                    var end_time = self.find("td:eq(5) input").val()
+                    var timeSplit2 = end_time.split(':'),
+                        hours,
+                        minutes,
+                        meridian;
+                    hours = timeSplit2[0];
+                    minutes = timeSplit2[1];
+                    if (hours > 12) {
+                        meridian = 'PM';
+                        hours -= 12;
+                    } else if (hours < 12) {
+                        meridian = 'AM';
+                        if (hours == 0) {
+                            hours = 12;
+                        }
+                    } else {
+                        meridian = 'PM';
+                    }
+                    final_end_date = hours + ':' + minutes + ' ' + meridian
+                    if (self.find("td:eq(6) input").prop("checked")) {
+                        var exam_type = "Online"
+                    }
+                    else {
+                        var exam_type = "Offline"
+                    }
+                    $('#courses_modal').append('<tr><td>' + course + '</td><td>' + new_startdate + '</td><td>' + new_enddate + '</td><td>' + final_start_date + '</td><td>' + final_end_date + '</td><td>' + exam_type + '</td></tr>')
+                }
+            })
+          
+            
+            
+        })
+    
+    </script>
+    
+    <script>
+
+        $("#update_button").click(function(){
+        
+            var scheduleList = []
+            var course_tr = document.querySelectorAll(".tr_class")
+            var ca_last_date=document.getElementById('ca_last_date').value
+            exam_type_dic = {}
+            sl_no = 1
+            
+        for (var m = 0; m < course_tr.length; ++m) {
+
+                courseinput = course_tr[m];
+                var dt = "#course_examType"+sl_no
+            var course_name_td = courseinput.querySelectorAll(".course_name_td")
+            var course_start_date = courseinput.querySelectorAll(".course_start_date")
+            var course_end_date = courseinput.querySelectorAll(".course_end_date")
+            var course_start_time = courseinput.querySelectorAll(".course_start_time")
+            var course_end_time = courseinput.querySelectorAll(".course_end_time")
+            var course_examType = courseinput.querySelectorAll(".course_examType")
+            
+            for (var n = 0; n < course_name_td.length; ++n) {
+                var courseNameValue = course_name_td[n]
+                // console.log(courseNameValue)
+                var courseStDateValue = course_start_date[n]
+                var courseEndDateValue = course_end_date[n]
+                var courseStTimeValue = course_start_time[n]
+                var courseEndTimeValue = course_end_time[n]
+                var courseTypeValue = course_examType[n]
+              
+                // console.log($(dt).attr('checked'))
+
+                if (courseTypeValue.checked == true) {
+                        // var exam_type = "Online"
+                        var exam_type = 1
+                    }
+                else {
+                    // var exam_type = "Offline"
+                    var exam_type = 2
+                }
+               
+                scheduleList.push({ "prgmCourseSemId": courseNameValue.value, "startDate": courseStDateValue.value, "endDate": courseEndDateValue.value, "startTime": courseStTimeValue.value, "endTime": courseEndTimeValue.value, "examTypeId": exam_type})
+
+              
+            }
+            sl_no++
+            
+        
+        }
+        // console.log(scheduleList)
+        var token = '{{csrf_token}}'
+        // console.log(scheduleList)
+        blockUI();
+            fetch("{% url 'examination-schedule-update' %}", {
+                method: 'post',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json', "X-CSRFToken": token
+                },
+                body: JSON.stringify({
+                    
+                    "scheduleList": scheduleList,
+                    "exam_id":$("#exam_id").val(),
+                    "ca_last_date":$("#ca_last_date").val()
+                })
+            }).then(function (res) { return res.json(); })
+                .then(function (data) {
+                    unblockUI();
+                   
+                    if (data.success == true) {
+                        swal({
+                            title: 'Done!',
+                            text: data.message,
+                            type: 'success',
+                            padding: '2em',
+
+                        }).then(() => {
+                            window.location.href="{% url 'exam-schedule-list' %}";
+                            // location.reload()
+                            // var back_button = document.getElementById('back_button');
+                            // back_button.click();
+                            // var button = document.getElementById('clrBtn');
+                            // button.click();
+                        });
+                    }
+                    else {
+                        Swal({
+                            "title": "Oops!",
+                            type: 'error',
+                            "text": data.message,
+                            padding: '2em'
+                        })
+                    }
+                });
+        
+        })
+        
+        </script>
+
+{% endblock head %}

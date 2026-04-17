@@ -1,0 +1,1830 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block additional_styles %}
+<link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css" type="image/x-icon">
+<link href="{% static 'plugins/flatpickr/flatpickr.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'plugins/noUiSlider/nouislider.min.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-step/jquery.steps.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'assets/css/forms/theme-checkbox-radio.css' %}">
+<link href="{% static 'plugins/flatpickr/custom-flatpickr.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'plugins/bootstrap-range-Slider/bootstrap-slider.css' %}" rel="stylesheet" type="text/css">
+<style>
+    .select-text2 {
+        position: relative;
+        font-family: inherit;
+        background-color: transparent;
+        width: 100%;
+        padding: 10px 10px 10px 0;
+        font-size: 14px;
+        border-radius: 0;
+        border: none;
+        border-bottom: 2px solid red;
+    }
+
+    /* Remove focus */
+    .select-text2:focus {
+        outline: none;
+        border-bottom: 2px solid #8c12a2 !important;
+    }
+
+    /* Use custom arrow */
+    .select .select-text2 {
+        appearance: none;
+        -webkit-appearance: none
+    }
+
+    code {
+        user-select: none;
+    }
+</style>
+<style>
+    .input-text2 {
+        background-color: #fff !important;
+        border-bottom: 2px solid rgb(241, 6, 6) !important;
+    }
+
+    .input-text2:focus {
+        border-bottom: 2px solid #8c12a2 !important;
+    }
+</style>
+<style>
+    input[type=date]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=date]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+
+    input[type=month]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=month]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+
+    input[type=time]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=time]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+</style>
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/datatables.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/dt-global_style.css' %}">
+<style>
+    .preview-th {
+        color: #000000;
+        font-weight: 700;
+        font-size: 13px;
+        border: none;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .preview-td {
+        color: #000000;
+        font-weight: 500;
+        font-size: 13px;
+        border: none;
+        letter-spacing: 2px;
+    }
+
+    .preview-head {
+        color: #87119c;
+        font-weight: 700;
+        font-size: 15px;
+        border: none;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+</style>
+<style>
+    .switch {
+        position: relative;
+        display: block;
+        vertical-align: top;
+        width: 100px;
+        height: 30px;
+        padding: 3px;
+        margin: 0;
+        background: linear-gradient(to bottom, #eeeeee, #FFFFFF 25px);
+        background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF 25px);
+        border-radius: 18px;
+        box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        box-sizing: content-box;
+    }
+
+    .switch-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        box-sizing: content-box;
+    }
+
+    .switch-label {
+        position: relative;
+        display: block;
+        height: inherit;
+        font-size: 10px;
+        text-transform: uppercase;
+        background: #eceeef;
+        border-radius: inherit;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.15);
+        box-sizing: content-box;
+    }
+
+    .switch-label:before,
+    .switch-label:after {
+        position: absolute;
+        top: 50%;
+        margin-top: -.5em;
+        line-height: 1;
+        -webkit-transition: inherit;
+        -moz-transition: inherit;
+        -o-transition: inherit;
+        transition: inherit;
+        box-sizing: content-box;
+    }
+
+    .switch-label:before {
+        content: attr(data-off);
+        right: 11px;
+        color: #FFFFFF;
+        text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+    }
+
+    .switch-label:after {
+        content: attr(data-on);
+        left: 11px;
+        color: #FFFFFF;
+        text-shadow: 0 1px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+    }
+
+    .switch-input:checked~.switch-label {
+        background: #E1B42B;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch-input:checked~.switch-label:before {
+        opacity: 0;
+    }
+
+    .switch-input:checked~.switch-label:after {
+        opacity: 1;
+    }
+
+    .switch-handle {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(to bottom, #FFFFFF 40%, #f0f0f0);
+        background-image: -webkit-linear-gradient(top, #FFFFFF 40%, #f0f0f0);
+        border-radius: 100%;
+        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch-handle:before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -6px 0 0 -6px;
+        width: 12px;
+        height: 12px;
+        background: linear-gradient(to bottom, #eeeeee, #FFFFFF);
+        background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF);
+        border-radius: 6px;
+        box-shadow: inset 0 1px rgba(0, 0, 0, 0.02);
+    }
+
+    .switch-input:checked~.switch-handle {
+        left: 74px;
+        box-shadow: -1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Switch Left Right */
+    .switch-left-right .switch-label {
+        overflow: hidden;
+    }
+
+    .switch-left-right .switch-label:before,
+    .switch-left-right .switch-label:after {
+        width: 20px;
+        height: 20px;
+        top: 4px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 11px 0 0 0;
+        text-indent: -37px;
+        border-radius: 20px;
+        box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.2), inset 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .switch-left-right .switch-label:before {
+        background: #87CEEB;
+        text-align: left;
+        padding-left: 80px;
+    }
+
+    .switch-left-right .switch-label:after {
+        text-align: left;
+        text-indent: 9px;
+        background: #FF7F50;
+        left: -100px;
+        opacity: 1;
+        width: 100%;
+    }
+
+    .switch-left-right .switch-input:checked~.switch-label:before {
+        opacity: 1;
+        left: 100px;
+    }
+
+    .switch-left-right .switch-input:checked~.switch-label:after {
+        left: 0;
+    }
+
+    .switch-left-right .switch-input:checked~.switch-label {
+        background: inherit;
+    }
+
+    #check_box_scroll {
+        display: flex;
+        align-items: center;
+    }
+
+    #asmission_year_improvement {
+        margin-left: 15px;
+        align-self: center;
+    }
+</style>
+<link href="{% static 'plugins/animate/animate.css' %}" rel="stylesheet" type="text/css" />
+<script src="{% static 'plugins/sweetalerts/promise-polyfill.js' %}"></script>
+<link href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'plugins/sweetalerts/sweetalert.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'assets/css/components/custom-sweetalert.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/select2/select2.min.css' %}">
+{% endblock additional_styles %}
+{% block content %}
+<div class="layout-px-spacing" id="">
+    <div class="row layout-top-spacing" id="cancel-row">
+        <div class="d-flex justify-content-between w-100" id="pgm_type_div">
+            <div id="date_time_picker" class=" layout-top-spacing">
+                <div class="seperator-header mx-3">
+                    <h4 class="">Exam Configuration</h4>
+                </div>
+            </div>
+            <div>
+                <nav class="breadcrumb-one" aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-white mt-3">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page"><span>Exam Config</span>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="container">
+            <div class="pl-4">
+                <form name="dform">
+                    <div class="col mb-4" style="margin: auto;">
+                        <div class="" id="dbl">
+                            <div class="row form-sec">
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" required id="pgm_type" name="programmeType">
+                                            <option value="" disabled selected></option>
+                                            {% for i in data.prg_typ %}
+                                            <option value="{{i.id}}">{{i.title}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" required id="programme_group"
+                                            name="programme_group">
+                                            <option value="" disabled selected></option>
+                                            {% for i in data.prg_grp %}
+                                            <option value="{{i.id}}">{{i.title}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme Group</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" required id="programme_class"
+                                            name="programme_class">
+                                            <option value="" disabled selected></option>
+                                            {% for i in data.prg_cls %}
+                                            <option value="{{i.id}}">{{i.title}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme Class</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row form-sec">
+                                <div class="col-4 mb-4 mt-2">
+                                    <div class="select">
+                                        <select class="select-text" required id="programme_title" name="programme">
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4 mt-2">
+                                    <div class="select">
+                                        <select class="select-text" required id="prgm_scheme" name="scheme">
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Scheme</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4 mt-2">
+                                    <div class="select">
+                                        <select class="select-text" required id="semester" name="semester"
+                                            data-url="{% url 'semester-wise-course-list' %}">
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Semester</label>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div id="warningMessage" class="row"
+                                style="display: none; background-color: gray; padding: 10px; margin-top: 10px; text-align: center;">
+                                <div class="col-12">
+                                    <h4 style="color: red;">Please select one of the options above to proceed.</h4>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 mb-3 mt-2">
+                                <h5 class="mb-4" style="color: #87119c; font-weight: 700; font-size: 15px; letter-spacing: 1px; text-transform: uppercase;">
+                                    Admission years for the exam
+                                </h5>
+
+                                <div class="mb-4">
+                                    <label style="font-weight: 600; font-size: 14px;">Choose The Categories Of Examinations That Should Be Included In This Section:</label>
+                                    <div class="n-chk d-flex mt-2" style="flex-wrap: wrap; gap: 20px;">
+                                        <label class="new-control new-checkbox checkbox-primary">
+                                            <input type="checkbox" id="chk_regular" class="new-control-input">
+                                            <span class="new-control-indicator"></span><span style="color:#555;font-weight:500;">&nbsp;Regular</span>
+                                        </label>
+                                        <label class="new-control new-checkbox checkbox-primary">
+                                            <input type="checkbox" id="chk_improvement" class="new-control-input">
+                                            <span class="new-control-indicator"></span><span style="color:#555;font-weight:500;">&nbsp;Improvement/Supplementary</span>
+                                        </label>
+                                        <label class="new-control new-checkbox checkbox-primary">
+                                            <input type="checkbox" id="chk_supplementary" class="new-control-input">
+                                            <span class="new-control-indicator"></span><span style="color:#555;font-weight:500;">&nbsp;Supplementary Only</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="section_regular" style="display:none;" class="mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <label style="min-width: 300px; white-space: nowrap;">
+                                            Admission Year Considered For The Regular Chance:<br>
+                                            <small class="text-muted">(Select one year only)</small>
+                                        </label>
+                                        <div style="flex-grow:1; min-width:220px;">
+                                            <select class="form-control" id="admission_regular" name="admission_regular">
+                                                <option value="">-- Select Year --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="section_improvement" style="display:none;" class="mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <label style="min-width: 300px; white-space: nowrap;">
+                                            Admission Year Considered For Improvement/Supplementary:<br>
+                                            <small class="text-muted">(Must be earlier than the regular year)</small>
+                                        </label>
+                                        <div style="flex-grow:1; min-width:220px;">
+                                            <select class="form-control" id="admission_improvement" name="admission_improvement">
+                                                <option value="">-- Select Year --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="section_supplementary" style="display:none;" class="mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <label style="min-width: 300px; white-space: nowrap;">
+                                            Admission Year Considered For Supplementary Only:<br>
+                                            <small class="text-muted">(Must be earlier than the regular year)</small>
+                                        </label>
+                                        <div style="flex-grow:1; min-width:220px;">
+                                            <select class="form-control" id="admission_supplementary" name="admission_supplementary">
+                                                <option value="">-- Select Year --</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-start mb-3">
+                                    <label style="min-width: 300px; white-space: nowrap;">
+                                        Admission Years Considered For The Examination:<br>
+                                        <small class="text-muted">(Auto-filled from the selections)</small>
+                                    </label>
+                                    <div style="flex-grow: 1; min-width: 220px; pointer-events: none;">
+                                        <select class="form-control tagging admission_year" multiple required id="admission_year" name="admission_year" style="width: 100%;">
+                                        </select>
+                                        <code id="year_valid" style="float: right;"></code>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row form-sec">
+                                <div class="col-8 mt-2 mb-3 ">
+                                    <input class="input-text" type="tel" id="notif_title" required="required">
+                                    <label>Notification Title</label>
+                                    <div class="cover"></div>
+                                </div>
+                                <div class="col-4 mt-2 mb-3">
+                                    <input class="input-text" type="tel" id="order_number" required="required">
+                                    <label>University Order ID</label>
+                                    <div class="cover"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8">
+                                    <div class="row form-sec">
+                                        <div class="col-6 mt-4 mb-4" style="background-color: #FFFFFF;">
+                                            <input class="input-text" onfocus="(this.type='date')"
+                                                onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                                id="notif_date" placeholder=" " required="required">
+                                            <label>Notification Date</label>
+                                            <div class="cover"></div>
+                                        </div>
+                                        <div class="col-6 mt-4 mb-4" style="background-color: #FFFFFF;">
+                                            <input class="input-text" onfocus="(this.type='date')"
+                                                onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                                id="attendance_upload_end_date" placeholder=" " required="required">
+                                            <label>Attendance Upload(Last Date)</label>
+                                            <div class="cover"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-2 mt-2">
+                                    <code id="file_validate" style="float: right;"></code>
+                                    <div class="form-group mb-">
+                                        <label for="exampleFormControlFile1">Upload Document <span style="color:red;">*</span></label>
+                                        <input type="file" class="form-control-file" id="exampleFormControlFile1" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row form-sec">
+                                <div class="col-md-12 mb-4 mt-2">
+                                    <input class="input-text" type="tel" required="required" id="examTitle">
+                                    <label>Exam Name</label>
+                                    <div class="cover"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="row form-sec">
+                                        <div class="col-4 mt-5 mb-4">
+                                            <div class="select">
+                                                <select class="select-text" required id="month" name="month">
+                                                    <option value="" disabled selected></option>
+                                                    <option value='Janaury'>January</option>
+                                                    <option value='February'>February</option>
+                                                    <option value='March'>March</option>
+                                                    <option value='April'>April</option>
+                                                    <option value='May'>May</option>
+                                                    <option value='June'>June</option>
+                                                    <option value='July'>July</option>
+                                                    <option value='August'>August</option>
+                                                    <option value='September'>September</option>
+                                                    <option value='October'>October</option>
+                                                    <option value='November'>November</option>
+                                                    <option value='December'>December</option>
+                                                </select>
+                                                <span class="select-highlight"></span>
+                                                <span class="select-bar"></span>
+                                                <label class="select-label">Month</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mt-5 mb-4">
+                                            <div class="select">
+                                                <select class="select-text" required id="year" name="year">
+                                                    <option value="" disabled selected></option>
+                                                    {% for i in data.datelist %}
+                                                    <option value='{{i}}'> {{i}} </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <span class="select-highlight"></span>
+                                                <span class="select-bar"></span>
+                                                <label class="select-label">Year</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-4 mt-5">
+                                            <div class="select">
+                                                <select class="select-text" required id="season" name="season"
+                                                    onChange="check()">
+                                                    <option value="" disabled selected></option>
+                                                </select>
+                                                <span class="select-highlight"></span>
+                                                <span class="select-bar"></span>
+                                                <label class="select-label">Season</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" id="check_box_scroll">
+                                <div class="row col-6  mt-3 mb-1">
+                                    <div class="col-md-4">
+                                        <label>Exam Type: </label>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="n-chk mt-1">
+                                            {% for i in data.exam_type_list %}
+                                            <label class="new-control new-checkbox checkbox-primary">
+                                                <input type="radio" name="examType" data-name="{{ i.name }}"
+                                                    class="new-control-input exam_type_class" value="{{ i.id }}"
+                                                    id="exam_type_id">
+                                                <span class="new-control-indicator"></span><span
+                                                    style="color: #555555; font-weight: 500;">&nbsp;{{ i.name }}</span>
+                                            </label>
+                                            {% endfor %}
+                                            <code id="check_valid2"></code>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row col-6 mt-3 ml-3 mb-1">
+                                    <div class="col-md-5">
+                                        <label>Question Paper Delivery: </label>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="n-chk mt-1">
+                                            {% for i in data.qp_delivery_list %}
+                                            <label class="new-control new-checkbox checkbox-primary">
+                                                <input type="radio" name="questionPaperDeliveryType"
+                                                    data-name="{{ i.name }}" class="new-control-input quest_paper_class"
+                                                    value="{{ i.id }}" id="quest_paper_id{{forloop.counter}}">
+                                                <span class="new-control-indicator"></span><span
+                                                    style="color: #555555; font-weight: 500;">&nbsp;{{ i.name }}</span>
+                                            </label>
+                                            {% endfor %}
+                                            <code id="check_valid1"></code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="">
+                                <h6 class="mb-3">Registration Dates</h6>
+                                <div class="row form-sec" id="without_fine">
+                                    <input type="text" hidden value="1" class="purposeId1" id="purposeId1">
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text startDate1" id="startDate1" name="startDate1"
+                                            type="text" onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>Without fine (Start Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text endDate1" id="endDate1" name="endDate1" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>Without fine (End Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-sec" id="with_fine">
+                                    <input type="text" hidden value="2" class="purposeId2" id="purposeId2">
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text startDate2" id="startDate2" name="startDate2"
+                                            type="text" onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With fine (Start Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text endDate2" id="endDate2" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With fine (End Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-sec" id="with_super_fine">
+                                    <input type="text" hidden value="3" class="purposeId3" id="purposeId3">
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text startDate3" id="startDate3" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With superfine (Start Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text endDate3" id="endDate3" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With superfine (End Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                </div>
+                                <code id="dive_id"></code>
+
+                                <div class="col-12" style="text-align: center; ">
+                                    <input type="text" hidden id="prgm_sem">
+                                    <button class="mt-3 btn btn-danger mb-3" type="reset" id="clrBtn"
+                                        onclick="restFullBtn()">Reset</button>
+                                    <button class="mt-3 btn btn-primary mb-3" type="button" data-toggle="modal"
+                                        data-target=".bd-example-modal-lg-1_" id="preview_button">Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div class="modal fade bd-example-modal-lg-1" tabindex="-1" role="dialog"
+                                aria-labelledby="myLargeModalLabel" aria-hidden="true" id="preview_window">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary">
+                                            <div class="col row" style="text-align: center;">
+                                                <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                    <span style="margin: auto; font-size: 18px;" id="exam"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <h6>Exam Details</h6>
+                                            <div class="table-responsive mb-1">
+                                                <table class="table">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-primary">Programme Type</td>
+                                                            <td id="programme_type"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Programme Group</td>
+                                                            <td id="prgm_group"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Programme Class</td>
+                                                            <td id="prgm_class"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Programme</td>
+                                                            <td id="programme"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Scheme</td>
+                                                            <td id="shm"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Semester</td>
+                                                            <td id="semstr"></td>
+                                                        </tr>
+                                                        <tr><td class="text-primary">Year of Admission &ndash; Regular Chance</td><td id="regular_yr_preview"></td></tr>
+                                                        <tr><td class="text-primary">Year of Admission &ndash; Improvement</td><td id="improvement_yr_preview"></td></tr>
+                                                        <tr><td class="text-primary">Year of Admission &ndash; Supplementary</td><td id="supplementary_yr_preview"></td></tr>
+                                                        <tr><td class="text-primary">Year of Admission Considered for Examination</td><td id="admi_year"></td></tr>
+                                                        <tr>
+                                                            <td class="text-primary">Notification Title</td>
+                                                            <td id="notif_title_data"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Date of Notification</td>
+                                                            <td id="not_date"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Last Date Of Attendance Upload</td>
+                                                            <td id="att_up_ate"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Month</td>
+                                                            <td id="mon"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Year</td>
+                                                            <td id="yr"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Season</td>
+                                                            <td id="ssn"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Exam Type</td>
+                                                            <td id="exam-type"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Question Paper Delivery</td>
+                                                            <td id="qp_delivery"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <h6>Important Dates</h6>
+                                            <div class="table-responsive mb-1">
+                                                <table class="table" id="exam_purpose">
+
+                                                </table>
+                                            </div>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn" id="back_button" data-dismiss="modal">Back to Edit</button>
+                                            <button type="button" class="btn btn-primary" id="button1">Save</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock content %}
+{% block head %}
+<script src="{%static 'assets/js/custom.js'%}"></script>
+<script>
+    if (typeof (Storage) !== "undefined") {
+        sessionStorage.setItem("Token", "{{data.token}}");
+    } else {
+    }
+</script>
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/noUiSlider/nouislider.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-range-Slider/bootstrap-rangeSlider.js' %}"></script>
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/jquery-step/jquery.steps.min.js' %}"></script>
+<script src="{% static 'plugins/jquery-step/custom-jquery.steps.js' %}"></script>
+<script src="{% static 'assets/js/date.time.picker.js' %}"></script>
+<script src="{% static 'assets/js/jquery.dateFormat.js' %}"></script>
+<script>
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var prgmsemid
+
+    const csrftoken = getCookie('csrftoken');
+    var tablecount;
+
+    $('#semester').on('change', function (event) {
+
+        var url = "semester-wise-course-list?format=json"
+        var id = $('#programme_title').val()
+        var scheme_id = $('#prgm_scheme').val()
+        var semester_id = $('#semester').val()
+        var res = jQuery.ajax
+            ({
+                headers: { 'X-CSRFToken': csrftoken },
+                method: "POST",
+                data: {
+                    programmeId: id,
+                    schemeId: scheme_id,
+                    semesterId: semester_id
+                },
+                url: url,
+                dataType: "json",
+                success: course_renderlist,
+            });
+
+        function course_renderlist(res) {
+
+            if (res.success == false) {
+                swal({
+                    title: res.message,
+                    text: 'Do you want to continue?',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    padding: '2em',
+                }).then(function (result) {
+                    if (result.value) {
+                        var und = 0
+                        prgmsemid = res.data.prgmsem
+                        document.getElementById("prgm_sem").value = prgmsemid
+                    }
+                    else {
+                        var button = document.getElementById('clrBtn');
+                        button.click();
+                    }
+                });
+
+            }
+            else {
+                var und = 0
+                prgmsemid = res.data.prgmsem
+                document.getElementById("prgm_sem").value = prgmsemid
+            }
+        }
+    });
+
+</script>
+
+<script>
+    var token = '{{csrf_token}}'
+    
+    // Changed from .one("click") to .click() so the button can be re-enabled on validation failure
+    $("#button1").click(function () {
+        
+        $(this).prop("disabled", true); // Disable to prevent double click
+
+        const myInput = document.getElementById('exampleFormControlFile1');
+        
+        // 🛑 STRICT VALIDATION 1: File is mandatory
+        if (myInput.files.length === 0) {
+            swal({
+                title: 'Missing Document',
+                text: 'You must upload the required document before creating this exam.',
+                type: 'warning',
+                padding: '2em'
+            }).then(() => {
+                // Ensure UI is cleanly dismissed and user can try again
+                $('#preview_window').modal('hide'); 
+            });
+            $(this).prop("disabled", false); // Re-enable button
+            return;
+        }
+
+        var all_adm_vals = $('#admission_year').val() || [];
+        
+        // 🛑 STRICT VALIDATION 2: At least one year selected
+        if (all_adm_vals.length === 0) {
+            swal({ 
+                title: 'Hold on!', 
+                text: 'You must select at least one Admission Year (Regular, Improvement, or Supplementary) to create this exam.', 
+                type: 'warning', 
+                padding: '2em' 
+            }).then(() => {
+                $('#preview_window').modal('hide'); 
+            });
+            $(this).prop("disabled", false); // Re-enable button
+            return; 
+        }
+
+        var reg_val  = $('#chk_regular').is(':checked') ? ($('#admission_regular').val() || '') : '';
+        var imp_val  = $('#chk_improvement').is(':checked') ? ($('#admission_improvement').val() || '') : '';
+        var supp_val = $('#chk_supplementary').is(':checked') ? ($('#admission_supplementary').val() || '') : '';
+
+        purposeList = []
+        var sample_dict1 = { "purposeId": $("#purposeId1").val(), "startDate": $("#startDate1").val(), "endDate": $("#endDate1").val() }
+        var sample_dict2 = { "purposeId": $("#purposeId2").val(), "startDate": $("#startDate2").val(), "endDate": $("#endDate2").val() }
+        var sample_dict3 = { "purposeId": $("#purposeId3").val(), "startDate": $("#startDate3").val(), "endDate": $("#endDate3").val() }
+        purposeList = [sample_dict1, sample_dict2, sample_dict3]
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        
+        // The old serializer strictly expects 'my_file'
+        if (myInput.files.length > 0) {
+            formData.append('my_file', myInput.files[0]); 
+        }
+        
+        formData.append('title', $('#examTitle').val());
+        formData.append('exam_type', $("input:radio[name=examType]:checked").val() || ''); // old serializer expects exam_type
+        formData.append('question_paper_delivery_type', $("input:radio[name=questionPaperDeliveryType]:checked").val() || '');
+        formData.append('season', $('#season option:selected').val());
+        
+        // The old serializer strictly expects 'admission_year_list'
+        // all_adm_vals.forEach(function(v) { 
+        //     formData.append('admission_year_list', v); 
+        // });
+        // KEEP JUST THESE TWO LINES
+        formData.append('admissionYearList', all_adm_vals);
+        formData.append('admission_year_list', all_adm_vals);
+
+        formData.append('year', $('#year option:selected').val());
+        formData.append('month', $('#month option:selected').val());
+        formData.append('programme', $('#programme_title option:selected').val());
+        formData.append('programme_semester', $('#prgm_sem').val());
+        formData.append('scheme', $('#prgm_scheme option:selected').val());
+        
+        // The old serializer strictly expects 'purpose_list'
+        formData.append('purpose_list', JSON.stringify(purposeList)); 
+        
+        formData.append('semester', $('#semester option:selected').val());
+        formData.append('notif_title', $('#notif_title').val());
+        formData.append('order_number', $('#order_number').val());
+        formData.append('attendance_upload_end_date', $('#attendance_upload_end_date').val());
+        formData.append('notif_date', $('#notif_date').val());
+        
+        // Send the specific category flags exactly how the old serializer expects them
+        formData.append('admissionyear_regular_list', reg_val);
+        
+        // Only append improvement if it actually exists, mimicking the old YES radio behavior
+        if (imp_val !== '') {
+            formData.append('admissionimprovement', imp_val);
+        }
+        
+        // We DO NOT append supplementary. The old serializer figures out supplementary 
+        // automatically by seeing what is left over!
+
+        // const formData = new FormData()
+        // formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+        // formData.append('myFile', myInput.files[0])
+        
+        // formData.append('title', $('#examTitle').val())
+        // formData.append('examType', $("input:radio[name=examType]:checked").val() || '')
+        // formData.append('questionPaperDeliveryType', $("input:radio[name=questionPaperDeliveryType]:checked").val() || '')
+        // formData.append('season', $('#season option:selected').val())
+        
+        // // Append all selected admission years iteratively
+        // all_adm_vals.forEach(function(v) { 
+        //     formData.append('admissionYearList', v); 
+        //     formData.append('admission_year_list', v); // Backup field name match
+        // });
+
+        // formData.append('year', $('#year option:selected').val())
+        // formData.append('month', $('#month option:selected').val())
+        // formData.append('programme', $('#programme_title option:selected').val())
+        // formData.append('programme_semester', $('#prgm_sem').val())
+        // formData.append('scheme', $('#prgm_scheme option:selected').val())
+        // formData.append('purposeList', JSON.stringify(purposeList))
+        // formData.append('semester', $('#semester option:selected').val())
+        // formData.append('notif_title', $('#notif_title').val())
+        // formData.append('order_number', $('#order_number').val())
+        // formData.append('attendance_upload_end_date', $('#attendance_upload_end_date').val())
+        // formData.append('notif_date', $('#notif_date').val())
+        
+        // // Push the new 3-way dropdowns to the backend
+        // formData.append('admissionyear_regular_list', reg_val)
+        // formData.append('admissionimprovement', imp_val)
+        // formData.append('supplementaryYearList', supp_val)
+        // formData.append('supplementary_year_list', supp_val) // Backup field name match
+
+        blockUI();
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'exam-creation' %}" + '?format=json',
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            enctype: 'multipart/form-data',
+            success: function (res) {
+                unblockUI();
+                if (res.success == true) {
+                    swal({
+                        title: 'Done!',
+                        text: res.message,
+                        type: 'success',
+                        padding: '2em',
+                    }).then(() => {
+                        var back_button = document.getElementById('back_button');
+                        back_button.click();
+                        var button = document.getElementById('clrBtn');
+                        button.click();
+                    });
+                }
+                else {
+                    $("#button1").prop("disabled", false); // re-enable on fail
+                    Swal({
+                        "title": "Oops!",
+                        type: 'error',
+                        "text": res.message,
+                        padding: '2em'
+                    })
+                }
+
+            },
+            error: function(xhr, status, error) {
+                unblockUI();
+                $("#button1").prop("disabled", false); // re-enable on fail
+                swal({
+                    title: 'Backend Error',
+                    text: 'Something went wrong.',
+                    type: 'error',
+                    padding: '2em'
+                });
+            }
+        })
+    });
+
+
+</script>
+<script>
+    $("#programme_class").change(function () {
+        $("#programme_title").empty();
+        $("#prgm_scheme").empty();
+        $("#semester").empty();
+        $("#admission_year").empty();
+        var prg_typ_id = $("#pgm_type option:selected").val();
+        var prg_grp_id = $("#programme_group option:selected").val();
+        var prg_cls_id = $("#programme_class option:selected").val();
+        var urls = "{% url 'prgm_type_group' %}"
+        $.ajax({
+            url: urls,
+            data: {
+                'prg_typ_id': prg_typ_id,
+                'prg_grp_id': prg_grp_id,
+                'prg_cls_id': prg_cls_id
+            },
+            success: function (data) {
+                $("#programme_title").html(data);
+            }
+        });
+    });
+
+    $("#pgm_type").change(function () {
+        $("#programme_group").prop('selectedIndex', 0);
+        $("#programme_class").prop('selectedIndex', 0);
+        $("#programme_title").empty();
+        $("#prgm_scheme").empty();
+        $("#semester").empty();
+        $("#admission_year").empty();
+    })
+    $("#programme_group").change(function () {
+        $("#programme_class").prop('selectedIndex', 0);
+        $("#programme_title").empty();
+        $("#prgm_scheme").empty();
+        $("#semester").empty();
+        $("#admission_year").empty();
+    })
+</script>
+<script>
+    $("#programme_title").change(function () {
+        var prgm_id = $("#programme_title option:selected").val();
+        var urls = "{% url 'prgmwise-scheme-syllabus-list' %}?format=json"
+        $.ajax({
+            headers: { 'X-CSRFToken': csrftoken },
+            type: "POST",
+            url: urls,
+            data: {
+                'programme_id': prgm_id,
+            },
+            success: function (res) {
+                $('#prgm_scheme').empty();
+                $("#semester").empty();
+                $.each(res.data.schemeList, function (i, value) {
+                    $('#prgm_scheme').append('<option value=""></option>');
+                    $('#prgm_scheme').append('<option value="' + value.id + '">' + value.name + '</option>');
+                });
+            }
+        });
+    });
+
+    $("#prgm_scheme").change(function () {
+        $("#semester").empty();
+        var prgm_id = $("#programme_title option:selected").val();
+        var scheme_id = $("#prgm_scheme option:selected").val()
+        var urls = "{% url 'prgmwise-scheme-admissionyear-list' %}?format=json"
+        
+        $.ajax({
+            headers: { 'X-CSRFToken': csrftoken },
+            type: "POST",
+            url: urls,
+            data: {
+                'programme_id': prgm_id,
+                'scheme_id': scheme_id
+            },
+            success: function (res) {
+                $('#admission_year').empty();
+                $('#admission_regular').empty().append('<option value="">-- Select Year --</option>');
+                $('#admission_improvement').empty().append('<option value="">-- Select Year --</option>');
+                $('#admission_supplementary').empty().append('<option value="">-- Select Year --</option>');
+
+                $.each(res.data.schemeList, function (i, value) {
+                    const uniqueAdmissionyear = [...new Map(value.syllabusList.map(item => [item.admissionYearId, item])).values()];
+                    $.each(uniqueAdmissionyear, function (j, value1) {
+                        var optHtml = '<option value="' + value1.admissionYearId + '" data-year="' + value1.admissionYear + '">' + value1.admissionYear + '</option>';
+                        $('#admission_year').append(optHtml);
+                        $('#admission_regular').append(optHtml);
+                        $('#admission_improvement').append(optHtml);
+                        $('#admission_supplementary').append(optHtml);
+                    });
+                });
+            }
+        });
+        
+        var urls_sem = "{% url 'prgm-schemewise-semester-list'%}?format=json"
+        var res = jQuery.ajax({
+            type: "POST",
+            url: urls_sem,
+            headers: { 'X-CSRFToken': csrftoken },
+            datatype: "json",
+            data: {
+                'programme_id': prgm_id,
+                'scheme_id': scheme_id
+            },
+            success: function (data) {
+                const array = data.data.schemeList
+                const key = 'semId';
+                $("#semester").empty()
+                $('#semester').append('<option value=""></option>');
+                $.each(array, function (j, value) {
+                    $("#semester").append('<option value="' + value.semId + '" data-prgsem="' + value.semId + '">' + value.semTitle + '</option>');
+                });
+            }
+        });
+    });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        var urls = "{% url 'get-all-exam-season' %}"
+        var res = jQuery.ajax;
+        $.ajax({
+            type: "GET",
+            url: urls,
+            dataType: "json",
+            success: function (res) {
+                $.each(res.data.seasonList, function (i, value) {
+                    $('#season').append('<option value="' + value.id + '">' + value.title + '</option>');
+                })
+            }
+        });
+    });
+</script>
+
+
+<script src="{% static 'plugins/sweetalerts/sweetalert2.min.js' %}"></script>
+<script src="{% static 'plugins/sweetalerts/custom-sweetalert.js' %}"></script>
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/select2/select2.min.js' %}"></script>
+<script>
+    $(".tagging").select2({
+        tags: true
+    });
+</script>
+<script>
+    var today = new Date()
+    $(".startDate1").attr('min', today.toISOString().split("T")[0]);
+    $(".endDate1").attr('min', today.toISOString().split("T")[0]);
+    $(".startDate2").attr('min', today.toISOString().split("T")[0]);
+    $(".endDate2").attr('min', today.toISOString().split("T")[0]);
+    $(".startDate3").attr('min', today.toISOString().split("T")[0]);
+    $(".endDate3").attr('min', today.toISOString().split("T")[0]);
+
+    $("#preview_button").click(function () {
+        var pgm_type = document.getElementById('pgm_type').value
+        var programme_group = document.getElementById('programme_group').value
+        var programme_class = document.getElementById('programme_class').value
+        var programme_title = document.getElementById('programme_title').value
+        var prgm_scheme = document.getElementById('prgm_scheme').value
+        var semester = document.getElementById('semester').value
+        
+        var all_adm_vals = $('#admission_year').val() || [];
+        var month = document.getElementById('month').value
+        var year = document.getElementById('year').value
+        var examTitle = document.getElementById('examTitle').value
+        var season = document.getElementById('season').value
+        var notif_title = document.getElementById('notif_title').value
+        var order_number = document.getElementById('order_number').value
+        var notif_date = document.getElementById('notif_date').value
+        var attendance_upload_end_date = document.getElementById('attendance_upload_end_date').value
+
+        var purpose_1 = document.getElementById('purposeId1').value
+        var purpose_2 = document.getElementById('purposeId2').value
+        var purpose_3 = document.getElementById('purposeId3').value
+
+        var startDate1 = document.getElementById('startDate1').value
+        var startDate2 = document.getElementById('startDate2').value
+        var startDate3 = document.getElementById('startDate3').value
+
+        var endDate1 = document.getElementById('endDate1').value
+        var endDate2 = document.getElementById('endDate2').value
+        var endDate3 = document.getElementById('endDate3').value
+
+        //==================FOR VALIDAION START======================================================
+
+        if (pgm_type.length < 1) {
+            document.getElementById("pgm_type").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (programme_group.length < 1) {
+            document.getElementById("programme_group").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (programme_class.length < 1) {
+            document.getElementById("programme_class").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (programme_title.length < 1) {
+            document.getElementById("programme_title").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (prgm_scheme.length < 1) {
+            document.getElementById("prgm_scheme").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (semester.length < 1) {
+            document.getElementById("semester").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (notif_title.length < 1) {
+            document.getElementById("notif_title").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+        else if (order_number.length < 1) {
+            document.getElementById("order_number").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        } else if (notif_date.length < 1) {
+            document.getElementById("notif_date").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        } else if (attendance_upload_end_date.length < 1) {
+            document.getElementById("attendance_upload_end_date").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if ($('#exampleFormControlFile1').get(0).files.length === 0) {
+            document.getElementById('pgm_type_div').scrollIntoView();
+            document.getElementById("file_validate").innerHTML = "* Please attach file";
+        }
+
+        else if (examTitle.length < 1) {
+            document.getElementById("examTitle").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (month.length < 1) {
+            document.getElementById("file_validate").innerHTML = " ";
+            document.getElementById("month").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (year.length < 1) {
+            document.getElementById("year").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (season.length < 1) {
+            document.getElementById("season").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (all_adm_vals.length < 1) {
+            document.getElementById("year_valid").innerHTML = "* This field is required";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (!$(".exam_type_class").is(':checked')) {
+            document.getElementById("check_valid2").innerHTML = "*This field is required";
+        }
+
+        else if (!$(".quest_paper_class").is(':checked')) {
+            document.getElementById("check_valid1").innerHTML = "*This field is required";
+        }
+
+        else if (startDate1.length < 1) {
+            document.getElementById("startDate1").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (endDate1.length < 1) {
+            document.getElementById("endDate1").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+        else if (purpose_2.length < 1) {
+            document.getElementById("purposeId2").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (startDate2.length < 1) {
+            document.getElementById("startDate2").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (endDate2.length < 1) {
+            document.getElementById("endDate2").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (purpose_3.length < 1) {
+            document.getElementById("purposeId3").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+
+        else if (startDate3.length < 1) {
+            document.getElementById("startDate3").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (endDate3.length < 1) {
+            document.getElementById("endDate3").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else {
+            $("#preview_window").modal("show");
+        }
+    })
+
+    $("#preview_window").on('shown.bs.modal', function () {
+        examTitle = $('#examTitle').val()
+        $('#exam').html(examTitle)
+
+        programmeGroup = $('#programme_group option:selected').text()
+        $('#prgm_group').html(programmeGroup)
+
+        programmeClass = $('#programme_class option:selected').text()
+        $('#prgm_class').html(programmeClass)
+
+        programme = $('#programme_title option:selected').text()
+        $('#programme').html(programme)
+
+        programmeType = $('#pgm_type option:selected').text()
+        $('#programme_type').html(programmeType)
+
+        scheme = $('#prgm_scheme option:selected').text()
+        $('#shm').html(scheme)
+
+        semester = $('#semester option:selected').text()
+        $('#semstr').html(semester)
+        
+        // ── Preview Redesign ──────────────────────────────────────
+        // ── Regular Chance
+        if ($('#chk_regular').is(':checked')) {
+            var regVal  = $('#admission_regular').val() || '';
+            var regText = regVal ? ($('#admission_regular option[value="' + regVal + '"]').text().trim()) : '';
+            $('#regular_yr_preview').html(regText || 'None selected');
+        } else {
+            $('#regular_yr_preview').html('No (not selected)');
+        }
+
+        // ── Improvement/Supplementary
+        if ($('#chk_improvement').is(':checked')) {
+            var impVal  = $('#admission_improvement').val() || '';
+            var impText = impVal ? ($('#admission_improvement option[value="' + impVal + '"]').text().trim()) : '';
+            $('#improvement_yr_preview').html(impText || 'None selected');
+        } else {
+            $('#improvement_yr_preview').html('No (not selected)');
+        }
+
+        // ── Supplementary Only
+        if ($('#chk_supplementary').is(':checked')) {
+            var suppVal  = $('#admission_supplementary').val() || '';
+            var suppText = suppVal ? ($('#admission_supplementary option[value="' + suppVal + '"]').text().trim()) : '';
+            $('#supplementary_yr_preview').html(suppText || 'None selected');
+        } else {
+            $('#supplementary_yr_preview').html('No (not selected)');
+        }
+
+        // ── Multiselect Preview
+        var yoaVals  = $('#admission_year').val() || [];
+        var yoaTexts = yoaVals.map(function(v) {
+            return $('#admission_year option[value="' + v + '"]').text().trim();
+        }).filter(Boolean);
+        $('#admi_year').html(yoaTexts.length > 0 ? yoaTexts.join(', ') : 'NA');
+
+        notif_title = $('#notif_title').val()
+        $('#notif_title_data').html(notif_title)
+
+        let notif_date = new Date($('#notif_date').val())
+        let notif_date_data = notif_date.getDate() + "-" + (notif_date.getMonth() + 1) + "-" + notif_date.getFullYear()
+        $('#not_date').html(notif_date_data)
+
+        let upload_date = new Date($('#attendance_upload_end_date').val())
+        let upload_date_data = upload_date.getDate() + "-" + (upload_date.getMonth() + 1) + "-" + upload_date.getFullYear()
+        $('#att_up_ate').html(upload_date_data)
+
+        month = $('#month option:selected').text()
+        $('#mon').html(month)
+
+        year = $('#year option:selected').text()
+        $('#yr').html(year)
+
+        season = $('#season option:selected').text()
+        $('#ssn').html(season)
+
+        examType = $("input:radio[name=examType]:checked").parent().text()
+        $('#exam-type').html(examType)
+
+        qpDelivery = $("input:radio[name=questionPaperDeliveryType]:checked").parent().text()
+        $('#qp_delivery').html(qpDelivery)
+        
+        $("#exam_purpose").empty();
+        $("#exam_purpose").append('<thead><tr><th>Purpose</th><th>Start Date</th><th>End Date</th></tr><thead>');
+
+        var text1 = "Exam Register"
+        var text2 = "Exam Register with fine"
+        var text3 = "Exam Register with super fine"
+
+        var sample_dict1 = { "purposeId": text1, "startDate": $("#startDate1").val(), "endDate": $("#endDate1").val() }
+        var sample_dict2 = { "purposeId": text2, "startDate": $("#startDate2").val(), "endDate": $("#endDate2").val() }
+        var sample_dict3 = { "purposeId": text3, "startDate": $("#startDate3").val(), "endDate": $("#endDate3").val() }
+
+        const purposeList = [sample_dict1, sample_dict2, sample_dict3]
+        purposeList.forEach((element) => {
+            var start_datearray = element.startDate.split("-");
+            var new_startdate = start_datearray[2] + '-' + start_datearray[1] + '-' + start_datearray[0];
+            var end_datearray = element.endDate.split("-");
+            var new_enddate = end_datearray[2] + '-' + end_datearray[1] + '-' + end_datearray[0];
+            $('#exam_purpose').append('<tr><td>' + element.purposeId + '</td><td>' + new_startdate + '</td><td>' + new_enddate + '</td></tr>')
+        });
+    });
+
+</script>
+
+<script>
+    $("#pgm_type").change(function () {
+        document.getElementById("pgm_type").className = "select-text";
+    })
+    $("#programme_group").change(function () {
+        document.getElementById("programme_group").className = "select-text";
+    })
+    $("#programme_class").change(function () {
+        document.getElementById("programme_class").className = "select-text";
+    })
+    $("#programme_title").change(function () {
+        document.getElementById("programme_title").className = "select-text";
+    })
+    $("#prgm_scheme").change(function () {
+        document.getElementById("prgm_scheme").className = "select-text";
+    })
+    $("#semester").change(function () {
+
+        document.getElementById("semester").className = "select-text";
+        $("#startDate1").val('');
+        $('#startDate1').attr('type', 'text');
+
+        $("#endDate1").val('');
+        $('#endDate1').attr('type', 'text');
+
+        $("#startDate2").val('');
+        $('#startDate2').attr('type', 'text');
+
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+    })
+    $("#notif_title").change(function () {
+        document.getElementById("notif_title").className = "input-text";
+    })
+    $("#order_number").change(function () {
+        document.getElementById("order_number").className = "input-text";
+    })
+    $("#notif_date").change(function () {
+        document.getElementById("notif_date").className = "input-text";
+    })
+    $("#attendance_upload_end_date").change(function () {
+        document.getElementById("attendance_upload_end_date").className = "input-text";
+    })
+
+    $("#admission_year").change(function () {
+        document.getElementById("year_valid").innerHTML = "";
+    })
+    $("#month").change(function () {
+        document.getElementById("month").className = "select-text";
+    })
+    $("#year").change(function () {
+        document.getElementById("year").className = "select-text";
+    })
+    $("#examTitle").change(function () {
+        document.getElementById("examTitle").className = "input-text";
+    })
+    $("#season").change(function () {
+        document.getElementById("season").className = "select-text";
+    })
+    $(".quest_paper_class").change(function () {
+        document.getElementById("check_valid1").innerHTML = "";
+    })
+    $(".exam_type_class").change(function () {
+        document.getElementById("check_valid2").innerHTML = "";
+        examType = $(this).attr("data-name")
+        if (examType == "Online") {
+            var x = $(".quest_paper_class").attr("data-name")
+            document.getElementById("quest_paper_id1").checked = true;
+            $(".course_examType").attr("checked", true);
+            $(".quest_paper_class").prop('disabled', true);
+            document.getElementById("check_valid1").innerHTML = "";
+        }
+        else {
+            $(".quest_paper_class").prop('disabled', false);
+            $(".course_examType").attr("checked", false);
+        }
+    })
+    $(".purposeId1").change(function () {
+        document.getElementById("purposeId1").style.borderColor = "";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    $(".purposeId2").change(function () {
+        document.getElementById("purposeId2").style.borderColor = "";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    $(".startDate1").change(function () {
+        var todaystartDate1 = $("#startDate1").val()
+        $(".endDate1").attr('min', todaystartDate1);
+        document.getElementById("startDate1").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    $(".startDate2").change(function () {
+        document.getElementById("startDate2").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    $(".endDate1").change(function () {
+        var today2 = $("#endDate1").val()
+        document.getElementById("endDate1").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+        $(".startDate2").attr('min', today2);
+        $(".endDate2").attr('min', today2);
+    })
+    $(".endDate2").change(function () {
+        var today3 = $("#endDate2").val()
+        document.getElementById("endDate2").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+        $(".startDate3").attr('min', today3);
+        $(".endDate3").attr('min', today3);
+    })
+</script>
+
+<script>
+    var today = new Date()
+
+    var end_date_one = $("#endDate1").val()
+    var end_date_two = $("#endDate2").val()
+    $("#startDate2").attr('min', end_date_one);
+    $("#endDate2").attr('min', end_date_one);
+    $("#startDate3").attr('min', end_date_two);
+    $("#endDate3").attr('min', end_date_two);
+    
+    $("#startDate1").change(function () {
+        $("#endDate1").val('');
+        $('#endDate1').attr('type', 'text');
+
+        $("#startDate2").val('');
+        $('#startDate2').attr('type', 'text');
+
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+    })
+
+    $("#startDate2").change(function () {
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+    })
+    
+    $(".endDate1").change(function () {
+        var today1 = new Date($("#endDate1").val())
+        today1.setDate(today1.getDate() + 1)
+        $('#startDate2').attr('type', 'date');
+        $("#startDate2").val(today1.toISOString().split('T')[0]);
+
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        $("#startDate2").attr('min', today1.toISOString().split('T')[0]);
+        $("#endDate2").attr('min', today1.toISOString().split('T')[0]);
+
+    })
+
+    $(".endDate2").change(function () {
+        var today2 = new Date($("#endDate2").val())
+        today2.setDate(today2.getDate() + 1)
+        $('#startDate3').attr('type', 'date');
+        $("#startDate3").val(today2.toISOString().split('T')[0]);
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        $("#startDate3").attr('min', today2.toISOString().split('T')[0]);
+        $("#endDate3").attr('min', today2.toISOString().split('T')[0]);
+        $(".course_start_date").val('');
+        $(".course_end_date").val('');
+        $(".course_start_time").val('');
+        $(".course_end_time").val('');
+    })
+
+    $("#notif_date").change(function () {
+        var notif_data = $(this).val()
+        $("#attendance_upload_end_date").attr('min', notif_data);
+    })
+
+
+</script>
+
+<script>
+    function restFullBtn() {
+        $('#startDate1').attr('type', 'text');
+        $('#endDate1').attr('type', 'text');
+        $('#startDate2').attr('type', 'text');
+        $('#endDate2').attr('type', 'text');
+        $('#startDate3').attr('type', 'text');
+        $('#endDate3').attr('type', 'text');
+        $('#startDate4').attr('type', 'text');
+        $('#endDate4').attr('type', 'text');
+
+        $("#admission_year").empty();
+    }
+
+    $("#pgm_type").change(function () {
+        var prgtype = $("#pgm_type option:selected").val()
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax
+            ({
+                headers: { "X-CSRFToken": token },
+                type: "POST",
+                url: "{% url 'prg_group_list' %}?format=json",
+                dataType: "json",
+                data: {
+                    "prg_typ_id": prgtype,
+
+                },
+                success: renderlist
+
+            });
+        function renderlist(res) {
+            $("#programme_group").empty()
+            $("#programme_group").append('<option value=""></option>')
+            $.each(res.data.prggrp, function (j, value) {
+                $("#programme_group").append('<option value="' + value.id + '">' + value.title + '</option>');
+            });
+        }
+    })
+    $("#programme_group").change(function () {
+        var prggrp = $("#programme_group option:selected").val()
+        var prgtype = $("#pgm_type option:selected").val()
+
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax
+            ({
+                headers: { "X-CSRFToken": token },
+                type: "POST",
+                url: "{% url 'prg_class_list' %}?format=json",
+                dataType: "json",
+                data: {
+                    "prggrp": prggrp,
+                    "prg_typ_id": prgtype
+
+                },
+                success: renderlist
+            });
+        function renderlist(res) {
+            $("#programme_class").empty()
+            $("#programme_class").append('<option value=""></option>')
+            $.each(res.data.prgclass, function (j, value) {
+                $("#programme_class").append('<option value="' + value.id + '">' + value.title + '</option>');
+            });
+        }
+    })
+
+</script>
+
+<script>
+$(document).ready(function () {
+
+    // ── Helper: sync the "All Considered" multiselect from checkboxes & singles ──
+    function syncAdmissionYear() {
+        var regVal  = $('#chk_regular').is(':checked') ? ($('#admission_regular').val() || '') : '';
+        var impVal  = $('#chk_improvement').is(':checked') ? ($('#admission_improvement').val() || '') : '';
+        var suppVal = $('#chk_supplementary').is(':checked') ? ($('#admission_supplementary').val() || '') : '';
+
+        var combined = [];
+        if (regVal)  combined.push(regVal);
+        if (impVal)  combined.push(impVal);
+        if (suppVal) combined.push(suppVal);
+
+        $('#admission_year').val(combined).trigger('change');
+    }
+
+    // ── Helper: filter options so improvement/supplementary must be STRICTLY BEFORE regular year ──
+    function filterEarlierThan(selectId, regularYear) {
+        $('#' + selectId + ' option').each(function () {
+            var optYear = parseInt($(this).data('year'), 10);
+            if (!$(this).val()) return; // keep the blank "-- Select Year --"
+            if (!isNaN(optYear) && !isNaN(regularYear) && optYear >= regularYear) {
+                $(this).prop('disabled', true);
+                if ($(this).is(':selected')) {
+                    $(this).prop('selected', false);
+                }
+            } else {
+                $(this).prop('disabled', false);
+            }
+        });
+    }
+
+    // ── Checkbox Triggers ──────────────────────────────────────────────────────
+    $('#chk_regular').on('change', function() {
+        if (this.checked) {
+            $('#section_regular').show();
+        } else {
+            $('#section_regular').hide();
+            $('#admission_regular').val('').trigger('change');
+        }
+        syncAdmissionYear();
+    });
+
+    $('#chk_improvement').on('change', function() {
+        if (this.checked) {
+            $('#section_improvement').show();
+        } else {
+            $('#section_improvement').hide();
+            $('#admission_improvement').val('').trigger('change');
+        }
+        syncAdmissionYear();
+    });
+
+    $('#chk_supplementary').on('change', function() {
+        if (this.checked) {
+            $('#section_supplementary').show();
+        } else {
+            $('#section_supplementary').hide();
+            $('#admission_supplementary').val('').trigger('change');
+        }
+        syncAdmissionYear();
+    });
+
+    // ── Dropdown Triggers ──────────────────────────────────────────────────────
+    $('#admission_regular').on('change', function () {
+        var regYear = parseInt($('#admission_regular option:selected').data('year'), 10);
+        filterEarlierThan('admission_improvement',   regYear);
+        filterEarlierThan('admission_supplementary', regYear);
+        syncAdmissionYear();
+    });
+
+    $('#admission_improvement, #admission_supplementary').on('change', function () {
+        syncAdmissionYear();
+    });
+
+    if ($.fn.select2) {
+        $('#admission_year').select2({
+            placeholder: 'Auto-filled from selections below...',
+            allowClear: false,
+            width: '100%'
+        });
+    }
+});
+</script>
+
+{% endblock head %}

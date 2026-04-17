@@ -31,3 +31,165 @@ Feature 2 — Search by QP Code:
     under each of those exams
             ↓
     Returns table: Examination | Exam Code | Course Codes
+
+
+
+
+
+
+     """
+    Given an exam_code, return all courses whose exam schedule has already
+    ended (ExaminationSchedule.end_date < today), along with the QP code(s)
+    assigned to each course for that examination.
+
+    Chain:
+        Examination (code=exam_code)
+            └─ ExaminationSchedule (exam=exam, end_date__lt=today)
+                  └─ ProgrammeCourseSemester → CourseMaster (name, code)
+                        └─ QuestionPaperExamMapper (exam=exam)
+                              └─ QuestionPaper (qp_pattern__course=course)
+                                    └─ qp_code
+    """
+
+
+    # ─────────────────────────────────────────────────────────────────────────────
+#  FEATURE 2 ─ QP Report by QP Code
+#  GET  → renders the template (handled in same template as Feature 1)
+#  POST → accepts { "qp_code": "..." } and returns exam codes + course codes
+# ─────────────────────────────────────────────────────────────────────────────
+
+# class QPReportByQPCode(APIView):
+#     """
+#     Given a qp_code, find every examination that used this QP code and list
+#     each exam's code along with all course codes scheduled under that exam.
+
+#     Chain:
+#         QuestionPaper (qp_code=qp_code)
+#             └─ QuestionPaperExamMapper.qp → Examination (code)
+#                   └─ ExaminationSchedule.exam
+#                         └─ ProgrammeCourseSemester → CourseMaster (code, name)
+#     """
+
+
+
+
+# class QPReportByQPCode(APIView):
+#     """
+#     Given a qp_code, find every examination that used this QP code and list
+#     each exam's code along with all course codes scheduled under that exam.
+
+#     Chain:
+#         QuestionPaper (qp_code=qp_code)
+#             └─ QuestionPaperExamMapper.qp → Examination (code)
+#                   └─ ExaminationSchedule.exam
+#                         └─ ProgrammeCourseSemester → CourseMaster (code, name)
+#     """
+
+#     def post(self, request):
+#         try:
+#             qp_code = request.data.get("qp_code", "").strip()
+#             if not qp_code:
+#                 return format_response(
+#                     False,
+#                     "QP Code is required.",
+#                     {},
+#                     "QP_CODE_REQUIRED",
+#                     status_code=status.HTTP_400_BAD_REQUEST,
+#                 )
+
+#             # ── 1. Resolve all QuestionPaper records with this qp_code ────────
+#             #   qp_code is a CharField (not unique), so multiple papers may
+#             #   share the same code (e.g., Set A / Set B re-uses the code).
+#             qp_papers = QuestionPaper.objects.filter(qp_code=qp_code)
+#             if not qp_papers.exists():
+#                 return format_response(
+#                     False,
+#                     "No Question Paper found with this QP Code.",
+#                     {},
+#                     "QP_CODE_NOT_FOUND",
+#                     status_code=status.HTTP_404_NOT_FOUND,
+#                 )
+
+#             # ── 2. Find all Examinations that used these QP papers ─────────────
+#             qp_exam_mappers = (
+#                 QuestionPaperExamMapper.objects.filter(qp__in=qp_papers)
+#                 .select_related("exam", "qp")
+#             )
+
+#             if not qp_exam_mappers.exists():
+#                 return format_response(
+#                     True,
+#                     "This QP Code has not been mapped to any examination.",
+#                     {
+#                         "qp_code": qp_code,
+#                         "exam_data": [],
+#                     },
+#                     status_code=status.HTTP_200_OK,
+#                 )
+
+#             # ── 3. For each unique Examination, collect course codes ────────────
+#             seen_exam_ids = set()
+#             exam_data = []
+
+#             for mapper in qp_exam_mappers:
+#                 exam = mapper.exam
+#                 if exam.id in seen_exam_ids:
+#                     continue
+#                 seen_exam_ids.add(exam.id)
+
+#                 # All ExaminationSchedule rows for this exam → course codes
+#                 schedules = ExaminationSchedule.objects.filter(
+#                     exam=exam
+#                 ).select_related("programme_semester_course__course")
+
+#                 # Deduplicate course codes preserving order
+#                 seen_course_ids = set()
+#                 courses = []
+#                 for sch in schedules:
+#                     course = sch.programme_semester_course.course
+#                     if course.id not in seen_course_ids:
+#                         seen_course_ids.add(course.id)
+#                         courses.append(
+#                             {
+#                                 "course_code": course.code,
+#                                 "course_name": course.name,
+#                             }
+#                         )
+
+#                 # Sort courses by code
+#                 courses.sort(key=lambda c: c["course_code"])
+
+#                 exam_data.append(
+#                     {
+#                         "exam_code": exam.code,
+#                         "exam_title": exam.title,
+#                         "courses": courses,
+#                         "course_codes_display": ", ".join(
+#                             c["course_code"] for c in courses
+#                         ) if courses else "N/A",
+#                     }
+#                 )
+
+#             # Sort exams by code
+#             exam_data.sort(key=lambda x: x["exam_code"])
+
+#             return format_response(
+#                 True,
+#                 FETCH_SUCCESS_MSG,
+#                 {
+#                     "qp_code": qp_code,
+#                     "exam_data": exam_data,
+#                 },
+#                 status_code=status.HTTP_200_OK,
+#             )
+
+#         except Exception as e:
+#             logger.error(e, exc_info=True)
+#             return format_response(
+#                 False,
+#                 BAD_GATEWAY,
+#                 {},
+#                 BAD_GATEWAY_ERROR_CODE,
+#                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             )
+        

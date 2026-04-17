@@ -1,0 +1,1742 @@
+#Api for Exam Configuration
+from django.shortcuts import render
+from rest_framework.serializers import Serializer
+from util.models import *
+from util.serializers import *
+from.serializers import *
+from django.http import HttpResponse,Http404 # witten httpresponse
+from django.shortcuts import get_object_or_404 # 404 if object is not exists
+from rest_framework.views import APIView # normal view can written API data
+from rest_framework.response import Response# get a perticular response every thing is okey then give 200 response
+from rest_framework import status # basically sent back status
+from django.contrib import messages
+from django.contrib.auth.models import User
+import json
+from util.constants import *
+from rest_framework import generics
+import datetime
+from django.utils import timezone
+from django.db.models import Q
+from rest_framework.exceptions import APIException
+from util.pagination import *
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.generics import ListAPIView
+from rest_framework import renderers,viewsets
+import random
+from river.models import State
+from river.utils.exceptions import RiverException   
+from datetime import date
+
+from rest_framework.permissions import AllowAny
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework.exceptions import (
+ APIException,               #for api exception
+ ValidationError
+)
+from rest_framework.filters import (
+    SearchFilter,
+    OrderingFilter
+)
+from iteration_utilities import unique_everseen #for remove dict
+from util.loggings import logging
+logger=logging.getLogger(__name__)
+from datetime import datetime
+from django.core.files.storage import FileSystemStorage
+import os
+from base64 import b64decode
+from django.core.exceptions import PermissionDenied
+from rest_framework import permissions
+from django.http import HttpResponseForbidden
+import pytz
+
+def qp_uploads(doc_file,file_name): #FOR FILE UPLOAD
+    
+    fs = FileSystemStorage(location=f"pre_exam_new/exam_notification",base_url=f"pre_exam_new/exam_notification")
+    name = fs.save(doc_file.name, doc_file)
+    urls = f"/{fs.url(name)}"
+    return urls
+
+
+         
+#================================================================================#
+#                      EXAM ADD API START                                        #
+#================================================================================#
+
+def examregcheck(exam_id):
+    try:
+        exam_crs = ExamRegistrationCourseMapper.objects.filter(exam_registration__exam_id = exam_id, exam_type__in = [2,3]).select_related('exam_registration')
+        supimp_regs = set(exc.exam_registration.id for exc in exam_crs)
+        pending_regs = ExamRegistration.objects.filter(id__in = supimp_regs,status_id = PENDING_STATE)
+
+        paid_regs = set(ExamRegistrationPaymentType.objects.filter(exam_registration__id__in = [reg.id for reg in pending_regs],status_id = SUCCESS_STATE).values_list('exam_registration_id',flat = True))
+        
+        ExamRegistration.objects.filter(id__in = paid_regs).update(status_id = ACTIVE_STATE, updated_on = timezone.now())
+
+    except Exception as e:
+        logger.error(e,exc_info=True)
+        return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST)
+
+class AddExam(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+
+        if request.user and request.user.has_perm('util.add_examination'):
+            return True  
+        raise PermissionDenied()
+class ExamConfiguration(ListAPIView):
+   
+    permission_classes=[AddExam,]
+    def post(self,request):
+        try:
+            print(request.data)
+            status_fetch=State.objects.filter(label='PENDING').first()
+            status_id=status_fetch.id
+            user =request.user
+           
+            created_on=timezone.now()      
+            notif_date=request.data.get('notif_date')
+            attendence_lastdate=request.data.get('attendance_upload_end_date')
+            prgm_query_set=Programme.objects.filter(id=request.data.get('programme')).first()
+            prgm_code=prgm_query_set.code            
+            scheme_query_set=SchemeMaster.objects.filter(id=request.data.get('scheme')).first()
+            prgm_scheme=scheme_query_set.name            
+            prefix=str(prgm_scheme)[-2:]
+            semester = ProgrammeSemester.objects.filter(id=request.data.get('programme_semester')).first()
+            sem_query_set=SemesterMaster.objects.filter(id=semester.semester.id).first()
+            prgm_sem=sem_query_set.title 
+            code=prgm_code+prefix+prgm_sem 
+             
+            existance_check=Examination.objects.filter(
+                code__icontains=code,
+                prgm_sem = semester
+            ).order_by('-code').first()
+            
+            
+            
+            
+            if existance_check==None:
+                code=code+"01"
+            else:
+                temp=int(existance_check.code[-2:])+1 
+                code=code+str(temp).zfill(2)
+            exam = ExaminationCreateSerializer(data=request.data,context={'request':request,"code":code,"comments":"Exam created"}) 
+            if exam.is_valid(raise_exception=True):
+                exam.save()
+                examid=existance_check.id
+            
+                exmprosemid=ExamProgrammeSemesterMapping.objects.filter(exam_id=examid,programme_semester_id=semester).first().id
+                examnotobj=ExaminationNotification.objects.filter(exam_prgm_sem_id=exmprosemid).first()
+                if examnotobj==None:
+                    notificationobj=ExaminationNotification(created_on=created_on,created_by_id=user,date=notif_date,status_id=ACTIVE_STATE,attendance_upload_end_date=attendence_lastdate,exam_prgm_sem_id=exmprosemid)
+                    notificationobj.save()
+                    notifid=ExaminationNotification.objects.filter(exam_prgm_sem_id=exmprosemid).first().id
+                else:
+                    notifid=examnotobj.id
+                collegebatchprgsem=CollegeBatchProgrammeSemester.objects.filter(prgm_semester=semester).all()
+                
+                collegebatchprgid=[]
+                for prgsem in collegebatchprgsem:
+                    collegebatchprgid.append(prgsem.college_batch_prgm_id)
+                for collprg in collegebatchprgid:
+                    add_attendence_dates=AttendanceUpload(colg_batch_prgm_id=collprg,prgm_semester=semester,start_date=notif_date,end_date=attendence_lastdate,created_by=user,status_id=PROCESSING,notification_id=notifid)
+                    add_attendence_dates.save()
+          
+            return format_response(True,EXAM_ADD_SUCCESS_MSG,{},status_code=status.HTTP_201_CREATED,template_name="exam_new.html") 
+            
+        except ValidationError as err:
+            
+            logger.error(err,exc_info=True)
+            er = err.__dict__
+            return format_response(False,er,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name="exam_new.html")
+        except Exception as e:
+            
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST)
+
+#================================================================================#
+#                        EXAM ADD API END                                        #
+#================================================================================#
+
+#================================================================================#
+#                      GET ALL EXAM API START                                    #
+#================================================================================#
+
+
+    def get(self,request): #getting the data from the table
+        
+        try:
+            
+            program = Programme.objects.all()
+            program = ProgrammeMasterSerializers(program,many=True)
+            staffbase=StaffBase.objects.filter(user=request.user).first()           
+            staffsection=StaffSection.objects.filter(staff=staffbase)
+         
+            subsection=[]
+            subsection=[subsect.sub_section  for  subsect in staffsection]
+            subsectionprg=SubsectionProgramme.objects.filter(sub_section_id__in=subsection).order_by('-programme__title')
+           
+            prgm_type=[]
+            for subsectprg in subsectionprg:
+                if subsectprg.programme.programme_type not in prgm_type:
+                    prgm_type.append(subsectprg.programme.programme_type)
+
+            
+            program_typ = ProgrammeTypeMasterSerializers(prgm_type,many=True)
+            states=[ACTIVE_STATE,PENDING_STATE]
+
+            # exam_obj=Examination.objects.select_related("exam_type","season","question_paper_delivery_type").prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list','schedule_list').filter(status_id__in=states).all()
+            # serialize_data=ExamSerializer(exam_obj,many=True)
+
+            exam_type_obj=ExaminationTypeMaster.objects.all()
+            exam_type_data=ExaminationTypeMasterSerializer(exam_type_obj,many=True)
+            qp_delivery_obj=ExaminationQuestionPaperDeliveryMaster.objects.all()
+            qp_delivery_data=ExamQpDeliverySerializer(qp_delivery_obj,many=True)
+            exam_purpose=ExaminationPurposeMaster.objects.all()
+            exam_purpose_data=ExaminationPurposeSerializer(exam_purpose,many=True)
+            year = timezone.now().year
+            date_list=[]
+            for y in range(year, year+2):
+                date_list.append(y)
+            # date_list.extend([int(year)-1,year,int(year)+1])
+            # date_list.extend([year])
+            # return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_list":serialize_data.data,"exam_type_list":exam_type_data.data,"qp_delivery_list":qp_delivery_data.data,"exam_purpose_list":exam_purpose_data.data,"prg":program.data,"prg_typ":program_typ.data,"prg_cls":program_cls.data,"prg_grp":program_grp.data,'datelist':date_list},status_code=status.HTTP_200_OK,template_name="exam_new.html")
+            return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_type_list":exam_type_data.data,"qp_delivery_list":qp_delivery_data.data,"exam_purpose_list":exam_purpose_data.data,"prg":program.data,"prg_typ":program_typ.data,'datelist':date_list},status_code=status.HTTP_200_OK,template_name="exam_new.html")
+
+        except Examination.DoesNotExist:
+            return format_response(False,PRGM_NOT_FOUND_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+           logger.error(e,exc_info=True)
+           return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ProgrammeGroupList(ListAPIView):  
+    def post(self, request):
+        try:
+            jsondata=request.data
+            prg_type=jsondata['prg_typ_id']
+            staffbase=StaffBase.objects.filter(user=request.user).first()           
+            staffsection=StaffSection.objects.filter(staff=staffbase)         
+            subsection=[subsect.sub_section  for  subsect in staffsection]
+            subsectionprg=SubsectionProgramme.objects.filter(sub_section_id__in=subsection,programme__programme_type_id=prg_type).order_by('-programme__title')
+            prgm_grp=[]
+            for subsectprg in subsectionprg:
+                if subsectprg.programme.programme_group not in prgm_grp:
+                    prgm_grp.append(subsectprg.programme.programme_group)
+            programme_group_serializer=ProgrammeGroupSerializer(prgm_grp,many=True)
+            return format_response(True,"success",{"prggrp":programme_group_serializer.data},status_code=status.HTTP_200_OK,template_name="programme_management.html")
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='exam-registration_view/programmes.html')    
+
+class ProgrammeClassList(ListAPIView):
+    def post(self, request):
+        try:
+            jsondata=request.data
+            prggrp=jsondata['prggrp']
+            prg_type=jsondata['prg_typ_id']
+            staffbase=StaffBase.objects.filter(user=request.user).first()           
+            staffsection=StaffSection.objects.filter(staff=staffbase)
+            subsection=[subsect.sub_section for  subsect in staffsection]
+            subsectionprg=SubsectionProgramme.objects.filter(sub_section_id__in=subsection,programme__programme_group_id=prggrp,programme__programme_type_id=prg_type).order_by('-programme__title')  
+            prgm_class=[]
+            for subsectprg in subsectionprg:
+                if subsectprg.programme.programme_class not in prgm_class:
+                    prgm_class.append(subsectprg.programme.programme_class)
+            programme_class_serializer=ProgrammeClassSerializer(prgm_class,many=True)
+            return format_response(True,"success",{"prgclass":programme_class_serializer.data},status_code=status.HTTP_200_OK,template_name="bundle_generation/bundlegeneration.html")
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='exam-registration_view/programmes.html')    
+
+
+#================================================================================#
+#                      GET ALL EXAM API END                                      #
+#================================================================================#
+
+#================================================================================#
+#               PROGRAMME,SCHEME,SEMESTER WISE COURSE LIST  API START            #
+#================================================================================#
+
+ 
+class SemesterwiseCourseList(ListAPIView):
+    permission_classes = (AllowAny,)
+    def post(self,request):
+        try:
+            
+            prgm_id= request.data['programme_id']
+            # scheme_id= request.data['scheme_id']
+            semester_id = request.data['semester_id']
+
+            prgm_sem = ProgrammeSemester.objects.filter(programme_id=prgm_id,semester_id=semester_id).first()
+           
+            exam_get = ExamProgrammeSemesterMapping.objects.filter(programme_semester_id=prgm_sem,status_id=ACTIVE_STATE).first()
+ 
+            if exam_get:
+                
+                
+                return format_response(False,EXAM_EXIST_MSG,data={"prgmsem":prgm_sem.id},status_code=status.HTTP_200_OK,template_name='exam.html')
+               
+            else:
+               
+                
+                return format_response(True,"success",data={"prgmsem":prgm_sem.id},status_code=status.HTTP_201_CREATED,template_name='exam.html')
+        except Exception as e:
+          
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='exam.html')
+
+
+class SemesterwiseCourseFetch(ListAPIView):
+    permission_classes = (AllowAny,)
+    def post(self,request):
+        try:
+            
+            prgm_id= request.data['programme_id']
+            scheme_id= request.data['scheme_id']
+            semester_id = request.data['semester_id']
+            prgm_sem = request.data['prgm_sem']
+            exam_id = request.data['exam_id']
+
+            # prgm_sem = ProgrammeSemester.objects.filter(programme_id=prgm_id,semester_id=semester_id).first()
+          
+            exam_reg = ExamRegistration.objects.filter(exam_id = exam_id, status_id__in = [ACTIVE_STATE]).all()
+            exam_get = ExamProgrammeSemesterMapping.objects.filter(programme_semester_id=prgm_sem,status_id=ACTIVE_STATE).first()
+            
+            if exam_get:
+                obj_data = ProgrammeSemester.objects.filter(id=prgm_sem).all()
+                # serialized_data = SemesterwiseCourse(obj_data,many=True)
+                serialized_data = SemesterwiseCourse(obj_data, many=True, context={'scheme_id': scheme_id, 'exam_reg':exam_reg})
+
+                return format_response(False,EXAM_EXIST_MSG,data={"data_list":serialized_data.data},status_code=status.HTTP_200_OK,template_name='exam.html')
+                # return format_response(False,EXAM_EXIST_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_200_OK,template_name='exam.html')
+            else:
+                obj_data = ProgrammeSemester.objects.filter(programme = prgm_id,semester=semester_id).all()  
+                serialized_data = SemesterwiseCourse(obj_data,many=True,context={'scheme_id': scheme_id, 'exam_reg':exam_reg})
+                
+                return format_response(True,"success",data={"data_list":serialized_data.data},status_code=status.HTTP_201_CREATED,template_name='exam.html')
+        except Exception as e:
+           
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='exam.html')
+            
+#================================================================================#
+#            PROGRAMME,SCHEME,SEMESTER WISE COURSE LIST  API END                 #
+#================================================================================# 
+
+
+
+
+#=================================================================#
+#                  EXAM LIST API START                            #
+# ================================================================#
+class ViewExam(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+
+        if request.user and request.user.has_perm('util.view_examination'):
+            return True  
+        raise PermissionDenied()
+
+class ExamList(ListAPIView):
+    filter_backends =(DjangoFilterBackend,OrderingFilter)
+    filter_fields = ('title', 'code','month','year','season__title','exam_type__name','question_paper_delivery_type__name','prgm_details__scheme__name')
+    permission_classes=[ViewExam,]
+
+    def get(self, request): 
+        try:
+            states=[ACTIVE_STATE,PENDING_STATE]
+            staffbase=StaffBase.objects.filter(user=request.user).first()
+            staffsection=StaffSection.objects.filter(staff=staffbase)
+         
+            subsection=[]
+            for subsect in staffsection:
+                subsection.append(subsect.sub_section)
+                
+            subsectionprg=SubsectionProgramme.objects.filter(sub_section_id__in=subsection)
+           
+            prgm=[]
+            for subsectprg in subsectionprg:
+                if subsectprg.programme not in prgm:
+                    prgm.append(subsectprg.programme)
+            
+            prpg_sem = ProgrammeSemester.objects.filter(programme__in=prgm)
+            
+            # FAST FETCH: Get dropdown mappings without loading all Exams
+            exam_prgm = ExamProgrammeSemesterMapping.objects.filter(
+                programme_semester__in=prpg_sem,
+                exam__status_id__in=states
+            ).select_related(
+                'programme_semester__programme__programme_type',
+                'programme_semester__programme__programme_group',
+                'programme_semester__programme__programme_class',
+                'programme_semester__semester',
+                'scheme'
+            )
+
+            cascade_data = {}
+            dup_typ = set()
+            dup_grp = set()
+           
+            # Build the mapping tree for Javascript
+            for mapping in exam_prgm:
+                prog = mapping.programme_semester.programme
+                sem = mapping.programme_semester.semester
+                scheme = mapping.scheme
+
+                # Get text titles to match your original POST search logic
+                p_type = prog.programme_type.title if prog.programme_type else "NA"
+                p_group = prog.programme_group.title if prog.programme_group else "NA"
+                p_class = prog.programme_class.title if prog.programme_class else "NA"
+                p_name = prog.title if prog else "NA"
+                s_name = scheme.name if scheme else "NA"
+                sem_name = sem.title if sem else "NA"
+                
+                if p_type != "NA": dup_typ.add(p_type)
+                if p_group != "NA": dup_grp.add(p_group)
+                
+                # Build the hierarchy: Type -> Group -> Class -> Programme -> Scheme -> Sem
+                if p_type not in cascade_data: cascade_data[p_type] = {}
+                if p_group not in cascade_data[p_type]: cascade_data[p_type][p_group] = {}
+                if p_class not in cascade_data[p_type][p_group]: cascade_data[p_type][p_group][p_class] = {}
+                if p_name not in cascade_data[p_type][p_group][p_class]: cascade_data[p_type][p_group][p_class][p_name] = {}
+                if s_name not in cascade_data[p_type][p_group][p_class][p_name]: cascade_data[p_type][p_group][p_class][p_name][s_name] = set()
+                
+                cascade_data[p_type][p_group][p_class][p_name][s_name].add(sem_name)
+
+            # Convert sets to lists so it can become JSON
+            def set_to_list(d):
+                for k, v in d.items():
+                    if isinstance(v, set):
+                        d[k] = list(v)
+                    elif isinstance(v, dict):
+                        set_to_list(v)
+            
+            set_to_list(cascade_data)
+           
+            # Send Type and Group populated, leave the rest empty for the cascade
+            programme_type = [{"prgtyp": t} for t in dup_typ]
+            programme_group = [{"prggrp": g} for g in dup_grp]
+            exam_status = [{"status": "ACTIVE"}, {"status": "PENDING"}]
+            admnyear = AdmissionYearMaster.objects.all()
+           
+            return format_response(
+                True,
+                EXAM_FETCH_SUCCESS_MSG,
+                data={
+                    "exam_list": [], # INSTANT PAGE LOAD!
+                    "prg_typ": programme_type,
+                    "prg_grp": programme_group,
+                    "status": exam_status,
+                    "admnyear": admnyear,
+                    "cascade_json": json.dumps(cascade_data) # Send map to frontend
+                },
+                status_code=status.HTTP_200_OK,
+                template_name="exam_list_new.html"
+            )
+
+        except Exception as e:
+           logger.error(e,exc_info=True)
+           return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,template_name='500.html')
+        
+    def post(self,request):
+        try: 
+            states=[ACTIVE_STATE,PENDING_STATE]
+            queryset=Examination.objects.select_related("exam_type","season","question_paper_delivery_type").prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list','schedule_list').filter(status_id__in=states).all()     
+            # query = self.request.GET.get("search")
+            # srch=request.data.getlist('search')
+            srch = request.data.get('search')
+            # date_sr = request.data.getlist('date_search')
+            date_sr = request.data["date_search"]
+            start_data,end_date = date_sr
+
+            for n in request.data.get('search'):
+              
+                query=n
+                if query!=None:
+                    queryset=queryset.filter(
+                        Q(prgm_details__programme_semester__programme__programme_type__title__icontains=query)|
+                        Q(prgm_details__programme_semester__programme__programme_group__title__icontains=query)|
+                        Q(prgm_details__programme_semester__programme__programme_class__title__icontains=query)|
+                        Q(prgm_details__programme_semester__semester__title__icontains=query)|
+                        Q(prgm_details__programme_semester__programme__title__icontains=query)|
+                        Q(prgm_details__scheme__name__icontains=query)|
+                        Q(status__label__icontains=query)
+                    ).distinct()
+
+            if start_data and end_date :
+               
+                queryset=queryset.filter(
+                         Q(created_on__date__range=(start_data,end_date))
+                    ).distinct()
+
+            queryset=self.filter_queryset(queryset)  
+            serializer_class = ExamListSerializer(queryset,many=True)   
+         
+
+            
+            return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_list":serializer_class.data},status_code=status.HTTP_200_OK,template_name="exam_list_new.html")
+           
+
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,template_name='500.html')
+      
+
+
+
+#=================================================================#
+#                      EXAM LIST API END                          #
+# ================================================================#
+
+
+#=================================================================#
+#               EXAM NOTIFICATION VIEW  START                     #    
+#=================================================================#
+
+class Examnotificationsingle(ListAPIView):
+    queryset = ExaminationNotification.objects.all()
+    serializer_class = ExamNotificationviewSerailizer
+    pagination_class = LimitPagination
+    def get(self,request,pk):
+        exam_prgm_sem = ExamProgrammeSemesterMapping.objects.filter(id=pk).first()
+        queryset = ExaminationNotification.objects.filter(exam_prgm_sem=exam_prgm_sem).order_by('-id')
+        data=self.paginate_queryset(queryset)
+        serializer=self.serializer_class(data,many=True)
+        data=self.get_paginated_response(serializer.data)
+      
+        return format_response(True,NOT_APP_SUCCESS_MSG,data={'notificationsing':serializer.data},status_code=status.HTTP_200_OK, template_name='exam-notification/notification_approval.html')
+
+
+#=================================================================#
+#               EXAM NOTIFICATION VIEW  END                       #    
+#=================================================================#
+
+
+#================================================================================#
+#                      SINGLE EXAM GET API START                                 #
+#================================================================================#
+
+class ExamSingleGetWithSchedule(ListAPIView):
+    def get(self,request,pk):
+        try:
+            exam_obj=Examination.objects.prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list','schedule_list').filter(pk=pk).first()
+            serialize_data=ExamSerializer(exam_obj)
+           
+            hist = Examination.history.filter(id=pk).all()
+            hist_serializer= ExaminationHistorySerializer(hist,many=True)
+            return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_details":serialize_data.data,"his_details":hist_serializer.data},status_code=status.HTTP_200_OK,template_name="exam.html")
+
+
+        except Examination.DoesNotExist:
+            return format_response(False,PRGM_NOT_FOUND_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND,template_name='404.html')
+            
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='500.html')
+
+class ExamSingleGet(ListAPIView):
+    def get(self,request,pk):
+        try:
+            exam_obj=Examination.objects.prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list').filter(pk=pk).first()
+            serialize_data=ExamSingleFtechSerializer(exam_obj)
+           
+            hist = Examination.history.filter(id=pk).all()
+            hist_serializer= ExaminationHistorySerializer(hist,many=True)
+            return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_details":serialize_data.data,"his_details":hist_serializer.data},status_code=status.HTTP_200_OK,template_name="exam.html")
+
+
+        except Examination.DoesNotExist:
+            return format_response(False,PRGM_NOT_FOUND_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND,template_name='404.html')
+            
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='500.html')
+
+
+class ExamWiseSchedule(ListAPIView):
+    def get(self,request,pk):
+        try:
+            exam_obj=Examination.objects.filter(pk=pk).first()
+            exm_schld =ExaminationSchedule.objects.filter(exam=exam_obj.id,status__label__in=["ACTIVE","PENDING"])
+            if exm_schld:
+                exam_name = exam_obj.title
+                exam_code = exam_obj.code
+                exm_schld_serial=ExamScheduleSerializer(exm_schld,many=True)
+                
+            
+                return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"exam_details":exm_schld_serial.data,"exam_name":exam_name,"exam_code":exam_code,"state":"true"},status_code=status.HTTP_200_OK,template_name="exam.html")
+            else:
+                return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={"state":"false"},status_code=status.HTTP_200_OK,template_name="exam.html")
+
+        except Examination.DoesNotExist:
+            return format_response(False,PRGM_NOT_FOUND_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND,template_name='404.html')
+            
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='500.html')
+
+class PrgmSemWiseFeeList(ListAPIView):
+    def get(self,request,pk):
+        try:
+            exam_obj=Examination.objects.prefetch_related('prgm_sem').filter(pk=pk).first()
+            serialize_data=ExamFeeFtechSerializer(exam_obj)
+            feecat=FeeCategory.objects.all()
+            feecatse=FeeCategoryserilizer(feecat,many=True)
+           
+            return format_response(True,EXAM_FETCH_SUCCESS_MSG,data={'feecat':serialize_data.data,'feetitle':feecatse.data},status_code=status.HTTP_200_OK,template_name="exam.html")
+
+
+        except Examination.DoesNotExist:
+            return format_response(False,PRGM_NOT_FOUND_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND,template_name='404.html')
+            
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='500.html')
+#================================================================================#
+#                      SINGLE EXAM GET API END                                   #
+#================================================================================#
+
+
+
+#================================================================================#
+#                         EXAM APPROVAL API START                                #
+#================================================================================#
+class ApprovalExam(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+
+        if request.user and request.user.has_perm('util.approve_examination'):
+            return True  
+        raise PermissionDenied()
+
+class ExamApproval(ListAPIView):
+    permission_classes=[ApprovalExam,]
+    def post(self,request):
+        approved_by = request.user
+        updated_on = timezone.now() 
+        try:
+            jsondata = request.data
+            exam_id=jsondata.get('exam_id')
+            text=jsondata.get('comments')
+            satus=jsondata.get('next_status')
+            status_fetch=State.objects.filter(label=satus).first()
+           
+            next_status = State.objects.get(label=satus)
+            exam=Examination.objects.filter(id=exam_id).first()
+            
+            prgm_Sem=ExamProgrammeSemesterMapping.objects.filter(exam=exam_id).first()
+           
+            prgm_Sem_id = prgm_Sem.programme_semester
+            
+            final_data = ExamProgrammeSemesterMapping.objects.filter(programme_semester=prgm_Sem_id,status_id=ACTIVE_STATE).all()
+            
+            # if final_data.exists():
+            #      return format_response(False,EXAM_EXIST_APPROVE_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_200_OK)
+               
+            # else:
+                
+            exam.comments=text
+            exam.updated_by=approved_by
+            exam.updated_on=updated_on
+            exam.status=status_fetch
+            exam.save()
+            
+            exam_obj=Examination.objects.filter(id=exam_id).first()
+            
+            exam_serilizer = ExamApprovalSerializer(exam_obj,context={'approved_by':approved_by,"updated_on":updated_on,"text":text,"next_status":next_status})
+            print(exam_serilizer.data)
+
+            #FOR SAVING EXAM CENTER
+            
+            exm_mp = ExamProgrammeSemesterMapping.objects.filter(exam_id=exam_id).first()
+            exam_prgm_data = exm_mp.programme_semester.programme.id
+            
+
+            college_prgm = CollegeProgramme.objects.filter(programme=exam_prgm_data).all()
+        
+            for col in college_prgm:
+                college_id = col.college_department.college
+                college_name = col.college_department.college.name
+                college_code = col.college_department.college.code
+            
+                exam_ctr_check = ExaminationCenter.objects.filter(College=college_id).first()
+                if exam_ctr_check:
+
+                    exam_center_exam_map = ExaminationCenterExamMapping(exam_id=exam_id,exam_center=exam_ctr_check,created_by_id=request.user.id,status_id=ACTIVE_STATE)
+                    exam_center_exam_map.save()
+                else:
+                    exam_center = ExaminationCenter(College=college_id,name=college_name,code=college_code,created_by_id=request.user.id,status_id=ACTIVE_STATE)
+                    exam_center.save()
+
+                    exam_center_exam_map = ExaminationCenterExamMapping(exam_id=exam_id,exam_center=exam_center,created_by_id=request.user.id,status_id=ACTIVE_STATE)
+                    exam_center_exam_map.save()
+
+            return format_response(True,EXAM_APPROVE_SUCCESS_MSG,{},status_code=status.HTTP_201_CREATED,template_name="exam_list.html")
+          
+               
+        except RiverException as e:
+            logger.error(e,exc_info=True)
+            
+            return format_response(False," ".join(e.args),{},RIVER_ERROR_CODE,status_code=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,template_name='500.html')
+
+
+
+    
+    
+#================================================================================#
+#                         EXAM APPROVAL API END                                  #
+#================================================================================#
+
+
+#================================================================================#
+#                         EXAM DELETE API START                                  #
+#================================================================================#
+class DeleteExam(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+
+        if request.user and request.user.has_perm('util.delete_examination'):
+            return True  
+        raise PermissionDenied()
+
+class ExamDelete(ListAPIView):
+   permission_classes=[DeleteExam,]
+   def post(self,request):
+        
+        approved_by=request.user
+        updated_by = request.user
+        updated_on = timezone.now()        
+        try:
+            jsondata = request.data
+            exam_id=jsondata.get('exam_id')
+            text=jsondata.get('comments')
+            status_fetch=State.objects.filter(label=DELETE_STATE).first()
+            
+            next_status=State.objects.filter(id=DELETE_STATE).first()
+            exam=Examination.objects.filter(id=exam_id).first()
+            
+            # exam.river.status.approve(as_user=approved_by,next_state=next_status)
+            exam.comments=text
+            exam.updated_by=approved_by
+            exam.updated_on=updated_on
+            exam.status=next_status
+            exam.save()
+            exam_obj=Examination.objects.filter(id=exam_id).first()
+            
+            exam_serilizer = ExamApprovalSerializer(exam_obj,context={'approved_by':approved_by,"updated_on":updated_on,"text":text,"next_status":next_status})
+            print(exam_serilizer.data)
+
+
+            return format_response(True,"Exam deleted successfully",data={},status_code=status.HTTP_200_OK,template_name='exam.html')
+
+        except RiverException as e:
+            logger.error(e,exc_info=True)
+            error_msg = e.args[0]
+            return format_response(False,error_msg,{},VALIDATION_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='exam.html')
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='500.html')
+
+#================================================================================#
+#                         EXAM DELETE API END                                    #
+#================================================================================#       
+
+#================================================================================#
+#                               EXAM EDIT API START                             #
+#================================================================================# 
+class ExamEditlist(ListAPIView):
+    def get(self,request,pk):
+        try:
+            programme=Programme.objects.all()
+            scheme=SchemeMaster.objects.all()
+            semester=SemesterMaster.objects.all()
+            examobj=Examination.objects.filter(id=pk)
+            serializer_class =ExamEditSerializer(examobj,many=True)            
+            exam_type=ExaminationTypeMaster.objects.all()
+            exam_t=[]
+            for ex in exam_type:
+                exam_t.append({'id':ex.id,'name':ex.name})
+            quesntype=ExaminationQuestionPaperDeliveryMaster.objects.all()
+            quest=[]
+            for qs in quesntype:
+                quest.append({'id':qs.id,'name':qs.name})
+                                
+            year = timezone.now().year
+            date_list=[]
+            date_list.extend([year])  
+            exm_prg_sem = ExamProgrammeSemesterMapping.objects.filter(exam__in=examobj).all() 
+            
+            noti=ExaminationNotification.objects.filter(exam_prgm_sem__in=exm_prg_sem)
+            serilizer_data = ExamEditNotifSerializer(noti,many=True)
+           
+            return format_response(True,"Exam updated successfully",{'exam':serializer_class.data,'exam_type':exam_t,'quest':quest,'programme':programme,'semester':semester,'scheme':scheme,'datelist':date_list,'not_list':serilizer_data.data},status_code=status.HTTP_202_ACCEPTED,template_name='examedit_new.html')
+           
+        except Examination.DoesNotExist:
+            return format_response(False,CAMP_SCHEDULE_NOT_FOUND,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST)
+
+class Examedit(ListAPIView):
+    def post(self,request):
+        try:
+            updated_by = request.user
+            updated_on = timezone.now() 
+            # print(request.data)
+            id=request.data['primary_key']
+            purpose_list=request.data['purpose_list']
+          
+            exam = Examination.objects.filter(id=id).first()
+            exam_serializer = ExamAddSerializer(exam,data=request.data)
+            exam_serializer.is_valid(raise_exception=True) 
+            exam_data = exam_serializer.save(updated_by=updated_by,updated_on=updated_on,comments="Exam updated")
+            purpose_list_new = json.loads(purpose_list)
+            exam_date=ExaminationDate.objects.filter(exam=id).all()         
+            for date in exam_date:
+                purpose_id=date.purpose_id
+                purpose_id_list=list(filter(lambda x:int(x.get("purposeId"))==purpose_id,purpose_list_new))[0]
+                s = purpose_id_list.get("startDate")
+                date.purpose_id=purpose_id_list.get("purposeId")
+                startdate=datetime.strptime(s, "%Y-%m-%d").date()
+                date.start_date=startdate
+                e=purpose_id_list.get("endDate")
+                enddate=datetime.strptime(e, "%Y-%m-%d").date()
+                date.end_date=enddate
+                date.updated_by=updated_by
+                date.updated_on=updated_on
+                date.save()
+            
+           
+                  
+            exm_prgm_sem = ExamProgrammeSemesterMapping.objects.filter(exam=exam)
+            
+            # print(exm_prgm_sem)
+            notification =ExaminationNotification.objects.filter(exam_prgm_sem__in=exm_prgm_sem).first()
+        
+            date_list = request.data['notif_date']
+            
+            notif_date=datetime.strptime(date_list, "%Y-%m-%d").date()
+            notification.date = notif_date
+
+            uplod_date_list = request.data['attendance_upload_end_date']
+            uplod_date=datetime.strptime(uplod_date_list, "%Y-%m-%d").date()
+            notification.attendance_upload_end_date =uplod_date
+            
+            notification.title=request.data['notif_title']
+            notification.order_number= request.data['order_number']
+            
+            notification.updated_by=updated_by
+            notification.updated_on=updated_on
+            
+            notification.comments = "Updated"
+            if request.data["my_file"]:
+                notification_url =   request.data["my_file"]
+                encodedZip = base64.b64encode(notification_url.read())
+
+                pdf = encodedZip
+                notification.notification_url=pdf
+            notification.save()
+            
+            return format_response(True,"Exam updated successfully",{},status_code=status.HTTP_202_ACCEPTED,template_name='examedit_new.html')
+            
+        except Examination.DoesNotExist:
+            return format_response(False,CAMP_SCHEDULE_NOT_FOUND,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+            
+#================================================================================#
+#                               EXAM EDIT API END                                #
+#================================================================================#
+
+
+
+#================================================================================#
+#               EXAM TIME TABLE SHCEDULE API START                               #
+#================================================================================#
+
+class ExamSchedule(ListAPIView):
+    def get(self,request):
+        try:
+            staffbase=StaffBase.objects.filter(user=request.user).first()           
+            staffsection=StaffSection.objects.filter(staff=staffbase)
+            status_data = [ACTIVE_STATE]
+            subsection=[]
+            for  subsect in staffsection:
+                subsection.append(subsect.sub_section)
+                
+            subsectionprg=SubsectionProgramme.objects.filter(sub_section_id__in=subsection).order_by('-programme__title')
+
+            prgm=[]
+            for subsectprg in subsectionprg:
+                if subsectprg.programme not in prgm:
+                    prgm.append(subsectprg.programme)
+
+            prpg_sem = ProgrammeSemester.objects.filter(programme__in=prgm).all()
+            exam_prgm = ExamProgrammeSemesterMapping.objects.filter(programme_semester__in=prpg_sem,status__in=status_data).all()
+            
+            exam_list = []
+            for exm in exam_prgm:
+                exam_list.append({"exam_id":exm.exam.id,"exam_code":exm.exam.code,"exam_name":exm.exam.title})
+           
+            return format_response(True,EXAM_SCHLD_PAGE_LOAD_MSG,data=exam_list,status_code=status.HTTP_202_ACCEPTED,template_name='exam_schedule.html')
+
+
+        except Exception as e:
+           logger.error(e,exc_info=True)
+           return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self,request):
+        try:
+
+            jsondata = request.data
+            user = request.user
+            
+            exam_id = jsondata["exam_id"]
+
+            check_schdule = ExaminationSchedule.objects.filter(exam_id=exam_id,status__in=[ACTIVE_STATE,PENDING_STATE])
+            
+            if check_schdule:
+                return format_response(False,'Exam schedule already created',{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                schedule_list = jsondata["schedule_list"]
+                ca_last_date = jsondata["ca_last_date"]
+                prgm_sem_cors_list = []
+                exm_start_date =[]
+                exm_end_date = []
+                exm_start_time = []
+                exm_end_time = []
+                exm_typ_list = []
+                status_fetch=State.objects.filter(label='PENDING').first()
+                list(map(lambda z:prgm_sem_cors_list.append(ProgrammeCourseSemester.objects.get(id=z.get('prgm_course_sem_id'))),schedule_list))
+
+                list(map(lambda start_date:exm_start_date.append(start_date.get('start_date')),schedule_list))
+
+                list(map(lambda end_date:exm_end_date.append(end_date.get('end_date')),schedule_list))
+
+                list(map(lambda start_time:exm_start_time.append(start_time.get('start_time')),schedule_list))
+
+                list(map(lambda end_time:exm_end_time.append(end_time.get('end_time')),schedule_list))
+
+                list(map(lambda exm_typ:exm_typ_list.append(exm_typ.get('exam_type_id')),schedule_list))
+
+                schedule_data = [ExaminationSchedule(exam_id=exam_id,programme_semester_course=a,start_date=b,end_date=c,start_time=d,end_time=e,exam_type_id=f,time_display_name=d+"-"+e,created_by=user,comments="Exam Schedule created",status=status_fetch)for a,b,c,d,e,f in zip(prgm_sem_cors_list,exm_start_date,exm_end_date,exm_start_time,exm_end_time,exm_typ_list)]
+
+                objs = bulk_create_with_history(schedule_data, ExaminationSchedule, batch_size=500)
+                prgcour=ProgrammeCourseSemester.objects.filter(id=schedule_list[0].get('prgm_course_sem_id')).first()
+                dateobj=(datetime.strptime(ca_last_date,"%Y-%m-%d").replace(hour=23,minute=59,second=59,tzinfo=pytz.utc)).astimezone(pytz.timezone('Asia/Kolkata'))
+                exam_prgm = ExamProgrammeSemesterMapping.objects.filter(programme_semester_id=prgcour.programme_semester,status_id=ACTIVE_STATE,exam_id=exam_id).first()
+                exam_notification=ExaminationNotification.objects.filter(exam_prgm_sem=exam_prgm).first()
+                exam_notification.ca_mark_entry_last_date=dateobj
+                exam_notification.save()
+                return format_response(True,EXAM_SCHLD_ADD_SUCCESS_MSG,data={},status_code=status.HTTP_202_ACCEPTED,template_name='exam_schedule.html')
+        except Exception as e:
+           logger.error(e,exc_info=True)
+           return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#================================================================================#
+#               EXAM TIME TABLE SHCEDULE API END                                 #
+#================================================================================#
+
+#================================================================================#
+#               EXAM WISE PROGRAMME,SEM,SCHEME API START                         #
+#================================================================================#
+
+class ExamWisePrgmSem(ListAPIView):
+    def get(self,request):
+        try:
+            exam_id = request.GET.get("exam_id")
+            examregcheck(exam_id)
+            exm_date = ExaminationDate.objects.filter(exam_id=exam_id,purpose=EXAM_WITH_SUPR_FINE).first()
+            exm_prgm_sem = ExamProgrammeSemesterMapping.objects.filter(exam_id=exam_id).first()
+            serializer_data = ExamProgrammeSemesterMappingFetchSerializer(exm_prgm_sem)
+            return format_response(True,EXAM_WISE_PRGM_SEM,data={"exm":serializer_data.data,"exm_date":exm_date.end_date},status_code=status.HTTP_202_ACCEPTED,template_name='exam_schedule.html')
+
+        except Exception as e:
+           logger.error(e,exc_info=True)
+           return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#================================================================================#
+#               EXAM WISE PROGRAMME,SEM,SCHEME API END                           #
+#================================================================================#
+
+
+#================================================================================#
+#                     EXAM SCHEDULE LIST API START                               #
+#================================================================================#
+class ExamScheduleListApi(ListAPIView):
+
+    def get(self, request):
+        try:
+            # Return empty table + just enough for page to load fast
+            return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data={
+                    "exam_data": [],
+                    "schedule_status": [],
+                },
+                status_code=status.HTTP_200_OK,
+                template_name='exam_schedule_list.html'
+            )
+
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return format_response(
+                False, BAD_GATEWAY, {}, BAD_GATEWAY_ERROR_CODE,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def post(self, request):
+        try:
+            states = [ACTIVE_STATE, PENDING_STATE]
+
+            # Scope to this staff member's programmes
+            staffbase = StaffBase.objects.filter(user=request.user).first()
+            staffsection = StaffSection.objects.filter(staff=staffbase)
+            subsection = [subsect.sub_section for subsect in staffsection]
+            subsectionprg = SubsectionProgramme.objects.filter(
+                sub_section_id__in=subsection
+            )
+            prgm = list({sp.programme for sp in subsectionprg})
+            prpg_sem = ProgrammeSemester.objects.filter(programme__in=prgm)
+            prgm_cors = ProgrammeCourseSemester.objects.filter(
+                programme_semester__in=prpg_sem
+            )
+
+            queryset = ExaminationSchedule.objects.filter(
+                programme_semester_course__in=prgm_cors,
+                status_id__in=states
+            ).select_related(
+                'exam',
+                'programme_semester_course__programme_semester__programme',
+                'programme_semester_course__programme_semester__semester',
+                'status'
+            )
+
+            # Keyword search — user typed exam code in the text box
+            search_terms = request.data.get('search', [])
+            for query in search_terms:
+                if query:
+                    queryset = queryset.filter(
+                        Q(exam__code__icontains=query) |
+                        Q(exam__title__icontains=query)
+                    ).distinct()
+
+            # Guard: require at least one non-empty search term
+            if not any(t for t in search_terms if t):
+                return format_response(
+                    False,
+                    "Please type an examination code before searching.",
+                    {},
+                    BAD_GATEWAY_ERROR_CODE,
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    template_name='exam_schedule_list.html'
+                )
+
+            exam_dtls_list = []
+            for x in queryset:
+                exam_dtls_list.append({
+                    "examId":         x.exam.id,           # camelCase — matches JS exm.examId
+                    "examCode":       x.exam.code,         # matches JS exm.examCode
+                    "examName":       x.exam.title,        # matches JS exm.examName
+                    "prgmName":       x.programme_semester_course.programme_semester.programme.title,  # matches JS exm.prgmName
+                    "semName":        x.programme_semester_course.programme_semester.semester.title,   # matches JS exm.semName
+                    "scheduleStatus": x.status.label,      # matches JS exm.scheduleStatus
+                })
+
+            # deduplicate by examId so one exam doesn't show multiple rows
+            exam_data = list(unique_everseen(exam_dtls_list))
+
+            return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data={"schlData": exam_data},   # ← matches JS data.data.schlData
+                status_code=status.HTTP_200_OK,
+                template_name='exam_schedule_list.html'
+            )
+
+        except Exception as e:
+            logger.error(e, exc_info=True)
+            return format_response(
+                False, BAD_GATEWAY, {}, BAD_GATEWAY_ERROR_CODE,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+#================================================================================#
+#                     EXAM SCHEDULE LIST API END                                 #
+#================================================================================#
+
+
+#================================================================================#
+#                     EXAM SCHEDULE VIEW API START                               #
+#================================================================================#
+
+class TimeTableViewApi(ListAPIView):
+    def get(self,request,pk):
+        try:
+            
+            exam_obj=Examination.objects.filter(pk=pk).first()
+            exm_schld =ExaminationSchedule.objects.filter(exam=exam_obj.id,status__label__in=["ACTIVE","PENDING"])
+            schm_data = ExamProgrammeSemesterMapping.objects.filter(exam=exam_obj).first()
+            if exm_schld:
+                exam_name = exam_obj.title
+                exam_code = exam_obj.code
+                exam_id = exam_obj.id
+                exm_schld_serial=ExamScheduleSerializer(exm_schld,many=True)
+                
+                hist = ExaminationSchedule.history.filter(exam=exam_obj.id,status__label__in=["ACTIVE","PENDING"]).all()
+                
+                hist_serializer= ExaminationScheduleHistorySerializer(hist,many=True)
+                exam_notification=ExaminationNotification.objects.filter(exam_prgm_sem=schm_data).first()
+                ca_last_date=exam_notification.ca_mark_entry_last_date
+                format_date=ca_last_date.strftime("%d-%m-%Y")
+                return format_response(True,EXAM_SCHLD_FETCH_SUCCESS_MSG,data={"exam_details":exm_schld_serial.data,"exam_name":exam_name,"exam_code":exam_code,"state":"true","schm_data":schm_data.scheme.title,"hisDetails":hist_serializer.data,"exam_id":exam_id,'internal_mark_entry_date':format_date},status_code=status.HTTP_200_OK,template_name="exam.html")
+            else:
+                return format_response(True,EXAM_SCHLD_FETCH_SUCCESS_MSG,data={"state":"false"},status_code=status.HTTP_200_OK,template_name="exam.html")
+
+        except Examination.DoesNotExist:
+            return format_response(False,PRGM_NOT_FOUND_MSG,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_404_NOT_FOUND,template_name='404.html')
+            
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_400_BAD_REQUEST,template_name='500.html')
+
+
+
+#================================================================================#
+#                     EXAM SCHEDULE VIEW API END                                 #
+#================================================================================#
+
+
+#================================================================================#
+#                     EXAM SCHEDULE APPROVAL API START                           #
+#================================================================================#
+
+class ExamScheduleApprovalApi(ListAPIView):
+
+    def post(self,request):
+        try:
+
+            jsondata = request.data
+            approved_by=request.user
+            updated_on = timezone.now()
+            exam_id= jsondata['exam_id']
+            text=jsondata.get('comments')
+            satus=jsondata.get('next_status')
+            MSG = EXAM_SCHLD_APPROVE_SUCCESS_MSG
+            next_status=State.objects.filter(label=satus).first()
+            # exam=Examination.objects.filter(id=exam_id).first()
+            
+            schedule=ExaminationSchedule.objects.filter(exam_id=exam_id,status__label__in=["PENDING"]).all()
+        
+            for j in schedule:
+                j.comments=text
+                j.updated_by=approved_by
+                j.updated_on=updated_on
+                j.status=next_status       
+            bulk_update_with_history(schedule, ExaminationSchedule, ['comments','updated_by','updated_on','status'], batch_size=500)
+
+            if satus == "REVERT":
+               MSG = EXAM_SCHLD_REVERT_SUCCESS_MSG
+
+            return format_response(True,MSG,{},status_code=status.HTTP_201_CREATED,template_name="exam_list.html")
+          
+               
+        except RiverException as e:
+            logger.error(e,exc_info=True)
+            
+            return format_response(False," ".join(e.args),{},RIVER_ERROR_CODE,status_code=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,template_name='500.html')
+
+#For Delete
+
+class ExamScheduleDeleteApi(ListAPIView):
+
+    def post(self,request):
+        try:
+
+            jsondata = request.data
+            approved_by=request.user
+            updated_on = timezone.now()
+            exam_id= jsondata['exam_id']
+            text=jsondata.get('comments')
+            # satus=jsondata.get('next_status')
+
+            next_status=State.objects.filter(id=DELETE_STATE).first()
+            # exam=Examination.objects.filter(id=exam_id).first()
+            
+            schedule=ExaminationSchedule.objects.filter(exam_id=exam_id,status__label__in=["PENDING"]).all()
+        
+            for j in schedule:
+                j.comments=text
+                j.updated_by=approved_by
+                j.updated_on=updated_on
+                j.status=next_status       
+            bulk_update_with_history(schedule, ExaminationSchedule, ['comments','updated_by','updated_on','status'], batch_size=500)
+           
+
+            return format_response(True,EXAM_SCHLD_DELETE_SUCCESS_MSG,{},status_code=status.HTTP_201_CREATED,template_name="exam_list.html")
+          
+               
+        except RiverException as e:
+            logger.error(e,exc_info=True)
+            
+            return format_response(False," ".join(e.args),{},RIVER_ERROR_CODE,status_code=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,template_name='500.html')
+
+#================================================================================#
+#                     EXAM SCHEDULE APPROVAL API END                             #
+#================================================================================#
+
+
+#================================================================================#
+#                     EXAM SCHEDULE EDIT API START                               #
+#================================================================================#
+
+class ExamScheduleEditApi(ListAPIView):
+
+
+    def get(self,request,pk):
+            try:
+                exam_obj=Examination.objects.filter(pk=pk).first()
+                exm_schld =ExaminationSchedule.objects.filter(exam=exam_obj.id,status__label__in=["ACTIVE","PENDING"])
+                
+                serializer = ExamScheduleEditSerializer(exm_schld,many=True)
+
+                exm_date = ExaminationDate.objects.filter(exam=exam_obj,purpose=EXAM_WITH_PENALITY).first()
+                exam_code = exam_obj.code
+                exam_name = exam_obj.title
+                exam_id = exam_obj.id
+                exam_prg= ExamProgrammeSemesterMapping.objects.filter(exam=exam_obj).first()
+                exam_notification=ExaminationNotification.objects.filter(exam_prgm_sem=exam_prg).first()
+                ca_last_date=exam_notification.ca_mark_entry_last_date
+                format_date=ca_last_date.strftime("%Y-%m-%d")
+                return format_response(True,EXAM_SCHLD_FETCH_SUCCESS_MSG,data={"schedule_list":serializer.data,"penality":exm_date.end_date,"exam_code":exam_code,"exam_name":exam_name,"exam_id":exam_id,'internal_mark_entry_date':format_date},status_code=status.HTTP_200_OK,template_name="exam_schedule_edit.html")
+
+                
+                  
+            except RiverException as e:
+                logger.error(e,exc_info=True)
+                
+                return format_response(False," ".join(e.args),{},RIVER_ERROR_CODE,status_code=status.HTTP_403_FORBIDDEN)
+            except Exception as e:
+                logger.error(e,exc_info=True)
+                return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,template_name='500.html')
+class ExamUpdateApi(ListAPIView):
+    def post(self,request):
+        try:
+
+            jsondata = request.data
+            updated_by=request.user
+            updated_on = timezone.now()
+            schedule_list = jsondata["schedule_list"]
+            schdl_list = []
+            exam_id = jsondata["exam_id"]
+            ca_last_date = jsondata["ca_last_date"]
+            schedule=ExaminationSchedule.objects.filter(exam_id=exam_id).all()
+            
+
+            prgm_sem_cors_list = []
+            exm_start_date =[]
+            exm_end_date = []
+            exm_start_time = []
+            exm_end_time = []
+            exm_typ_list = []
+            status_fetch=State.objects.filter(label='PENDING').first()
+
+            list(map(lambda z:prgm_sem_cors_list.append(ProgrammeCourseSemester.objects.get(id=z.get('prgm_course_sem_id'))),schedule_list))
+
+            list(map(lambda start_date:exm_start_date.append(start_date.get('start_date')),schedule_list))
+
+            list(map(lambda end_date:exm_end_date.append(end_date.get('end_date')),schedule_list))
+
+            list(map(lambda start_time:exm_start_time.append(start_time.get('start_time')),schedule_list))
+
+            list(map(lambda end_time:exm_end_time.append(end_time.get('end_time')),schedule_list))
+
+            list(map(lambda exm_typ:exm_typ_list.append(exm_typ.get('exam_type_id')),schedule_list))
+
+            for sch,st_date,end_date,st_time,end_time,typ in zip(schedule,exm_start_date,exm_end_date,exm_start_time,exm_end_time,exm_typ_list):
+                
+                sch.start_date = st_date
+                sch.end_date = end_date
+                sch.start_time = st_time
+                sch.end_time = end_time
+                sch.exam_type_id = typ
+                sch.comments="Updated"
+                sch.updated_by=updated_by
+                sch.updated_on=updated_on
+            
+            bulk_update_with_history(schedule, ExaminationSchedule, ['start_date','end_date','start_time','end_time','exam_type','comments','updated_by','updated_on','status'], batch_size=500)
+            exam_prg= ExamProgrammeSemesterMapping.objects.filter(exam_id=exam_id).first()
+            exam_notification=ExaminationNotification.objects.filter(exam_prgm_sem=exam_prg).first()
+            dateobj=datetime.strptime(ca_last_date,"%Y-%m-%d").replace(hour=23,minute=59,second=59,tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Kolkata'))
+            exam_notification.ca_mark_entry_last_date=dateobj
+            exam_notification.save()
+
+            return format_response(True,EXAM_SCHLD_EDIT_SUCCESS_MSG,{},status_code=status.HTTP_201_CREATED,template_name="exam_list.html")
+          
+               
+        except RiverException as e:
+            logger.error(e,exc_info=True)
+            
+            return format_response(False," ".join(e.args),{},RIVER_ERROR_CODE,status_code=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,template_name='500.html')
+
+
+
+#================================================================================#
+#                     EXAM SCHEDULE EDIT API END                                 #
+#================================================================================#
+
+
+class SectionWiseResultView(ListAPIView):
+
+    def get(self,request):
+        try:
+            staffbase=StaffBase.objects.filter(user=request.user).first()           
+            staffsection=StaffSection.objects.filter(staff=staffbase)
+         
+            subsection=[]
+            for  subsect in staffsection:
+                subsection.append(subsect.sub_section)
+                
+            subsectionprg=SubsectionProgramme.objects.filter(sub_section_id__in=subsection).order_by('-programme__code')
+           
+            prgm_type=[]
+            prgm_grp=[]
+            prgm_class=[]
+            for subsectprg in subsectionprg:
+                if subsectprg.programme.programme_type not in prgm_type:
+                    prgm_type.append(subsectprg.programme.programme_type)
+                if subsectprg.programme.programme_group not in prgm_grp:
+                    prgm_grp.append(subsectprg.programme.programme_group)
+                if subsectprg.programme.programme_class not in prgm_class:
+                    prgm_class.append(subsectprg.programme.programme_class)
+
+            programmetypes = ProgrammeTypeMasterSerializers(prgm_type,many=True)
+            # programmegroups  = ProgrammeGroupMasterSerializers(prgm_grp,many=True)
+            # programmeclasss = ProgrammeClassMasterSerializers(prgm_class,many=True)
+
+            # prgm=[]
+            # for subsectprg in subsectionprg:
+            #     if subsectprg.programme not in prgm:
+            #         prgm.append(subsectprg.programme)
+
+            # prpg_sem = ProgrammeSemester.objects.filter(programme__in=prgm).all()
+           
+            # prgm_cors = ProgrammeCourseSemester.objects.filter(programme_semester__in=prpg_sem)
+            # schedule_status_data = [ACTIVE_STATE, PENDING_STATE]
+            # schld = ExaminationSchedule.objects.filter(programme_semester_course__in=prgm_cors,status__in=schedule_status_data).all().distinct().order_by('-start_date')
+            # exam_dtls_list = []
+
+            # for x in schld:
+            #     exam_dtls_list.append(
+            #         {
+            #             "exam_code":x.exam.code,
+            #             "exam_id":x.exam.id,
+            #             "prgm_name":x.programme_semester_course.programme_semester.programme.title,
+            #             "sem_name":x.programme_semester_course.programme_semester.semester.title,
+            #             "exam_name":x.exam.title,"schedule_status":x.status.label
+            #         }
+            #     )
+            # exam_data = list(unique_everseen(exam_dtls_list))
+            return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data={
+                    'programmetypes': programmetypes.data,
+                },
+                status_code=status.HTTP_202_ACCEPTED,
+                template_name='exam-result/section_result_view.html'
+            )
+        except Exception as e:
+            print(e)
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ExamWiseYearAndMonth(ListAPIView):
+    def post(self, request):
+        try:
+            exam_id = request.data["exam_id"]
+            exm_date = Examination.objects.filter(id=exam_id).first()
+            return format_response(True,EXAM_WISE_PRGM_SEM,data={"year_month": exm_date.year + ' ' + exm_date.month},status_code=status.HTTP_202_ACCEPTED,template_name='exam_schedule.html')
+        except Exception as e:
+           logger.error(e,exc_info=True)
+           return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PrgmwiseColleges(APIView):
+    def post(self,request):
+        try:
+            programme_id =request.data['programme']
+            sem_id = request.data['semester']
+            prgms = ProgrammeSemester.objects.filter(programme_id=programme_id, semester_id=sem_id).first()
+            prgm_data = HallticketProgrammeSemesterSerializer(prgms)
+            return format_response(True,COLLEGE_FETCH_SUCCESS_MSG,data={"prgm_list":prgm_data.data},status_code=status.HTTP_201_CREATED,template_name='exam.html')
+
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ExamWiseStudentsResultView(ListAPIView):
+
+    def post(self,request):
+        try:
+            exam_reg = ExamRegistration.objects.filter(
+                exam_id=request.data['exam_id'],
+                student_semester__colg_batch_prgm_sem__college_batch_prgm__college_programm__college_department__college_id=request.data['college_id']
+            ).distinct().order_by('student_semester__student_details__candidate_code')
+            stud_sem = []
+            for x in exam_reg:
+                stud_sem.append(StudentExamResultSerializer(x.student_semester).data)
+            return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data={"stud_sem":stud_sem},
+                status_code=status.HTTP_201_CREATED,
+                template_name='exam-result/section_result_view.html'
+            )
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ExamWiseStudentsResultDetailsView(ListAPIView):
+
+    def post(self,request):
+        try:
+            exam_reg = ExamRegistration.objects.filter(
+                exam_id=request.data['exam_id'],
+                student_semester_id=request.data['student_semester_id']
+            ).first()
+            student = StudentExamResultSerializer(exam_reg.student_semester).data
+            return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data={"stud_sem":student},
+                status_code=status.HTTP_201_CREATED,
+                template_name='exam-result/section_result_view.html'
+            )
+        except Exception as e:
+            logger.error(e,exc_info=True)
+            return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+#================================================================================#
+#                     EXTEND  DATE                                           #
+#================================================================================#
+class ExtendExamDate(ListAPIView):
+    
+    def post(self,request,pk):
+        exmid = pk
+        
+        exam_obj=Examination.objects.prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list').filter(pk=pk).first()
+        serialize_data=ExamSingleFtechSerializer(exam_obj)
+        exmprgsem = ExamProgrammeSemesterMapping.objects.filter(exam_id = pk).last()
+        exmnotif = ExaminationNotification.objects.filter(exam_prgm_sem_id = exmprgsem.id).last()
+        
+        data = {
+            "exam_details":serialize_data.data,
+            "enddate":exmnotif.date.strftime("%d-%m-%Y"),
+        }
+        return format_response(
+            True,
+            EXAM_SCHLD_FETCH_SUCCESS_MSG,
+            data=data,
+            status_code=status.HTTP_201_CREATED,
+            template_name='exam_list_new.html'
+        )
+
+class ExtendDateAttendance(ListAPIView):
+    def post(self,request):
+        examid = request.data.get('examid')
+        enddate = request.data.get('extdate')
+        
+        exmprgsem = ExamProgrammeSemesterMapping.objects.filter(exam_id = examid).last()
+
+        exmnotif = ExaminationNotification.objects.filter(exam_prgm_sem_id = exmprgsem.id).last()
+        
+        exmnotif.date = enddate
+        exmnotif.save()
+        
+        attendenceupload = AttendanceUpload.objects.filter(notification_id = exmnotif.id).all()
+        for attendenceup in attendenceupload:
+
+            attendenceup.end_date = enddate
+            attendenceup.status_id=PENDING_STATE
+            attendenceup.save()     
+        
+
+        return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data={},
+                status_code=status.HTTP_201_CREATED,
+                template_name='exam_list_new.html'
+            )
+
+class ExtendCaMarkDate(ListAPIView):
+    
+    def post(self,request,pk):
+        exmid = pk
+        
+        exam_obj=Examination.objects.prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list').filter(pk=pk).first()
+        serialize_data=ExamSingleFtechSerializer(exam_obj)
+        exmprgsem = ExamProgrammeSemesterMapping.objects.filter(exam_id = pk).last()
+        exmnotif = ExaminationNotification.objects.filter(exam_prgm_sem_id = exmprgsem.id).last()
+        if exmnotif.ca_mark_entry_last_date:
+            enddate = exmnotif.ca_mark_entry_last_date.strftime("%d-%m-%Y")
+            endateformat = exmnotif.ca_mark_entry_last_date.strftime("%Y-%m-%d")
+        else:
+            enddate = "NA"
+            endateformat = ""
+        data = {
+            "exam_details":serialize_data.data,
+            "enddate":enddate,
+            "endateformat":endateformat,
+        }
+        return format_response(
+            True,
+            EXAM_SCHLD_FETCH_SUCCESS_MSG,
+            data=data,
+            status_code=status.HTTP_201_CREATED,
+            template_name='exam_list_new.html'
+        )
+
+class ExtendCaMarkLastDate(ListAPIView):
+    def post(self,request):
+        examid = request.data.get('examid')
+        enddate = request.data.get('extdate')
+        dateobj=(datetime.strptime(enddate,"%Y-%m-%d")).replace(hour=15,minute=00,second=00,tzinfo=pytz.utc).astimezone(pytz.timezone('Asia/Kolkata'))
+        exmprgsem = ExamProgrammeSemesterMapping.objects.filter(exam_id = examid).last()
+
+        exmnotif = ExaminationNotification.objects.filter(exam_prgm_sem_id = exmprgsem.id).last()
+        exmnotif.ca_mark_entry_last_date = dateobj
+        exmnotif.save()
+        
+        
+
+        return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data={},
+                status_code=status.HTTP_201_CREATED,
+                template_name='exam_list_new.html'
+            )
+
+#================================================================================#
+#                     ADMISSION YEAR  ADD API START                              #
+#================================================================================#
+class AddAdmissionYear(ListAPIView):
+    
+    def post(self,request,pk):
+        # try:
+        # admnyear = request.data.getlist('admissionyear')
+        exmid = pk
+        # print(admnyear)
+
+        # ExaminationAdmissionYear
+        # exmadm = Examination.objects.filter(id = exmid).first()
+        # print(exmadm.id)
+        # prgcrssem = ProgrammeCourseSemester.objects.filter()
+        exam_obj=Examination.objects.prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list').filter(pk=pk).first()
+        serialize_data=ExamSingleFtechSerializer(exam_obj)
+        
+        admnyear = AdmissionYearMaster.objects.all()
+        adyear = []
+        for ad in admnyear:
+            adm = {
+                "id":ad.id,
+                "year":ad.admission_year,
+            }
+            adyear.append(adm)
+
+        data = {
+            "exam_details":serialize_data.data,
+            "admsnyr":adyear,
+            # "programme":exmadmid
+        }
+        
+        return format_response(
+            True,
+            EXAM_SCHLD_FETCH_SUCCESS_MSG,
+            data=data,
+            status_code=status.HTTP_201_CREATED,
+            template_name='exam-result/section_result_view.html'
+        )
+        # except Exception as e:
+        #     logger.error(e,exc_info=True)
+        #     return format_response(False,BAD_GATEWAY,{},BAD_GATEWAY_ERROR_CODE,status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+class UpdateAdmissionYear(ListAPIView):
+    
+    def post(self,request):
+        # ExaminationAdmissionYear
+        admnyear = request.data.getlist('admissionyear[]')
+        examid = request.data.get('examid')
+        
+        for i in admnyear:
+            
+            # exmadm = ExaminationAdmissionYear.objects.filter(exam_id = examid,admission_year_id = i).first()
+            # print(exmadm)
+            try:
+                exmadm = ExaminationAdmissionYear.objects.filter(exam_id = examid,admission_year_id = i).last()
+                if exmadm:
+                    message = "Admission year already added"
+                    year = "added"
+                    
+                else:
+                    exmcreate = ExaminationAdmissionYear.objects.create(exam_id = examid,admission_year_id = i, created_by = request.user)
+                    year = "sucess"
+                    message = "Admission year successfully added"
+                    
+
+            except:
+                exmcreate = ExaminationAdmissionYear.objects.create(exam_id = examid,admission_year_id = i, created_by = request.user)
+                year = "sucess"
+                message = "Admission year successfully added"
+                
+
+
+        
+        return format_response(
+            True,
+            EXAM_SCHLD_FETCH_SUCCESS_MSG,
+            data={"message":message,"year":year},
+            status_code=status.HTTP_201_CREATED,
+            template_name='exam-result/section_result_view.html'
+        )
+#================================================================================#
+#                     ADMISSION YEAR  ADD API END                                #
+#================================================================================#
+
+#================================================================================#
+#                     PROJECT REJECT API START                                   #
+#================================================================================#
+
+
+
+
+# API to load the rejection modal
+
+class RejectProjectUpload(ListAPIView):
+    
+    def post(self,request,pk):
+        try:
+            exmid = pk
+            exam_obj=Examination.objects.prefetch_related('admission_yr','prgm_sem','prgm_details','purpose_list').filter(pk=pk).first()
+            serialize_data=ExamSingleFtechSerializer(exam_obj)
+            exmprgsem = ExamProgrammeSemesterMapping.objects.filter(exam_id = pk).last()
+            exmnotif = ExaminationNotification.objects.filter(exam_prgm_sem_id = exmprgsem.id).last()
+            if exmnotif.ca_mark_entry_last_date:
+                enddate = exmnotif.ca_mark_entry_last_date.strftime("%d-%m-%Y")
+                endateformat = exmnotif.ca_mark_entry_last_date.strftime("%Y-%m-%d")
+            else:
+                enddate = "NA"
+                endateformat = ""
+            
+            today = date.today()
+
+            today_str = today.strftime("%Y-%m-%d")
+            startdate_format = today.strftime("%Y-%m-%d")
+
+            proj_rej_obj = ProjectRejection.objects.filter(exam = exam_obj).last()
+
+            flag=False
+
+            formatted_rejection_startdate = ""
+            if proj_rej_obj:
+                flag= True
+                rejection_start_date = proj_rej_obj.start_date
+                rejection_last_date = proj_rej_obj.end_date
+                formatted_rejection_date = rejection_last_date.strftime("%d-%m-%Y")
+                formatted_rejection_startdate = rejection_start_date.strftime("%d/%m/%Y")
+                
+            else:
+                formatted_rejection_date = "NA"
+                flag=False
+            
+            
+            data = {
+                "exam_details":serialize_data.data,
+                "enddate":enddate,
+                "endateformat":endateformat,
+                "start_date_default" : today_str,
+                "startdateformat" : startdate_format,
+                "rejection_last_date":formatted_rejection_date,
+                "flag":flag,
+                "start_date":formatted_rejection_startdate,
+
+            }
+
+            return format_response(
+                True,
+                EXAM_SCHLD_FETCH_SUCCESS_MSG,
+                data=data,
+                status_code=status.HTTP_201_CREATED,
+                template_name='exam_list_new.html'
+            )
+        except Exception as e:
+                # Log the exception
+                return JsonResponse({"error": "Internal Server Error"}, status=500)
+        
+
+
+# API to save the extended dates
+
+class ExtendProjectLastDate(ListAPIView):
+    def post(self,request):
+        try:
+
+            user = request.user
+            examid = request.data.get('examid')
+            exam = Examination.objects.filter(id = examid).first()
+            startdate = request.data.get('projstartdate')
+            start_date_new = datetime.strptime(startdate,"%Y-%m-%d").date()
+            enddate = request.data.get('projenddate')
+            end_date_new = datetime.strptime(enddate,"%Y-%m-%d").date()
+
+            proj_upload_rej = ProjectRejection(
+                exam =exam,
+                start_date=start_date_new,
+                end_date = end_date_new,
+                created_by = user,
+                updated_on = timezone.now(),
+
+
+            )
+            proj_upload_rej.save()
+        
+
+            return format_response(
+                    True,
+                    PROJ_UPLOAD_DATE_EXT,
+                    data={},
+                    status_code=status.HTTP_201_CREATED,
+                    template_name='exam_list_new.html'
+            )
+        except Exception as e:
+                return JsonResponse({"error": "Internal Server Error"}, status=500)
+
+
+
+#================================================================================#
+#                     PROJECT REJECT API END                                     #
+#================================================================================#

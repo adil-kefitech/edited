@@ -1,0 +1,942 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block additional_styles %}
+
+ <!-- BEGIN THEME GLOBAL STYLES -->
+ <link href="{% static 'plugins/flatpickr/flatpickr.css' %}" rel="stylesheet" type="text/css">
+ <link href="{% static 'plugins/noUiSlider/nouislider.min.css' %}" rel="stylesheet" type="text/css">
+ <!-- END THEME GLOBAL STYLES -->
+ <!--  BEGIN CUSTOM STYLE FILE  -->
+ <link href="{% static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+ <link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-step/jquery.steps.css' %}">
+ <link rel="stylesheet" type="text/css" href="{% static 'assets/css/forms/theme-checkbox-radio.css' %}">
+ <link href="{% static 'plugins/flatpickr/custom-flatpickr.css' %}" rel="stylesheet" type="text/css">
+ <link href="{% static 'plugins/noUiSlider/custom-nouiSlider.css' %}" rel="stylesheet" type="text/css">
+ <link href="{% static 'plugins/bootstrap-range-Slider/bootstrap-slider.css' %}" rel="stylesheet" type="text/css">
+
+ <style>
+     #dbl {
+         display: block;
+     }
+     #dblz {
+         display: none;
+     }
+     .space {
+         padding: 5px 0px;
+     }
+     .pointer {
+        cursor: pointer;
+    }
+ </style>
+ <!--  END CUSTOM STYLE FILE  -->
+ <style>
+     input[type=date]:required:invalid::-webkit-datetime-edit {
+         color: transparent;
+     }
+
+     input[type=date]:focus::-webkit-datetime-edit {
+         color: black !important;
+     }
+
+     input[type=month]:required:invalid::-webkit-datetime-edit {
+         color: transparent;
+     }
+
+     input[type=month]:focus::-webkit-datetime-edit {
+         color: black !important;
+     }
+ </style>
+ <!-- BEGIN PAGE LEVEL STYLES -->
+ <link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/datatables.css' %}">
+ <link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/dt-global_style.css' %}">
+ <!-- END PAGE LEVEL STYLES -->
+ <!-- BEGIN THEME GLOBAL STYLES -->
+ <link href="{% static 'plugins/animate/animate.css' %}" rel="stylesheet" type="text/css" />
+ <script src="{% static 'plugins/sweetalerts/promise-polyfill.js' %}"></script>
+ <link href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+ <link href="{% static 'plugins/sweetalerts/sweetalert.css' %}" rel="stylesheet" type="text/css" />
+ <link href="{% static 'assets/css/components/custom-sweetalert.css' %}" rel="stylesheet" type="text/css" />
+ <!-- END THEME GLOBAL STYLES -->
+ <link href="{% static 'assets/css/components/tabs-accordian/custom-tabs.css' %}" rel="stylesheet" type="text/css" />
+ <style>
+     .switch {
+         position: relative;
+         display: block;
+         vertical-align: top;
+         width: 100px;
+         height: 30px;
+         padding: 3px;
+         margin: 0;
+         background: linear-gradient(to bottom, #eeeeee, #FFFFFF 25px);
+         background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF 25px);
+         border-radius: 18px;
+         box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
+         cursor: pointer;
+         box-sizing: content-box;
+     }
+     .switch-input {
+         position: absolute;
+         top: 0;
+         left: 0;
+         opacity: 0;
+         box-sizing: content-box;
+     }
+     .switch-label {
+         position: relative;
+         display: block;
+         height: inherit;
+         font-size: 10px;
+         text-transform: uppercase;
+         background: #eceeef;
+         border-radius: inherit;
+         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.15);
+         box-sizing: content-box;
+     }
+     .switch-label:before,
+     .switch-label:after {
+         position: absolute;
+         top: 50%;
+         margin-top: -.5em;
+         line-height: 1;
+         -webkit-transition: inherit;
+         -moz-transition: inherit;
+         -o-transition: inherit;
+         transition: inherit;
+         box-sizing: content-box;
+     }
+     .switch-label:before {
+         content: attr(data-off);
+         right: 11px;
+         color: #FFFFFF;
+         text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+     }
+     .switch-label:after {
+         content: attr(data-on);
+         left: 11px;
+         color: #FFFFFF;
+         text-shadow: 0 1px rgba(0, 0, 0, 0.2);
+         opacity: 0;
+     }
+     .switch-input:checked~.switch-label {
+         background: #E1B42B;
+         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 3px rgba(0, 0, 0, 0.2);
+     }
+     .switch-input:checked~.switch-label:before {
+         opacity: 0;
+     }
+     .switch-input:checked~.switch-label:after {
+         opacity: 1;
+     }
+     .switch-handle {
+         position: absolute;
+         top: 4px;
+         left: 4px;
+         width: 28px;
+         height: 28px;
+         background: linear-gradient(to bottom, #FFFFFF 40%, #f0f0f0);
+         background-image: -webkit-linear-gradient(top, #FFFFFF 40%, #f0f0f0);
+         border-radius: 100%;
+         box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+     }
+     .switch-handle:before {
+         content: "";
+         position: absolute;
+         top: 50%;
+         left: 50%;
+         margin: -6px 0 0 -6px;
+         width: 12px;
+         height: 12px;
+         background: linear-gradient(to bottom, #eeeeee, #FFFFFF);
+         background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF);
+         border-radius: 6px;
+         box-shadow: inset 0 1px rgba(0, 0, 0, 0.02);
+     }
+     .switch-input:checked~.switch-handle {
+         left: 74px;
+         box-shadow: -1px 1px 5px rgba(0, 0, 0, 0.2);
+     }
+     /* Switch Left Right
+     ==========================*/
+     .switch-left-right .switch-label {
+         overflow: hidden;
+     }
+     .switch-left-right .switch-label:before,
+     .switch-left-right .switch-label:after {
+         width: 20px;
+         height: 20px;
+         top: 4px;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         padding: 11px 0 0 0;
+         text-indent: -37px;
+         border-radius: 20px;
+         box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.2), inset 0 0 3px rgba(0, 0, 0, 0.1);
+     }
+     .switch-left-right .switch-label:before {
+         background: #87CEEB;
+         text-align: left;
+         padding-left: 80px;
+     }
+     .switch-left-right .switch-label:after {
+         text-align: left;
+         text-indent: 9px;
+         background: #FF7F50;
+         left: -100px;
+         opacity: 1;
+         width: 100%;
+     }
+     .switch-left-right .switch-input:checked~.switch-label:before {
+         opacity: 1;
+         left: 100px;
+     }
+     .switch-left-right .switch-input:checked~.switch-label:after {
+         left: 0;
+     }
+     .switch-left-right .switch-input:checked~.switch-label {
+         background: inherit;
+     }
+ </style>
+{% endblock additional_styles %}
+
+{% block content %}
+<!--  BEGIN MAIN CONTAINER  -->
+<div class="main-container" id="container">
+    <!--  BEGIN MAIN CONTAINER  -->
+    
+     
+           
+                <div class="container">
+                    <div class="row layout-top-spacing" id="cancel-row">
+                        <div class="d-flex justify-content-between w-100">
+                            <div id="date_time_picker" class=" layout-top-spacing">
+                                <div class="seperator-header mx-3">
+                                    <h4 class="">Examination Schedule</h4>
+                                </div>
+                            </div>
+                            <div>
+                                <nav class="breadcrumb-one" aria-label="breadcrumb">
+                                    <ol class="breadcrumb bg-white mt-3">
+                                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page"><span>Examination Schedule</span>
+                                        </li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="pl-4">
+                                <div class="col mb-4" style="margin: auto;">
+                                    <div class="filterz">
+                                        <div class="row form-sec">
+                                            <!-- Text input — user types exam code e.g. 65521101 -->
+                                            <div class="col-12 mb-4 mt-1">
+                                                <div class="input-group">
+                                                    <input type="text"
+                                                           id="exm_code"
+                                                           class="form-control"
+                                                           placeholder="Type Examination Code (e.g. 65521101)"
+                                                           autocomplete="off">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12" style="text-align: right; padding: 0px;">
+                                            <button class="mt-1 btn btn-danger mb-1" onclick="reset_check()" type="reset">Reset</button>
+                                            <button class="mt-1 btn btn-primary mb-1" id="button1" type="button">Submit</button>
+                                        </div>
+                                    </div>
+                                    <div class="row layout-top-spacing" id="dbl">
+                                        <div class="col-xl-12 col-lg-12 col-sm-12 pl-0 pr-0">
+                                            <div class="widget-content br-6">
+                                                <div class="table-responsive mb-4 mt-3">
+                                                    <table id="style-3" class="table style-3" style="width:100%">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="text-center">Sl.No.</th>
+                                                                <th>Exam</th>
+                                                                <th>Code</th>
+                                                                <th>Programme</th>
+                                                                <th>Semester</th>
+                                                                <th>Status</th>
+                                                                <th class="text-center">Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="course_list">
+                                                            <tr class="text-center">
+                                                                <td valign="top" colspan="7" class="dataTables_empty">
+                                                                    Type an examination code and click Submit to search.
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ==================== BEGIN VIEW MODAL ==================== -->
+                        <div class="modal fade bd-example-modal-lgs" tabindex="-1" role="dialog"
+                        aria-labelledby="myLargeModalLabel" aria-hidden="true" id="modal_id">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary">
+                                    <div class="col row" style="text-align: center;">
+                                        <div class="col" style="padding: 1% 0px 1% 0px;">
+                                            <span style="margin: auto; font-size: 18px;">Exam Time Table</span>
+                                        </div>
+                                     </div>  
+                                </div>
+                                <div class="modal-body">
+                                        <h6>Schedule Details</h6>
+                                        <div class="table-responsive mb-1">
+                                            <table class="table">
+                                                <tbody>
+                                                    <tr>
+                                                        <td class="text-primary">Exam</td>
+                                                        <td id="exam_name"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-primary">Exam Code</td>
+                                                        <td id="exam_code_name"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-primary">Programme</td>
+                                                        <td id="prgm"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-primary">Scheme</td>
+                                                        <td id="schmData"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-primary">Semester</td>
+                                                        <td id="sem"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-primary">Last date for submission of CA Marks</td>
+                                                        <td id="ca_date_tr"></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    <h6>Exam Schedule</h6>
+                                    <div class="table-responsive mb-1">
+                                        <table class="table schedule_timetable" id="schedule_timetable">
+                                        </table>
+                                    </div>
+
+                                    <div class="col-12 mt-3" id="created_by">
+                                        <p style="float: right;">Created By :  &nbsp;|&nbsp; Created On : </p>
+                                    </div><br><hr>
+
+                                    <h6>History</h6>
+                                    <div class="table-responsive mb-4">
+                                        <table id="zero-configss" class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">Sl.No.</th>
+                                                    <th>Updated By</th>
+                                                    <th>Designation</th>
+                                                    <th>Updated On</th>
+                                                    <th>Comments</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="hist_data"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!-- CHANGED: Added Print button alongside Close -->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" id="print_schedule_btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                            class="feather feather-printer">
+                                            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                            <rect x="6" y="14" width="12" height="8"></rect>
+                                        </svg>
+                                        &nbsp;Print
+                                    </button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ==================== END VIEW MODAL ==================== -->
+
+
+                    <!-- ==================== BEGIN APPROVAL MODAL ==================== -->
+                    <div class="modal fade bd-example-modal-lgs-approval" tabindex="-1" role="dialog"
+                    aria-labelledby="myLargeModalLabel" aria-hidden="true" id="modal-id-approval">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary">
+                                <div class="col row" style="text-align: center;">
+                                    <div class="col" style="padding: 1% 0px 1% 0px;">
+                                        <span style="margin: auto; font-size: 18px;">Exam Time Table</span>
+                                    </div>
+                                 </div>  
+                            </div>
+                            <div class="modal-body">
+                                    <h6>Schedule Details</h6>
+                                    <div class="table-responsive mb-1">
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td class="text-primary">Exam</td>
+                                                    <td id="exam_name_approval"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-primary">Exam Code</td>
+                                                    <td id="exam_code_name_approval"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-primary">Programme</td>
+                                                    <td id="prgm_approval"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-primary">Scheme</td>
+                                                    <td id="schmData_approval"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-primary">Last date for submission of CA Marks</td>
+                                                    <td id="ca_date_approve_tr"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                <h6>Exam Schedule</h6>
+                                <div class="table-responsive mb-1">
+                                    <table class="table schedule_timetable_approval" id="schedule_timetable_approval">
+                                    </table>
+                                </div>
+
+                                <div class="col-12 mt-3" id="created_by_approval">
+                                    <p style="float: right;">Created By :  &nbsp;|&nbsp; Created On : </p>
+                                </div><br><hr>
+
+                                <h6>History</h6>
+                                <div class="table-responsive mb-4">
+                                    <table id="zero-configss" class="table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">Sl.No.</th>
+                                                <th>Updated By</th>
+                                                <th>Designation</th>
+                                                <th>Updated On</th>
+                                                <th>Comments</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="hist_data_approval"></tbody>
+                                    </table>
+                                </div>
+                                <div class="clipboard">
+                                    <label><code>Comments</code></label>
+                                    <textarea class="form-control" id="comment" rows="4" placeholder=""></textarea>
+                                    <div class="col-12" style="text-align: center; margin-top: 10px">
+                                        <input class="input-text" id="exmid" type="text" hidden name="exmid" value="{{exmid}}">
+                                        <button type="button" class="mt-2 mb-3 btn btn-danger revert_button" id="revert_button">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="feather feather-alert-triangle">
+                                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                                <line x1="12" y1="9" x2="12" y2="13" />
+                                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                                            </svg>
+                                            &nbsp;Revert
+                                        </button>
+                                        <button type="button" class="mt-2 mb-3 btn btn-success approve_button" id="approve_button">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                                class="feather feather-check-circle">
+                                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                                <polyline points="22 4 12 14.01 9 11.01" />
+                                            </svg>
+                                            &nbsp;Verify and Forward
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ==================== END APPROVAL MODAL ==================== -->
+
+                    </div>
+                </div>
+
+    <!-- END MAIN CONTAINER -->
+</div>
+<!-- END MAIN CONTAINER -->
+
+{% endblock content %}
+
+{% block head %}
+
+<script src="{% static 'plugins/highlight/highlight.pack.js' %}"></script>
+    <script src="{% static 'assets/js/custom.js' %}"></script>
+    <script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+    <script src="{% static 'plugins/noUiSlider/nouislider.min.js' %}"></script>
+    <script src="{% static 'plugins/noUiSlider/custom-nouiSlider.js' %}"></script>
+    <script src="{% static 'plugins/bootstrap-range-Slider/bootstrap-rangeSlider.js' %}"></script>
+
+    <script>
+        function check() {
+            var x = document.getElementById("dbl");
+            x.style.display = "flex";
+        }
+        function checkz() {
+            var z = document.getElementById("dblz");
+            z.style.display = "block";
+        }
+    </script>
+
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+    </script>
+
+<script src="{% static 'plugins/table/datatable/datatables.js' %}"></script>
+<script>
+    c3 = $('#style-3').DataTable({
+        "oLanguage": {
+            "oPaginate": {
+                "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>',
+                "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>'
+            },
+            "sInfo": "Showing page _PAGE_ of _PAGES_",
+            "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            "sSearchPlaceholder": "Search...",
+            "sLengthMenu": "Results :  _MENU_",
+        },
+        "stripeClasses": [],
+        "lengthMenu": [5, 10, 20, 50],
+        "pageLength": 5
+    });
+
+    multiCheck(c3);
+</script>
+
+    <script src="{% static 'plugins/sweetalerts/sweetalert2.min.js' %}"></script>
+    <script src="{% static 'plugins/sweetalerts/custom-sweetalert.js' %}"></script>
+
+<!-- Submit handler -->
+<script>
+    $('#button1').click(function(e){
+        e.preventDefault();
+
+        var exam_code = $.trim($('#exm_code').val());
+
+        if (exam_code === '') {
+            swal("No input", "Please type an examination code before searching.", "warning");
+            return;
+        }
+
+        var token = '{{csrf_token}}';
+        var search_list = [exam_code];
+
+        blockUI();
+        fetch("{% url 'exam-schedule-list' %}", {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                "X-CSRFToken": token
+            },
+            body: JSON.stringify({ "search": search_list })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            unblockUI();
+
+            if (data.data.schlData && data.data.schlData.length !== 0) {
+
+                $("#course_list").empty();
+                var num = 0;
+
+                data.data.schlData.forEach(function(exm) {
+                    var exm_id = exm.examId;
+
+                    var time_table_url = "{% url 'exam-schedule-view' 123 %}";
+                    time_table_url = time_table_url.replace('123', exm_id);
+
+                    var bg, dt;
+
+                    if (exm.scheduleStatus === "ACTIVE") {
+                        bg = "success";
+                        dt = '<td class="text-center"><div class="dropdown custom-dropdown"><a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink5" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></a><div class="dropdown-menu widget-content" aria-labelledby="dropdownMenuLink5" style="will-change: transform;">{% if perms.util.view_examination %}<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#modal_id" data-url="' + time_table_url + '">View</a>{% endif %}</div></div></td>';
+                    }
+
+                    if (exm.scheduleStatus === "PENDING") {
+                        bg = "warning";
+                        dt = '<td class="text-center"><div class="dropdown custom-dropdown"><a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink5" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></a><div class="dropdown-menu widget-content" aria-labelledby="dropdownMenuLink5" style="will-change: transform;">{% if perms.util.view_examination %}<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#modal_id" data-url="' + time_table_url + '">View</a>{% endif %}{% if perms.util.change_examination %}<a class="dropdown-item" href="">Edit</a>{% endif %}{% if perms.util.approve_examination %}<a class="dropdown-item" href="javascript:void(0);" data-target="#modal-id-approval" data-toggle="modal" data-url="' + time_table_url + '">Approve</a>{% endif %}{% if perms.util.delete_examination %}<a class="dropdown-item delete_button" href="javascript:void(0);" data-value="' + exm_id + '" id="delete_button">Delete</a>{% endif %}</div></div></td>';
+                    }
+
+                    num = num + 1;
+                    $("#course_list").append(
+                        '<tr>' +
+                        '<td class="text-center">' + num + '</td>' +
+                        '<td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="' + time_table_url + '" class="pointer">' + exm.examName + '</td>' +
+                        '<td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="' + time_table_url + '" class="pointer">' + exm.examCode + '</td>' +
+                        '<td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="' + time_table_url + '" class="pointer">' + exm.prgmName + '</td>' +
+                        '<td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="' + time_table_url + '" class="pointer">' + exm.semName + '</td>' +
+                        '<td><div style="display: inline-flex;"><div class="t-dot bg-' + bg + ' mt-1"></div>&nbsp;&nbsp;' + exm.scheduleStatus + '</div></td>' +
+                        dt +
+                        '</tr>'
+                    );
+                });
+
+            } else {
+                $("#course_list").html('<tr class="text-center"><td valign="top" colspan="7" class="dataTables_empty">No data available in table</td></tr>');
+            }
+        });
+    });
+
+    // Enter key triggers submit
+    $('#exm_code').on('keypress', function(e) {
+        if (e.which === 13) { $('#button1').click(); }
+    });
+</script>
+
+<!-- View modal data loader -->
+<script>
+$('#modal_id').on('shown.bs.modal', function (event) {
+    var url = $(event.relatedTarget).data("url");
+    var res = jQuery.ajax({
+        type: "GET",
+        url: url,
+        dataType: "json",
+        success: renderlist
+    });
+    function renderlist(res) {
+        $("#exam_name").html(res.data.examName);
+        $("#exam_code_name").html(res.data.examCode);
+        $("#schmData").html(res.data.schmData);
+        $("#prgm").html(res.data.examDetails[0].prgm);
+        $("#sem").html(res.data.examDetails[0].sem);
+        $("#ca_date_tr").html(res.data.internalMarkEntryDate);
+        
+
+        if (res.data.state == "true") {
+            $("#schedule_timetable").empty();
+            $("#schedule_timetable").append('<thead><tr><th style="width:170px;">Course</th><th>Start Date</th><th>End Date</th><th>Start Time</th><th>End Time</th><th>Exam Type</th></tr></thead>');
+
+            res.data.examDetails.forEach(function (schedule) {
+                var start_time = schedule.startTime;
+                var timeSplit1 = start_time.split(':');
+                var hours = timeSplit1[0], minutes = timeSplit1[1], meridian;
+                if (hours > 12) { meridian = 'PM'; hours -= 12; }
+                else if (hours < 12) { meridian = 'AM'; if (hours == 0) hours = 12; }
+                else { meridian = 'PM'; }
+                var final_start_time = hours + ':' + minutes + ' ' + meridian;
+
+                var end_time = schedule.endTime;
+                var timeSplit2 = end_time.split(':');
+                hours = timeSplit2[0]; minutes = timeSplit2[1];
+                if (hours > 12) { meridian = 'PM'; hours -= 12; }
+                else if (hours < 12) { meridian = 'AM'; if (hours == 0) hours = 12; }
+                else { meridian = 'PM'; }
+                var final_end_time = hours + ':' + minutes + ' ' + meridian;
+
+                $("#schedule_timetable").append(
+                    '<tr><td data-course-code="' + schedule.courseCode + '">' + schedule.course + '</td><td>' + schedule.startDate +
+                    '</td><td>' + schedule.endDate + '</td><td>' + final_start_time +
+                    '</td><td>' + final_end_time + '</td><td>' + schedule.courseExamType + '</td></tr>'
+                );
+            });
+        } else {
+            $("#time-table_modal_id").modal('hide');
+            $("#no-time-table_modal_id").modal("show");
+        }
+
+        $("#hist_data").empty();
+        var temp_hist = [];
+        var hist_length = res.data.hisDetails.length;
+        for (var h = 0; h < hist_length; ++h) {
+            var upd_on = res.data.hisDetails[h].updatedOn;
+            if (upd_on == null) upd_on = 'NA';
+            temp_hist.push({
+                "user": res.data.hisDetails[h].updatedBy,
+                "desig": res.data.hisDetails[h].designation[0].name,
+                "time": upd_on,
+                "commt": res.data.hisDetails[h].comments
+            });
+        }
+        temp_hist.sort(function(a, b) {
+            return new Date(a.time).getTime() > new Date(b.time).getTime() ? 1 : -1;
+        });
+        const uniq = new Set(temp_hist.map(e => JSON.stringify(e)));
+        const resd = Array.from(uniq).map(e => JSON.parse(e));
+        for (var hist = 0; hist < resd.length; ++hist) {
+            $("#hist_data").append(
+                '<tr><td class="text-center">' + (hist + 1) +
+                '</td><td style="text-transform:capitalize;">' + resd[hist].user +
+                '</td><td>' + resd[hist].desig +
+                '</td><td>' + resd[hist].time +
+                '</td><td>' + resd[hist].commt + '</td></tr>'
+            );
+        }
+        $("#created_by").html(
+            '<p style="float: right; text-transform:capitalize">Created By :' +
+            res.data.hisDetails[0].createdBy + '&nbsp; | &nbsp; Created On : ' +
+            res.data.hisDetails[0].createdOn + '</p>'
+        );
+    }
+})
+</script>
+
+<!-- Approval modal data loader -->
+<script>
+$('#modal-id-approval').on('shown.bs.modal', function (event) {
+    var url = $(event.relatedTarget).data("url");
+    var res = jQuery.ajax({
+        type: "GET",
+        url: url,
+        dataType: "json",
+        success: renderlist
+    });
+    function renderlist(res) {
+        document.getElementById("exmid").value = res.data.examId;
+        $("#exam_name_approval").html(res.data.examName);
+        $("#exam_code_name_approval").html(res.data.examCode);
+        $("#schmData_approval").html(res.data.schmData);
+        $("#prgm_approval").html(res.data.examDetails[0].prgm);
+        $("#sem_approval").html(res.data.examDetails[0].sem);
+        $("#ca_date_approve_tr").html(res.data.internalMarkEntryDate);
+
+        if (res.data.state == "true") {
+            $("#schedule_timetable_approval").empty();
+            $("#schedule_timetable_approval").append('<thead><tr><th style="width:170px;">Course</th><th>Start Date</th><th>End Date</th><th>Start Time</th><th>End Time</th><th>Exam Type</th></tr></thead>');
+
+            res.data.examDetails.forEach(function (schedule) {
+                var start_time = schedule.startTime;
+                var timeSplit1 = start_time.split(':');
+                var hours = timeSplit1[0], minutes = timeSplit1[1], meridian;
+                if (hours > 12) { meridian = 'PM'; hours -= 12; }
+                else if (hours < 12) { meridian = 'AM'; if (hours == 0) hours = 12; }
+                else { meridian = 'PM'; }
+                var final_start_time = hours + ':' + minutes + ' ' + meridian;
+
+                var end_time = schedule.endTime;
+                var timeSplit2 = end_time.split(':');
+                hours = timeSplit2[0]; minutes = timeSplit2[1];
+                if (hours > 12) { meridian = 'PM'; hours -= 12; }
+                else if (hours < 12) { meridian = 'AM'; if (hours == 0) hours = 12; }
+                else { meridian = 'PM'; }
+                var final_end_time = hours + ':' + minutes + ' ' + meridian;
+
+                $("#schedule_timetable_approval").append(
+                    '<tr><td>' + schedule.course + '</td><td>' + schedule.startDate +
+                    '</td><td>' + schedule.endDate + '</td><td>' + final_start_time +
+                    '</td><td>' + final_end_time + '</td><td>' + schedule.courseExamType + '</td></tr>'
+                );
+            });
+        }
+
+        $("#hist_data_approval").empty();
+        var temp_hist = [];
+        var hist_length = res.data.hisDetails.length;
+        for (var h = 0; h < hist_length; ++h) {
+            var upd_on = res.data.hisDetails[h].updatedOn;
+            if (upd_on == null) upd_on = 'NA';
+            temp_hist.push({
+                "user": res.data.hisDetails[h].updatedBy,
+                "desig": res.data.hisDetails[h].designation[0].name,
+                "time": upd_on,
+                "commt": res.data.hisDetails[h].comments
+            });
+        }
+        temp_hist.sort(function(a, b) {
+            return new Date(a.time).getTime() > new Date(b.time).getTime() ? 1 : -1;
+        });
+        const uniq = new Set(temp_hist.map(e => JSON.stringify(e)));
+        const resd = Array.from(uniq).map(e => JSON.parse(e));
+        for (var hist = 0; hist < resd.length; ++hist) {
+            $("#hist_data_approval").append(
+                '<tr><td class="text-center">' + (hist + 1) +
+                '</td><td style="text-transform:capitalize;">' + resd[hist].user +
+                '</td><td>' + resd[hist].desig +
+                '</td><td>' + resd[hist].time +
+                '</td><td>' + resd[hist].commt + '</td></tr>'
+            );
+        }
+        $("#created_by_approval").html(
+            '<p style="float: right; text-transform:capitalize">Created By :' +
+            res.data.hisDetails[0].createdBy + '&nbsp; | &nbsp; Created On : ' +
+            res.data.hisDetails[0].createdOn + '</p>'
+        );
+    }
+})
+</script>
+
+<!-- Approve -->
+<script>
+    $(document).ready(function () {
+        $(".approve_button").click(function () {
+            var token = '{{csrf_token}}';
+            var exam_id = $("#exmid").val();
+            var comment = $("#comment").val();
+            var sate = "ACTIVE";
+            blockUI();
+            fetch("{% url 'exam-schedule-approval' %}", {
+                method: 'post',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', "X-CSRFToken": token },
+                body: JSON.stringify({ "exam_id": exam_id, "comments": comment, "next_status": sate })
+            }).then(function(res) { return res.json(); })
+            .then(function(data) {
+                unblockUI();
+                if (data.success == true) {
+                    swal({ title: 'Done!', text: data.message, type: 'success', padding: '2em' }).then(() => { location.reload(); });
+                } else {
+                    Swal({ "title": "Oops!", type: 'error', "text": data.message, padding: '2em' });
+                }
+            });
+        });
+    });
+</script>
+
+<!-- Revert -->
+<script>
+    $(document).ready(function () {
+        $(".revert_button").click(function () {
+            var token = '{{csrf_token}}';
+            var exam_id = $("#exmid").val();
+            var comment = $("#comment").val();
+            var sate = "REVERT";
+            blockUI();
+            fetch("{% url 'exam-schedule-approval' %}", {
+                method: 'post',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', "X-CSRFToken": token },
+                body: JSON.stringify({ "exam_id": exam_id, "comments": comment, "next_status": sate })
+            }).then(function(res) { return res.json(); })
+            .then(function(data) {
+                unblockUI();
+                if (data.success == true) {
+                    swal({ title: 'Done!', text: data.message, type: 'success', padding: '2em' }).then(() => { location.reload(); });
+                } else {
+                    Swal({ "title": "Oops!", type: 'error', "text": data.message, padding: '2em' });
+                }
+            });
+        });
+    });
+</script>
+
+<!-- Delete -->
+<script>
+    $(document).on('click', "a.delete_button", function(){
+        var token = '{{csrf_token}}';
+        var cal_id = $(this).attr('data-value');
+        swal({
+            title: 'Are you sure?',
+            text: "Enter the reason for rejection",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            input: 'text',
+            padding: '2em',
+            inputValidator: (value) => { return !value && 'You need to write something!'; }
+        }).then(function(result) {
+            if (result.value) {
+                var comment = result.value;
+                blockUI();
+                fetch("{% url 'exam-schedule-delete' %}", {
+                    method: 'post',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', "X-CSRFToken": token },
+                    body: JSON.stringify({ "exam_id": cal_id, "comments": comment })
+                }).then(function(res) { return res.json(); })
+                .then(function(data) {
+                    unblockUI();
+                    if (data.success == true) {
+                        swal({ title: 'Done!', text: data.message, type: 'success', padding: '2em' }).then(() => { location.reload(); });
+                    } else {
+                        Swal({ "title": "Oops!", type: 'error', "text": data.message, padding: '2em' });
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<!-- Reset -->
+<script>
+    function reset_check() {
+        $('#exm_code').val('');
+        $('#course_list').html('<tr class="text-center"><td valign="top" colspan="7" class="dataTables_empty">Type an examination code and click Submit to search.</td></tr>');
+    }
+</script>
+<!-- Print button handler -->
+<script>
+    $('#print_schedule_btn').click(function () {
+        var examName  = $('#exam_name').text().trim();
+        var examCode  = $('#exam_code_name').text().trim();
+        var programme = $('#prgm').text().trim();
+        var scheme    = $('#schmData').text().trim();
+        var semester  = $('#sem').text().trim();
+
+        var rows = '';
+        var sl = 1;
+        // Modal has: Course | Start Date | End Date | Start Time | End Time | Exam Type (6 cells)
+        // Print needs: Sl.No | Course Code | Course | Date | Start Time | End Time (6 columns)
+        $('#schedule_timetable tr').each(function () {
+            var cells = $(this).find('td');
+            if (cells.length >= 6) {
+                rows += '<tr>' +
+                    '<td>' + sl++ + '</td>' +
+                    '<td>' + $(cells[0]).data('course-code') + '</td>' +  // Course Code
+                    '<td>' + $(cells[0]).text() + '</td>' +  // Course name
+                    '<td>' + $(cells[1]).text() + '</td>' +  // Start Date
+                    '<td>' + $(cells[3]).text() + '</td>' +  // Start Time
+                    '<td>' + $(cells[4]).text() + '</td>' +  // End Time
+                    '</tr>';
+            }
+        });
+
+        var printContent =
+            '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+            '<title>Print Exam Schedule</title>' +
+            '<style>' +
+            'body { font-family: Arial, sans-serif; font-size: 14px; margin: 30px; color: #000; }' +
+            'h1 { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; }' +
+            '.details { margin-bottom: 18px; }' +
+            '.details p { margin: 4px 0; font-size: 14px; }' +
+            '.details p span.label { font-weight: bold; display: inline-block; width: 120px; }' +
+            'h2 { font-size: 15px; font-weight: bold; margin: 18px 0 6px 0; border-bottom: 1px solid #000; padding-bottom: 3px; }' +
+            'table { width: 100%; border-collapse: collapse; font-size: 13px; }' +
+            'th { border: 1px solid #999; padding: 6px 8px; text-align: left; background: #f5f5f5; font-weight: bold; }' +
+            'td { border: 1px solid #999; padding: 5px 8px; vertical-align: top; }' +
+            '@media print { @page { size: A4; margin: 15mm; } }' +
+            '</style></head><body>' +
+            '<h1>Timetable</h1>' +
+            '<div class="details">' +
+            '<p><span class="label">Programme</span>: ' + programme + '</p>' +
+            '<p><span class="label">Exam Name</span>: ' + examName + '</p>' +
+            '<p><span class="label">Exam Code</span>: ' + examCode + '</p>' +
+            '<p><span class="label">Semester</span>: ' + semester + '</p>' +
+            '<p><span class="label">Scheme</span>: ' + scheme + '</p>' +
+            '</div>' +
+            '<h2>Exam Schedule</h2>' +
+            '<table>' +
+            '<thead><tr><th>Sl.No.</th><th>Course Code</th><th>Course</th><th>Date</th><th>Start Time</th><th>End Time</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody>' +
+            '</table>' +
+            '</body></html>';
+
+        var printWin = window.open('', '_blank', 'width=960,height=700');
+        printWin.document.write(printContent);
+        printWin.document.close();
+        printWin.focus();
+        setTimeout(function () { printWin.print(); }, 500);
+    });
+</script>
+
+{% endblock head %}

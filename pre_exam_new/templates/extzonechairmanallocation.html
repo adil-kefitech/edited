@@ -1,0 +1,546 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block additional_styles %}
+
+    <style>
+       
+        #con_data {
+            display: none;
+        }
+        #dbl1 {
+			display:none;
+		}
+        #dbl2 {
+			display:none;
+		}
+        #dblnext {
+			display:none;
+		}
+        .space {
+            padding: 5px 0px;
+        }
+        .foc {
+            top: -15px !important; 
+            font-size: 14px !important;
+            transform: translateY(0) !important;
+            left: 15px !important;
+            opacity: 1 !important;
+            color: #8f12a5 !important;
+        }
+        .foci {
+            border-bottom: 2px solid #8c12a2 !important;
+        }
+        #Yes_ {
+			display:none;
+		}
+        #No_ {
+			display:none;
+		}
+    </style>
+    <style>
+        #bundleCode {
+            display: none;
+        }
+    </style>
+    <!--  END CUSTOM STYLE FILE  -->
+    <!-- <style>
+        input[type=date]:required:invalid::-webkit-datetime-edit {
+            color: transparent;
+        }
+
+        input[type=date]:focus::-webkit-datetime-edit {
+            color: black !important;
+        }
+
+        input[type=month]:required:invalid::-webkit-datetime-edit {
+            color: transparent;
+        }
+
+        input[type=month]:focus::-webkit-datetime-edit {
+            color: black !important;
+        }
+    </style> -->
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/dt-global_style.css' %}">
+    <!-- END PAGE LEVEL STYLES -->
+    <!-- BEGIN THEME GLOBAL STYLES -->
+    <link href="{% static 'plugins/animate/animate.css' %}" rel="stylesheet" type="text/css" />
+    <script src="{% static 'plugins/sweetalerts/promise-polyfill.js' %}"></script>
+    <link href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'plugins/sweetalerts/sweetalert.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/components/custom-sweetalert.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END THEME GLOBAL STYLES -->
+    <!-- SweetAlert CSS -->
+    <link rel="stylesheet" href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- Include SweetAlert JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <!-- jQuery (if used) -->
+   
+    {% endblock %}
+    {% block content %}
+
+        <!--  BEGIN CONTENT AREA  -->
+        <div id="content" class="main-content">
+            <div class="container">
+                <div class="container">
+                    <div class="row layout-top-spacing" id="cancel-row">
+                        <div class="d-flex justify-content-between w-100">
+                            <div id="date_time_picker" class=" layout-top-spacing">
+                                <div class="seperator-header mx-3">
+                                    <h4 class="">Zonal Chairman Allocation</h4>
+                                </div>
+                            </div>
+                            <div>
+                                <nav class="breadcrumb-one" aria-label="breadcrumb">
+                                    <ol class="breadcrumb bg-white mt-3">
+                                        <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page"><span>Zonal Chairman Allocation</span>
+                                        </li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="pl-4">
+                                <div class="col-12 mb-4" style="margin: auto;">
+                                    <div class="filterz" id="filterz">
+                                        <div class="row form-sec">
+                                            <div class="col-4 mb-4 mt-2">
+                                                <div class="select">
+                                                    <select class="select-text" id="cord" required>
+                                                        <option value="" disabled selected></option>
+                                                        {% for user_id in data.userobj%}
+                                                        <option value="{{user_id.id}}">{{user_id.name}}</option>
+                                                        {% endfor%}
+                                                    </select>
+                                                    <span class="select-highlight"></span>
+                                                    <span class="select-bar"></span>
+                                                    <label class="select-label">Select Coordinating Chairman</label>
+                                                </div>
+                                            </div>
+                                            
+                                            
+                                          
+                                        </div>
+                                        <div class="col-12" style="text-align: right; padding: 0px;">
+                                            <button class="mt-1 btn btn-danger mb-1" type="reset" id="reset">Reset</button>
+                                            <button class="mt-1 btn btn-primary mb-1" type="button" id="submit">Submit</button>
+                                        </div>
+                                    </div>
+                                    <div class="row layout-top-spacing" id="dbl">
+                                        <div class="col-xl-12 col-lg-12 col-sm-12 pl-0 pr-0" id="detailTable">
+                                            
+                                            <div class="widget-content br-6">
+                                                <div class="table-responsive mb-4 mt-4" style="overflow-x: visible;">
+                                                    <table id="style-3" class="table style-3">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="text-center">Record id</th>
+
+                                                                <th class="text-center">Sl.No.</th>
+                                                                <th class="text-center">Colleges</th>
+                                                              
+                                                                
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="tab">
+                                                            
+                                                        </tbody>
+                                                        
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                       
+
+                                    </div>
+                                    <div class="col-md-6 col-sm-12 mb-4 mt-1">
+                                        <input class="input-text" type="tel" required id="search">
+                                        <label>Benificiary ID or Email ID</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                    <div class="col-12" style="text-align: right; padding: 0px;">
+                                        <button class="mt-1 btn btn-primary mb-1" type="button" id="fetch">Fetch</button>
+                                    </div>
+                                    <div>
+                                        <div class="col-12 filterz">
+                                            <table>
+                                                <tr>
+                                                    <th colspan="3" style="padding: 3px; font-size: 18px;">Teacher Details</th>
+                                                </tr>
+                                                <tr>
+                                                    <th style="padding: 3px;">User&nbsp;Name</th>
+                                                    <td style="padding: 3px;">&nbsp;:&nbsp;</td>
+                                                    <td id="name" style="padding: 3px;"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="padding: 3px;">College</th>
+                                                    <td style="padding: 3px;">&nbsp;:&nbsp;</td>
+                                                    <td id="col-id" style="padding: 3px;"></td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="padding: 3px;">Mail Id</th>
+                                                    <td style="padding: 3px;">&nbsp;:&nbsp;</td>
+                                                    <td id="mail-id" style="padding: 3px;"></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-12" style="text-align: center;">
+                                            <button class="mt-1 btn btn-primary mb-1" type="button" id="allo">Allocate</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  END CONTENT AREA  -->
+
+        {% endblock %}
+       
+        {% block head %}
+        <script src="{%static 'assets/js/custom.js'%}"></script>
+    
+        <script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+        <script src="{% static 'plugins/noUiSlider/nouislider.min.js' %}"></script>
+    
+        <script src="{% static 'plugins/noUiSlider/custom-nouiSlider.js' %}"></script>
+        <script src="{% static 'plugins/bootstrap-range-Slider/bootstrap-rangeSlider.js' %}"></script>
+    
+      
+    
+        <script>
+            $(document).ready(function () {
+                App.init();
+            });
+        </script>
+    
+        
+    
+    
+        <script>
+            function check() {
+                var x = document.getElementById("dbl");
+                x.style.display = "flex";
+            }
+            function checkz() {
+                var z = document.getElementById("dblz");
+                z.style.display = "block";
+            }
+        </script>
+    
+        <script>
+            var field = document.getElementById('city');
+            $('#done').on('click', function () {
+                field.required = false;
+            });
+            $('#done').on('blur', function () {
+                field.required = true;
+            });
+            
+        </script>
+    
+        <script>
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+        </script>
+    
+    
+    
+    <script>
+        // var e;
+        c1 = $('#style-1').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c1);
+    
+        c2 = $('#style-2').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            // "order": [[ 2, "desc" ]],
+            "bPaginate": false,
+            "bFilter": false,
+            "bInfo": false,
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c2);
+    
+        c21 = $('#style-21').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            // "order": [[ 2, "desc" ]],
+            "bPaginate": false,
+            "bFilter": false,
+            "bInfo": false,
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c21);
+    
+        c22 = $('#style-22').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            // "order": [[ 2, "desc" ]],
+            "bPaginate": false,
+            "bFilter": false,
+            "bInfo": false,
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c22);
+    
+        
+        c3 = $('#style-3').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 20, 30, 50],
+            "pageLength": 20
+        });
+    
+        multiCheck(c3);
+    
+    </script>
+    
+    <script>
+        var collegeId
+        $(document).ready(function () {
+            $("#submit").click(function () {
+               
+    
+                var chairman = $("#cord").val();
+                console.log("///////",chairman)
+                var token = '{{csrf_token}}';
+                var url = "{% url 'extzone-collg' %}?format=json";
+                $.ajax({
+                    headers: { "X-CSRFToken": token },
+                    type: "post",
+                    url: url,
+                    dataType: "json",
+                    data: {
+                        'chairman': chairman,
+                       
+                    },
+                    success: (res) => {
+    
+                        if (res.success == true) {
+                            
+                            var tbody = $("#tab");
+                            tbody.empty(); // Clear existing rows
+    
+                            var collglist =  res.data.colleges || [];
+                            console.log("//////", collglist);
+    
+                            // Create a new row for "Select All" checkbox
+                            
+                            // Append "Select All" row to the tbody
+    
+                            for (var i = 0; i < collglist.length; i++) {
+                                var collgname = collglist[i];
+                                console.log("courseName////////////",collgname)
+    
+                                // Create a new row
+                                var row = $('<tr>');
+    
+                                // Add cells to the row
+                                row.append($('<td>').html('<input type="checkbox" class="recordCheckbox" name="recordCheckbox[]" value="' + collgname.id + '">'));
+                                row.append($('<td>').text(i + 1)); // Sl.No. (you can adjust this as needed)
+                                let concatenatedText = `${collgname.name} (${collgname.code})`;
+                                row.append($('<td>').text(concatenatedText));
+    
+                                    // Append the row to the tbody
+                                tbody.append(row);
+                            }
+    
+                                // Handle "Select All" checkbox functionality
+                               
+                            }
+                            else {
+                                console.log("'name' property not found or is undefined in res.data");
+                            }
+                        
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $("#fetch").click(function () {
+            var search_id = $("#search").val();
+            var token = '{{ csrf_token }}';
+            var url = "{% url 'extzone-chairman' %}?format=json";
+    
+            $.ajax({
+                headers: { "X-CSRFToken": token },
+                type: "post",
+                url: url,
+                dataType: "json",
+                data: {
+                    'search_id': search_id,
+                },
+    
+                success: (res) => {
+                    console.log(res)
+                    if (res.success == true) {
+                        
+                        $("#name").text(res.data.fullname);
+                        console.log(res.data.fullname)
+                        $("#col-id").text(res.data.collobj);
+                      
+                        
+                        $("#mail-id").text(res.data.mailId);
+                        
+    
+    
+                    }
+                }
+            });
+        });
+    </script>
+    <script>
+        $("#reset").click(function (){
+            location.reload();
+        })
+    </script>
+    
+    <script>
+      $(document).ready(function () {
+        $('#allo').on('click', function () {
+            var selectedCollegeid = [];
+            
+            $('.recordCheckbox').each(function () {
+                if ($(this).prop('checked')) {
+                    var collegeid = $(this).val(); // Retrieve the course code from 'value' attribute
+                    console.log("?//////",collegeid)
+                    selectedCollegeid.push(collegeid); // Push the course code into the array
+                    console.log("?//////",selectedCollegeid)
+
+                }
+            });
+    
+            // Log the selected course codes to verify
+            // console.log("Selected course codesiddd:", selectedCourseCodes;
+    
+            // Join the course codes into a comma-separated string for the AJAX request
+          
+
+            if (selectedCollegeid.length > 0) {
+                // Continue with your disposal logic here
+                var search = $("#search").val();
+                var cord= $("#cord").val();
+                var uploadToken = '{{csrf_token}}'; // Ensure this value is properly set
+                var uploadUrl = "{% url 'extzone-upload' %}?format=json";
+    
+    
+                $.ajax({
+                    headers: { "X-CSRFToken": uploadToken, "Content-Type": "application/json"},
+                    type: "post",
+                    url: uploadUrl,
+                    dataType: "json",
+                    data: JSON.stringify({
+                        'collegeCodes': selectedCollegeid,
+                        'search': search,
+                        'cord': cord,
+                        
+                    }),
+                    success: function (uploadRes) {
+                        if (uploadRes.success) {
+                            swal.fire({
+                                title: 'Done!',
+                                text: uploadRes.message,
+                                type: 'success',
+                                padding: '2em'
+                            }).then(() => {
+                                    location.reload();
+                                });
+                        } else {
+                            // Handle unsuccessful response from the server
+                            alert('Error: ' + uploadRes.message);
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.error('AJAX Error:', errorThrown);
+                        alert('An error occurred while processing the request.');
+                    }
+                });
+            } else {
+                // Inform the user that no checkboxes are selected
+                alert('Please select at least one entry to dispose.');
+            }
+        });
+    });
+    </script>
+    
+
+{% endblock %}

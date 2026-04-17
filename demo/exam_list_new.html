@@ -1,0 +1,1383 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block additional_styles %}
+<style>
+    #dbl { display: flex; }
+    .clipboard { background-color: #f1f2f3; padding: 20px; border-radius: 6px; }
+    .history { color: crimson; font-weight: 800; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+    .pointer { cursor: pointer; }
+    input[type=date]:required:invalid::-webkit-datetime-edit { color: transparent; }
+    input[type=date]:focus::-webkit-datetime-edit { color: black !important; }
+    input[type=month]:required:invalid::-webkit-datetime-edit { color: transparent; }
+    input[type=month]:focus::-webkit-datetime-edit { color: black !important; }
+    .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) { width: 100% !important; }
+</style>
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/datatables.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/dt-global_style.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/bootstrap-select/bootstrap-select.min.css' %}">
+<link href="{% static 'plugins/animate/animate.css' %}" rel="stylesheet" type="text/css" />
+<script src="{% static 'plugins/sweetalerts/promise-polyfill.js' %}"></script>
+<link href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'plugins/sweetalerts/sweetalert.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'assets/css/components/custom-sweetalert.css' %}" rel="stylesheet" type="text/css" />
+{% endblock additional_styles %}
+
+{% block content %}
+<div class="row layout-top-spacing" id="cancel-row">
+    <div class="d-flex justify-content-between w-100">
+        <div id="date_time_picker" class="layout-top-spacing">
+            <div class="seperator-header mx-3">
+                <h4>Exam List</h4>
+            </div>
+        </div>
+        <div>
+            <nav class="breadcrumb-one" aria-label="breadcrumb">
+                <ol class="breadcrumb bg-white mt-3">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page"><span>Exam List</span></li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="pl-4">
+            <form name="dform" id="filterform" method="POST" action="{% url 'exam-list' %}" novalidate>
+                {% csrf_token %}
+                <div class="col mb-4" style="margin: auto;">
+                    <div class="filterz">
+                        <div class="row form-sec">
+                            <div class="col-4 mb-4 mt-1">
+                                <div class="select">
+                                    <select class="select-text" name="search" id="prgm_type" required>
+                                        <option value="" disabled selected></option>
+                                        {% for typ in data.prg_typ %}
+                                        <option value="{{typ.prgtyp}}">{{typ.prgtyp}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-highlight"></span>
+                                    <span class="select-bar"></span>
+                                    <label class="select-label">Programme Type</label>
+                                </div>
+                            </div>
+                            <div class="col-4 mb-4 mt-1">
+                                <div class="select">
+                                    <select class="select-text" name="search" id="prgm_group" required>
+                                        <option value="" disabled selected></option>
+                                        {% for grp in data.prg_grp %}
+                                        <option value="{{grp.prggrp}}">{{grp.prggrp}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-highlight"></span>
+                                    <span class="select-bar"></span>
+                                    <label class="select-label">Programme Group</label>
+                                </div>
+                            </div>
+                            <div class="col-4 mb-4 mt-1">
+                                <div class="select">
+                                    <select class="select-text" name="search" id="prgm_class" required>
+                                        <option value="" disabled selected></option>
+                                        {% for cls in data.prg_cls %}
+                                        <option value="{{cls.prgcls}}">{{cls.prgcls}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-highlight"></span>
+                                    <span class="select-bar"></span>
+                                    <label class="select-label">Programme Class</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-sec">
+                            <div class="col-4 mb-4 mt-2">
+                                <div class="select">
+                                    <select class="select-text prgm_list" id="prgm_list" name="search" required>
+                                        <option value="" disabled selected></option>
+                                        {% for prgm in data.prg %}
+                                        <option value="{{prgm.programme}}">{{prgm.programme}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-highlight"></span>
+                                    <span class="select-bar"></span>
+                                    <label class="select-label">Programme</label>
+                                </div>
+                            </div>
+                            <div class="col-4 mb-4 mt-2">
+                                <div class="select">
+                                    <select class="select-text scheme_list" id="scheme_list" name="search" required>
+                                        <option value="" disabled selected></option>
+                                        {% for schm in data.schema %}
+                                        <option value="{{schm.schema}}">{{schm.schema}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-highlight"></span>
+                                    <span class="select-bar"></span>
+                                    <label class="select-label">Scheme</label>
+                                </div>
+                            </div>
+                            <div class="col-4 mb-4 mt-2">
+                                <div class="select">
+                                    <select class="select-text sem_list" id="sem_list" name="search" required>
+                                        <option value="" disabled selected></option>
+                                        {% for sem in data.sem %}
+                                        <option value="{{sem.semester}}">{{sem.semester}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-highlight"></span>
+                                    <span class="select-bar"></span>
+                                    <label class="select-label">Semester</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row form-sec">
+                            <div class="col-4 mb-4 mt-2">
+                                <div class="select">
+                                    <select class="select-text" name="search" id="status_list" required>
+                                        <option value="" disabled selected></option>
+                                        {% for status in data.status %}
+                                        <option value="{{status.status}}">{{status.status}}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="select-highlight"></span>
+                                    <span class="select-bar"></span>
+                                    <label class="select-label">Status</label>
+                                </div>
+                            </div>
+                            <div class="col-4 mb-4 mt-2 date-class" style="background-color: #FFFFFF;">
+                                <input class="input-text date-class" id="startDateList" type="text" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" name="date_search" required="required">
+                                <label>Start Date</label>
+                                <div class="cover"></div>
+                            </div>
+                            <div class="col-4 mb-4 mt-2 date-class" style="background-color: #FFFFFF;">
+                                <input class="input-text date-class" id="endDateList" type="text" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" name="date_search" required="required">
+                                <label>End Date</label>
+                                <div class="cover"></div>
+                            </div>
+                        </div>
+                        <div class="col-12" style="text-align: right; padding: 0px;">
+                            <button class="btn btn-danger mt-1 mb-1" type="reset" id="clrBtn">Reset</button>
+                            <button class="btn btn-primary mt-1 mb-1 submitbutton" type="button">Submit</button>
+                        </div>
+                    </div>
+
+                    <div class="row layout-top-spacing" id="dbl">
+                        <div class="col-xl-12 col-lg-12 col-sm-12 pl-0 pr-0 layout-spacing">
+                            <div class="widget-content br-6">
+                                <div class="table-responsive mb-4 mt-3" style="overflow-x: visible;">
+                                    <table id="zero-config" class="table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">Sl.No.</th>
+                                                <th>List of Exams</th>
+                                                <th>Exam Code</th>
+                                                <th class="text-center">Status</th>
+                                                <th class="text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="exam_data_body">
+                                            {% for i in data.exam_list %}
+                                            <tr>
+                                                <td data-toggle="modal" data-target=".bd-example-modal-lgs" class="text-center pointer" data-url="{% url 'exam-update-new' pk=i.id %}">{{ forloop.counter }}</td>
+                                                <td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="{% url 'exam-update-new' pk=i.id %}" class="pointer">{{ i.title }}</td>
+                                                <td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="{% url 'exam-update-new' pk=i.id %}" class="pointer">{{ i.code }}</td>
+                                                {% if i.status == "ACTIVE" %}
+                                                <td>
+                                                    <div style="display: inline-flex;">
+                                                        <div class="t-dot bg-success mt-1"></div>&nbsp;&nbsp;{{ i.status }}
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="dropdown custom-dropdown">
+                                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink5" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                        </a>
+                                                        <div class="dropdown-menu widget-content" aria-labelledby="dropdownMenuLink5" style="will-change: transform;">
+                                                            {% if perms.util.view_examination %}
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#modal_id" data-url="{% url 'exam-update-new' pk=i.id %}">View</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#time-table_modal_id" data-url="{% url 'time-table-view-new' pk=i.id %}">Time Table</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#fee-table_modal_id" data-url="{% url 'fee-table-view-new' pk=i.id %}">Fee Details</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#Notification-table_modal_id" data-url="{% url 'single-view-notification' pk=i.id %}">Notification Details</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgsa" data-url="{% url 'extend-att-exam-date' pk=i.id %}">Extend Attendance Date</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgca" data-url="{% url 'extend-ca-mark-date' pk=i.id %}">Extend CA Mark Entry Last Date</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgz" data-url="{% url 'add-admission-year' pk=i.id %}">Add Admission Year</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgcf" data-url="{% url 'reject-project-upload' pk=i.id %}">Project Upload reject</a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endif %}
+                                                {% if i.status == "PENDING" %}
+                                                <td>
+                                                    <div style="display: inline-flex;">
+                                                        <div class="t-dot bg-warning mt-1"></div>&nbsp;{{ i.status }}
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="dropdown custom-dropdown">
+                                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink5" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                                                        </a>
+                                                        <div class="dropdown-menu widget-content" aria-labelledby="dropdownMenuLink5" style="will-change: transform;">
+                                                            {% if perms.util.view_examination %}
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#modal_id" data-url="{% url 'exam-update-new' pk=i.id %}">View</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#fee-table_modal_id" data-url="{% url 'fee-table-view-new' pk=i.id %}">Fee Details</a>
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#Notification-table_modal_id" data-url="{% url 'single-view-notification' pk=i.id %}">Notification Details</a>
+                                                            {% endif %}
+                                                            {% if perms.util.change_examination %}
+                                                            <a class="dropdown-item" href="{% url 'examination-edit' pk=i.id %}">Edit</a>
+                                                            {% endif %}
+                                                            {% if perms.util.approve_examination %}
+                                                            <a class="dropdown-item" href="javascript:void(0);" data-target="#modal-id" data-toggle="modal" data-url="{% url 'exam-update-new' pk=i.id %}">Approve</a>
+                                                            {% endif %}
+                                                            {% if perms.util.delete_examination %}
+                                                            <a class="dropdown-item delete_button" href="javascript:void(0);" data-value="{{ i.id }}">Delete</a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {% endif %}
+                                                {% if i.status == "DELETE" %}
+                                                <td>
+                                                    <div style="display: inline-flex;">
+                                                        <div class="t-dot bg-danger mt-1"></div>&nbsp;{{ i.status }}
+                                                    </div>
+                                                </td>
+                                                <td class="text-center"></td>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Approve/Revert Modal -->
+                                <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="modal-id">
+                                    <form action="" method="POST" id="appform_id" name="appform_name">
+                                        {% csrf_token %}
+                                        <input class="input-text" id="calid" type="text" hidden name="calid" value="{{calid}}">
+                                        <input class="input-text" id="approvaloption" type="text" hidden name="approvaloption" value="true">
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header bg-primary">
+                                                    <div class="col row" style="text-align: center;">
+                                                        <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                            <span style="margin: auto; font-size: 18px;" id="_exam_name"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <h6>Exam Details</h6>
+                                                    <div class="table-responsive mb-1">
+                                                        <table class="table">
+                                                            <tbody>
+                                                                <tr><td class="text-primary">Programme</td><td id="_prgm"></td></tr>
+                                                                <tr><td class="text-primary">Scheme</td><td id="_scheme"></td></tr>
+                                                                <tr><td class="text-primary">Semester</td><td id="_sem"></td></tr>
+                                                                <tr><td class="text-primary">Year of Admission</td><td id="_year_of_admission"></td></tr>
+                                                                <tr><td class="text-primary">Month</td><td id="_exam_month"></td></tr>
+                                                                <tr><td class="text-primary">Year</td><td id="_exam_year"></td></tr>
+                                                                <tr><td class="text-primary">Season</td><td id="_season_id"></td></tr>
+                                                                <tr><td class="text-primary">Notification</td><td id="_notif_name"></td></tr>
+                                                                <tr><td class="text-primary">Date of Notification</td><td id="_notif_date"></td></tr>
+                                                                <tr><td class="text-primary">Last Date Of Attendance Upload</td><td id="_attdn_upld_date"></td></tr>
+                                                                <tr><td class="text-primary">Exam Type</td><td id="_exam_type"></td></tr>
+                                                                <tr><td class="text-primary">Question Paper Delivery</td><td id="_qp_delry"></td></tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <h6>Important Dates</h6>
+                                                    <div class="table-responsive mb-1">
+                                                        <table class="table" id="_purpose"></table>
+                                                    </div>
+                                                    <div class="col-12 mt-3" id="_created_by">
+                                                        <p style="float: right;">Created By : &nbsp;|&nbsp; Created On : </p>
+                                                    </div><br><hr>
+                                                    <h6>History</h6>
+                                                    <div class="table-responsive mb-4">
+                                                        <table id="zero-configs" class="table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="text-center">Sl.No.</th>
+                                                                    <th>Updated By</th>
+                                                                    <th>Designation</th>
+                                                                    <th>Updated On</th>
+                                                                    <th>Comments</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="_hist_data">
+                                                                <tr><td class="text-center">1</td><td></td><td></td><td></td><td></td></tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="clipboard">
+                                                        <label><code>Comments</code></label>
+                                                        <textarea class="form-control" id="comment" rows="4" placeholder=""></textarea>
+                                                        <div class="col-12" style="text-align: center; margin-top: 10px">
+                                                            <button type="button" class="mt-2 mb-3 btn btn-danger revert_button" id="revert_button">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                                                &nbsp;Revert
+                                                            </button>
+                                                            <button type="button" class="mt-2 mb-3 btn btn-success approve_button" id="approve_button">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                                                &nbsp;Verify and Forward
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Add Admission Year Modal -->
+                                <div class="modal fade bd-example-modal-lgz" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary">
+                                                <div class="col row" style="text-align: center;">
+                                                    <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                        <span style="margin: auto; font-size: 18px;" id="ad_exam_name"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h6>Exam Details</h6>
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table">
+                                                        <tbody>
+                                                            <tr><td class="text-primary">Programme</td><td id="ad_prgm"></td></tr>
+                                                            <tr><td class="text-primary">Scheme</td><td id="ad_scheme"></td></tr>
+                                                            <tr><td class="text-primary">Semester</td><td id="ad_sem"></td></tr>
+                                                            <tr><td class="text-primary">Year of Admission</td><td id="ad_year_of_admission"></td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <form id="adyr-sub">
+                                                    <div class="col-12" style="min-width: 250px;" id="adyrdiv">
+                                                        <input id="exmid" hidden>
+                                                        <p>Year of Admission</p>
+                                                        <select class="selectpicker" multiple name="madmsnyr" id="muladmsnyr">
+                                                            {% for i in data.admnyear %}
+                                                            <option value="{{i.id}}">{{i.admission_year}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn" data-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- View Modal (read-only, no approve/revert) -->
+                                <div class="modal fade bd-example-modal-lgs" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="modal_id">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary">
+                                                <div class="col row" style="text-align: center;">
+                                                    <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                        <span style="margin: auto; font-size: 18px;" id="exam_name"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <h6>Exam Details</h6>
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table">
+                                                        <tbody>
+                                                            <tr><td class="text-primary">Programme</td><td id="prgm"></td></tr>
+                                                            <tr><td class="text-primary">Scheme</td><td id="scheme"></td></tr>
+                                                            <tr><td class="text-primary">Semester</td><td id="sem"></td></tr>
+                                                            <tr><td class="text-primary">Year of Admission</td><td id="year_of_admission"></td></tr>
+                                                            <tr><td class="text-primary">Month</td><td id="exam_month"></td></tr>
+                                                            <tr><td class="text-primary">Year</td><td id="exam_year"></td></tr>
+                                                            <tr><td class="text-primary">Season</td><td id="season_id"></td></tr>
+                                                            <tr><td class="text-primary">Notification</td><td id="notif_name"></td></tr>
+                                                            <tr><td class="text-primary">Date of Notification</td><td id="notif_date"></td></tr>
+                                                            <tr><td class="text-primary">Last Date Of Attendance Upload</td><td id="attdn_upld_date"></td></tr>
+                                                            <tr><td class="text-primary">Exam Type</td><td id="exam_type"></td></tr>
+                                                            <tr><td class="text-primary">Question Paper Delivery</td><td id="qp_delry"></td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <h6>Important Dates</h6>
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table" id="purpose"></table>
+                                                </div>
+                                                <div class="col-12 mt-3" id="created_by">
+                                                    <p style="float: right;">Created By : &nbsp;|&nbsp; Created On : </p>
+                                                </div><br><hr>
+                                                <h6>History</h6>
+                                                <div class="table-responsive mb-4">
+                                                    <table id="zero-configss" class="table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="text-center">Sl.No.</th>
+                                                                <th>Updated By</th>
+                                                                <th>Designation</th>
+                                                                <th>Updated On</th>
+                                                                <th>Comments</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="hist_data"></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Time Table Modal -->
+                                <div class="modal fade bd-example-modal-lg-time-table" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="time-table_modal_id">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary">
+                                                <div class="col row" style="text-align: center;">
+                                                    <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                        <span style="margin: auto; font-size: 18px;">Exam Time Table</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table" id="time_tbl">
+                                                        <tbody>
+                                                            <tr><td class="text-primary">Exam</td><td id="exam_name_timetable"></td></tr>
+                                                            <tr><td class="text-primary">Exam Code</td><td id="exam_code_timetable"></td></tr>
+                                                            <tr><td class="text-primary">Programme</td><td id="exam_prgm_timetable"></td></tr>
+                                                            <tr><td class="text-primary">Semester</td><td id="exam_sem_timetable"></td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <h6 id="head_time">Exam Schedule</h6>
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table" id="schedule_timetable"></table>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- No Time Table Modal -->
+                                <div class="modal fade bd-example-modal-lg-no-time-table" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="no-time-table_modal_id">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary">
+                                                <div class="col row" style="text-align: center;">
+                                                    <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                        <span style="margin: auto; font-size: 18px;">Exam Time Table</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table" id="no-time_tbl">
+                                                        <tbody>
+                                                            <tr class="text-center"><td valign="top" colspan="7" class="dataTables_empty" style="font-size: large;">Time Table Not Created</td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Fee Table Modal -->
+                                <div class="modal fade bd-example-modal-lg-fee-table" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="fee-table_modal_id">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary">
+                                                <div class="col row" style="text-align: center;">
+                                                    <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                        <span style="margin: auto; font-size: 18px;">Fee Details</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table">
+                                                        <tbody>
+                                                            <tr><td class="text-primary">Programme</td><td id="exam_prgm_feetable"></td></tr>
+                                                            <tr><td class="text-primary">Semester</td><td id="exam_sem_feetable"></td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <h6>Fee</h6>
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table" id="fee"></table>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Notification Table Modal -->
+                                <div class="modal fade bd-example-modal-lg-Notification-table" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" id="Notification-table_modal_id">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary">
+                                                <div class="col row" style="text-align: center;">
+                                                    <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                        <span style="margin: auto; font-size: 18px;">Notification Details</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive mb-1">
+                                                    <table class="table">
+                                                        <tbody>
+                                                            <tr><td class="text-primary">Notification Name</td><td id="notif_name_data"></td></tr>
+                                                            <tr><td class="text-primary">Order Number</td><td id="order_num_data"></td></tr>
+                                                            <tr><td class="text-primary">Date Of Notification</td><td id="notif_date_data"></td></tr>
+                                                            <tr><td class="text-primary">Last Date Of Attendance Upload</td><td id="attdn_upld_date_data"></td></tr>
+                                                            <tr><td class="text-primary">Programme</td><td id="exam_prgm_notif_data"></td></tr>
+                                                            <tr><td class="text-primary">Semester</td><td id="exam_sem_notif_data"></td></tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Extend Attendance Date Modal -->
+    <div class="modal fade bd-example-modal-lgsa" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form id="extend-attendance-date">
+                    <div class="modal-header bg-primary">
+                        <div class="col row" style="text-align: center;">
+                            <div class="col" style="padding: 1% 0px 1% 0px;">
+                                <span style="margin: auto; font-size: 18px;">Attendance Date Extend</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="padding: 20px">
+                        <div style="padding: 5px;">
+                            <h6>Scheduled Dates</h6>
+                            <div class="table-responsive mb-4">
+                                <table class="table" style="width:100%">
+                                    <tbody>
+                                        <tr><td class="text-primary">Examination</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="examtd"></td></tr>
+                                        <tr><td class="text-primary">Programme</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="programmetd"></td></tr>
+                                        <tr><td class="text-primary">Attendance Upload End Date</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="datetd"></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h6>Extend Attendance Upload Date</h6>
+                            <div class="border border-primary mt-3" style="border-radius: 5px; max-width: 350px; padding: 4%; margin: auto;">
+                                <br>
+                                <div class="row form-sec">
+                                    <div class="col mb-2">
+                                        <input id="extexamid" hidden>
+                                        <input class="input-text" autocomplete="off" type="text" placeholder=" " id="extendend_date" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" name="reshedule_start_date" aria-describedby="att_help" required="required">
+                                        <label>Extended End Date</label>
+                                        <div class="cover"></div>
+                                        <small id="att_help" class="form-text text-muted">Enter new end date here..</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Extend</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extend CA Mark Entry Last Date Modal -->
+    <div class="modal fade bd-example-modal-lgca" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form id="extend-ca-date">
+                    <div class="modal-header bg-primary">
+                        <div class="col row" style="text-align: center;">
+                            <div class="col" style="padding: 1% 0px 1% 0px;">
+                                <span style="margin: auto; font-size: 18px;">CA Mark Entry Last Date</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="padding: 20px">
+                        <div style="padding: 5px;">
+                            <h6>Scheduled Dates</h6>
+                            <div class="table-responsive mb-4">
+                                <table class="table" style="width:100%">
+                                    <tbody>
+                                        <tr><td class="text-primary">Examination</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="caexamtd"></td></tr>
+                                        <tr><td class="text-primary">Programme</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="caprogrammetd"></td></tr>
+                                        <tr><td class="text-primary">CA Mark Entry Last Date</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="cadatetd"></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h6>Extend CA Mark Entry Last Date</h6>
+                            <div class="border border-primary mt-3" style="border-radius: 5px; max-width: 350px; padding: 4%; margin: auto;">
+                                <br>
+                                <div class="row form-sec">
+                                    <div class="col mb-2">
+                                        <input id="caextexamid" hidden>
+                                        <input class="input-text" autocomplete="off" type="text" placeholder=" " id="caextendend_date" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" name="ca_reshedule_date" aria-describedby="ca_help" required="required">
+                                        <label>Extended End Date</label>
+                                        <div class="cover"></div>
+                                        <small id="ca_help" class="form-text text-muted">Enter new end date here..</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Extend</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Upload Reject Modal -->
+    <div class="modal fade bd-example-modal-lgcf" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form id="extend-project-date">
+                    <div class="modal-header bg-primary">
+                        <div class="col row" style="text-align: center;">
+                            <div class="col" style="padding: 1% 0px 1% 0px;">
+                                <span style="margin: auto; font-size: 18px;">Project Upload Reject</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="padding: 20px">
+                        <div style="padding: 5px;">
+                            <h6>Scheduled Dates</h6>
+                            <div class="table-responsive mb-4">
+                                <table class="table" style="width:100%">
+                                    <tbody>
+                                        <tr><td class="text-primary">Examination</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="projexamtd"></td></tr>
+                                        <tr><td class="text-primary">Programme</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="projprogrammetd"></td></tr>
+                                        <tr><td class="text-primary">Project Reject Last Date</td><td>&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;</td><td id="projdatetd"></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h6>Project Upload Reject Date</h6>
+                            <div class="border border-primary mt-3" style="border-radius: 5px; max-width: 350px; padding: 4%; margin: auto;">
+                                <br>
+                                <div class="row form-sec">
+                                    <div class="col mb-2">
+                                        <input id="projexamid" hidden>
+                                        <input class="input-text" autocomplete="off" type="text" placeholder=" " id="projextendstart_date" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" name="proj_start_date" aria-describedby="proj_start_help" required="required">
+                                        <label>Reject Start Date</label>
+                                        <div class="cover"></div>
+                                        <small id="proj_start_help" class="form-text text-muted">Enter new start date here..</small>
+                                    </div>
+                                </div>
+                                <div class="row form-sec">
+                                    <div class="col mb-2">
+                                        <input class="input-text" autocomplete="off" type="text" placeholder=" " id="projextendend_date" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" name="proj_end_date" aria-describedby="proj_end_help" required="required">
+                                        <label>Reject End Date</label>
+                                        <div class="cover"></div>
+                                        <small id="proj_end_help" class="form-text text-muted">Enter new end date here..</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock content %}
+
+{% block head %}
+<script src="{% static 'assets/js/custom.js' %}"></script>
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/table/datatable/datatables.js' %}"></script>
+<script src="{% static 'plugins/sweetalerts/sweetalert2.min.js' %}"></script>
+<script src="{% static 'plugins/sweetalerts/custom-sweetalert.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-select/bootstrap-select.min.js' %}"></script>
+
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    $('#zero-config').DataTable({
+        "oLanguage": {
+            "oPaginate": {
+                "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>',
+                "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>'
+            },
+            "sInfo": "Showing page _PAGE_ of _PAGES_",
+            "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+            "sSearchPlaceholder": "Search...",
+            "sLengthMenu": "Results : _MENU_"
+        },
+        "stripeClasses": [],
+        "lengthMenu": [7, 10, 20, 50],
+        "pageLength": 50
+    });
+
+    function initInnerDataTable(id) {
+        if ($.fn.DataTable.isDataTable('#' + id)) {
+            $('#' + id).DataTable().destroy();
+        }
+        $('#' + id).DataTable({
+            "oLanguage": {
+                "oPaginate": {
+                    "sPrevious": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>',
+                    "sNext": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>'
+                },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results : _MENU_"
+            },
+            "stripeClasses": [],
+            "lengthMenu": [7, 10, 20, 50],
+            "pageLength": 10
+        });
+    }
+</script>
+
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+</script>
+
+<script>
+    $('#modal_id').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        $.ajax({
+            type: "GET",
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                $("#exam_name").html(res.data.examDetails.code + ":" + res.data.examDetails.title);
+                $("#prgm").html(res.data.examDetails.prgmDetails[0].programme);
+                $("#scheme").html(res.data.examDetails.prgmDetails[0].scheme);
+                $("#sem").html(res.data.examDetails.prgmDetails[0].semester);
+                $("#qp_delry").html(res.data.examDetails.qpDeliveryType);
+                $("#exam_type").html(res.data.examDetails.examType);
+                $("#exam_month").html(res.data.examDetails.month);
+                $("#exam_year").html(res.data.examDetails.year);
+                $("#season_id").html(res.data.examDetails.season);
+                $("#notif_name").html(res.data.examDetails.prgmDetails[0].notifPrgmSem[0].title);
+                $("#notif_date").html(res.data.examDetails.prgmDetails[0].notifPrgmSem[0].date);
+                $("#attdn_upld_date").html(res.data.examDetails.prgmDetails[0].notifPrgmSem[0].attendanceUploadEndDate);
+
+                $("#year_of_admission").empty();
+                res.data.examDetails.admissionYr.forEach(function (yr) {
+                    $("#year_of_admission").append(yr.admissionYear + " ");
+                });
+
+                $("#purpose").empty();
+                $("#purpose").append('<thead><tr><th>Purpose</th><th>Start Date</th><th>End Date</th></tr></thead>');
+                res.data.examDetails.purposeStatus.forEach(function (purpose) {
+                    $("#purpose").append('<tr><td>' + purpose.purposeName + '</td><td>' + purpose.startDate + '</td><td>' + purpose.endDate + '</td></tr>');
+                });
+
+                $("#hist_data").empty();
+                res.data.hisDetails.forEach(function (h, idx) {
+                    var upd_on = h.updatedOn || 'NA';
+                    $("#hist_data").append('<tr><td class="text-center">' + (idx + 1) + '</td><td style="text-transform:capitalize;">' + h.updatedBy + '</td><td>' + h.designation[0].name + '</td><td>' + upd_on + '</td><td>' + h.comments + '</td></tr>');
+                });
+                $("#created_by").html('<p style="float: right; text-transform:capitalize">Created By :' + res.data.hisDetails[0].createdBy + '&nbsp; | &nbsp; Created On : ' + res.data.hisDetails[0].createdOn + '</p>');
+
+                initInnerDataTable('zero-configss');
+            }
+        });
+    });
+</script>
+
+<script>
+    $('#modal-id').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        $.ajax({
+            type: "GET",
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                document.getElementById("calid").value = res.data.examDetails.id;
+                $("#_exam_name").html(res.data.examDetails.code + ":" + res.data.examDetails.title);
+                $("#_prgm").html(res.data.examDetails.prgmDetails[0].programme);
+                $("#_scheme").html(res.data.examDetails.prgmDetails[0].scheme);
+                $("#_sem").html(res.data.examDetails.prgmDetails[0].semester);
+                $("#_qp_delry").html(res.data.examDetails.qpDeliveryType);
+                $("#_exam_type").html(res.data.examDetails.examType);
+                $("#_exam_month").html(res.data.examDetails.month);
+                $("#_exam_year").html(res.data.examDetails.year);
+                $("#_season_id").html(res.data.examDetails.season);
+                $("#_year_of_admission").html(res.data.examDetails.admissionYr[0].admissionYear);
+                $("#_notif_name").html(res.data.examDetails.prgmDetails[0].notifPrgmSem[0].title);
+                $("#_notif_date").html(res.data.examDetails.prgmDetails[0].notifPrgmSem[0].date);
+                $("#_attdn_upld_date").html(res.data.examDetails.prgmDetails[0].notifPrgmSem[0].attendanceUploadEndDate);
+
+                $("#_purpose").empty();
+                $("#_purpose").append('<thead><tr><th>Purpose</th><th>Start Date</th><th>End Date</th></tr></thead>');
+                res.data.examDetails.purposeStatus.forEach(function (purpose) {
+                    $("#_purpose").append('<tr><td>' + purpose.purposeName + '</td><td>' + purpose.startDate + '</td><td>' + purpose.endDate + '</td></tr>');
+                });
+
+                $("#_hist_data").empty();
+                res.data.hisDetails.forEach(function (h, idx) {
+                    var upd_on = h.updatedOn || 'NA';
+                    $("#_hist_data").append('<tr><td class="text-center">' + (idx + 1) + '</td><td style="text-transform:capitalize;">' + h.updatedBy + '</td><td>' + h.designation[0].name + '</td><td>' + upd_on + '</td><td>' + h.comments + '</td></tr>');
+                });
+                $("#_created_by").html('<p style="float: right; text-transform:capitalize">Created By :' + res.data.hisDetails[0].createdBy + '&nbsp; | &nbsp; Created On : ' + res.data.hisDetails[0].createdOn + '</p>');
+
+                initInnerDataTable('zero-configs');
+            }
+        });
+    });
+</script>
+
+<script>
+    $('#time-table_modal_id').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        $.ajax({
+            type: "GET",
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                if (res.data.state == "true") {
+                    $("#exam_name_timetable").html(res.data.examName);
+                    $("#exam_code_timetable").html(res.data.examCode);
+                    $("#exam_prgm_timetable").html(res.data.examDetails[0].prgm);
+                    $("#exam_sem_timetable").html(res.data.examDetails[0].sem);
+
+                    $("#schedule_timetable").empty();
+                    $("#schedule_timetable").append('<thead><tr><th style="width:170px;">Course</th><th>Start Date</th><th>End Date</th><th>Start Time</th><th>End Time</th><th>Exam Type</th></tr></thead>');
+
+                    res.data.examDetails.forEach(function (schedule) {
+                        function formatTime(t) {
+                            var parts = t.split(':');
+                            var h = parseInt(parts[0]);
+                            var m = parts[1];
+                            var meridian = h >= 12 ? 'PM' : 'AM';
+                            h = h % 12 || 12;
+                            return h + ':' + m + ' ' + meridian;
+                        }
+                        $("#schedule_timetable").append('<tr><td>' + schedule.course + '</td><td>' + schedule.startDate + '</td><td>' + schedule.endDate + '</td><td>' + formatTime(schedule.startTime) + '</td><td>' + formatTime(schedule.endTime) + '</td><td>' + schedule.courseExamType + '</td></tr>');
+                    });
+                } else {
+                    $("#time-table_modal_id").modal('hide');
+                    $("#no-time-table_modal_id").modal("show");
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    $('#fee-table_modal_id').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        $.ajax({
+            type: "GET",
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                $("#exam_prgm_feetable").html(res.data.feecat.prgmSem[0].programme);
+                $("#exam_sem_feetable").html(res.data.feecat.prgmSem[0].semester);
+
+                $("#fee").empty();
+                $('#fee').append('<thead><tr><th class="text-left">Category</th><th class="text-center">Regular</th><th class="text-center">Improvement</th><th class="text-center">Supplementary</th></tr></thead>');
+
+                var arr1 = res.data.feecat.prgmSem[0].feeListData.filter(function (r) { return r.feeCat == res.data.feetitle[0].title; });
+                var arr2 = res.data.feecat.prgmSem[0].feeListData.filter(function (r) { return r.feeCat == res.data.feetitle[1].title; });
+                var arr3 = res.data.feecat.prgmSem[0].feeListData.filter(function (r) { return r.feeCat == res.data.feetitle[2].title; });
+                var largest = Math.max(arr1.length, arr2.length, arr3.length);
+
+                for (var i = 0; i < largest; i++) {
+                    var aval = i < arr1.length ? arr1[i].amount : "";
+                    var bval = i < arr2.length ? (arr2[i].amount == 0 ? 'NA' : arr2[i].amount) : "";
+                    var cval = i < arr3.length ? (arr3[i].amount == 0 ? 'NA' : arr3[i].amount) : "";
+                    var feeParam = i < arr1.length ? arr1[i].feeParam : "";
+                    $('#fee').append('<tr><td class="text-left">' + feeParam + '</td><td class="text-center">' + aval + '</td><td class="text-center">' + bval + '</td><td class="text-center">' + cval + '</td></tr>');
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    $('#Notification-table_modal_id').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        $.ajax({
+            type: "GET",
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                $("#notif_name_data").html(res.data.notificationsing[0].title);
+                $("#order_num_data").html(res.data.notificationsing[0].orderNumber);
+                $("#notif_date_data").html(res.data.notificationsing[0].notifDate);
+                $("#attdn_upld_date_data").html(res.data.notificationsing[0].attendanceEndDate);
+                $("#exam_prgm_notif_data").html(res.data.notificationsing[0].programmeName);
+                $("#exam_sem_notif_data").html(res.data.notificationsing[0].semester);
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        $(".approve_button").click(function () {
+            var token = '{{csrf_token}}';
+            var cal_id = $("#calid").val();
+            var comment = $("#comment").val();
+            blockUI();
+            fetch("{% url 'exam-approve-new' %}", {
+                method: 'post',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', "X-CSRFToken": token },
+                body: JSON.stringify({ "exam_id": cal_id, "comments": comment, "next_status": "ACTIVE" })
+            }).then(function (res) { return res.json(); })
+              .then(function (data) {
+                unblockUI();
+                if (data.success == true) {
+                    swal({ title: 'Done!', text: data.message, type: 'success', padding: '2em' }).then(function () { location.reload(); });
+                } else {
+                    swal({ title: "Oops!", type: 'error', text: data.message, padding: '2em' });
+                }
+            });
+        });
+
+        $(".revert_button").click(function () {
+            var token = '{{csrf_token}}';
+            var cal_id = $("#calid").val();
+            var comment = $("#comment").val();
+            blockUI();
+            fetch("{% url 'exam-approve-new' %}", {
+                method: 'post',
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', "X-CSRFToken": token },
+                body: JSON.stringify({ "exam_id": cal_id, "comments": comment, "next_status": "REVERT" })
+            }).then(function (res) { return res.json(); })
+              .then(function (data) {
+                unblockUI();
+                if (data.success == true) {
+                    swal({ title: 'Done!', text: data.message, type: 'success', padding: '2em' }).then(function () { location.reload(); });
+                } else {
+                    swal({ title: "Oops!", type: 'error', text: data.message, padding: '2em' });
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+    $(document).on('click', "a.delete_button", function () {
+        var token = '{{csrf_token}}';
+        var cal_id = $(this).attr('data-value');
+        swal({
+            title: 'Are you sure?',
+            text: "Enter the reason for rejection",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            input: 'text',
+            padding: '2em',
+            inputValidator: function (value) { return !value && 'You need to write something!'; }
+        }).then(function (result) {
+            if (result.value) {
+                blockUI();
+                fetch("{% url 'exam-delete-new' %}", {
+                    method: 'post',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', "X-CSRFToken": token },
+                    body: JSON.stringify({ "exam_id": cal_id, "comments": result.value })
+                }).then(function (res) { return res.json(); })
+                  .then(function (data) {
+                    unblockUI();
+                    if (data.success == true) {
+                        swal({ title: 'Done!', text: data.message, type: 'success', padding: '2em' }).then(function () { location.reload(); });
+                    } else {
+                        swal({ title: "Oops!", type: 'error', text: data.message, padding: '2em' });
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<script>
+    $("#clrBtn").click(function () {
+        $('.date-class').attr('type', 'text');
+    });
+
+    var flag = false;
+    $(".select-text").change(function () { flag = true; });
+    $(".date-class").change(function () { flag = true; });
+
+    $(".submitbutton").click(function () {
+        event.preventDefault();
+        if (!flag) {
+            swal("select filter", "please select at least one filter", "warning");
+            return;
+        }
+
+        var search_list = [
+            $("#prgm_type").val(),
+            $("#prgm_group").val(),
+            $("#prgm_class").val(),
+            $("#prgm_list").val(),
+            $("#scheme_list").val(),
+            $("#sem_list").val(),
+            $("#status_list").val()
+        ];
+        var date_search = [$("#startDateList").val(), $("#endDateList").val()];
+        var token = '{{csrf_token}}';
+
+        blockUI();
+        fetch("{% url 'exam-list' %}", {
+            method: 'post',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', "X-CSRFToken": token },
+            body: JSON.stringify({ "search": search_list, "date_search": date_search })
+        }).then(function (res) { return res.json(); })
+          .then(function (data) {
+            unblockUI();
+            if (data.data.examList.length != 0) {
+                $("#exam_data_body").empty();
+                var num = 0;
+
+                data.data.examList.forEach(function (exm) {
+                    var exm_id = exm.id;
+
+                    var ul = "{% url 'exam-fetch-new' 123 %}".replace('123', exm_id);
+                    var edit_ul = "{% url 'examination-edit' 123 %}".replace('123', exm_id);
+                    var time_table_url = "{% url 'time-table-view-new' 123 %}".replace('123', exm_id);
+                    var fee_table_url = "{% url 'fee-table-view-new' 123 %}".replace('123', exm_id);
+                    var notification_table_url = "{% url 'single-view-notification' 123 %}".replace('123', exm_id);
+                    var extend_att_url = "{% url 'extend-att-exam-date' 123 %}".replace('123', exm_id);
+                    var extend_ca_url = "{% url 'extend-ca-mark-date' 123 %}".replace('123', exm_id);
+                    var add_adm_yr_url = "{% url 'add-admission-year' 123 %}".replace('123', exm_id);
+                    var reject_proj_url = "{% url 'reject-project-upload' 123 %}".replace('123', exm_id);
+
+                    var svg_dots = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>';
+                    var dropdown_open = '<td class="text-center"><div class="dropdown custom-dropdown"><a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + svg_dots + '</a><div class="dropdown-menu widget-content" style="will-change: transform;">';
+                    var dropdown_close = '</div></div></td>';
+
+                    var bg, dt;
+                    if (exm.status == "ACTIVE") {
+                        bg = "success";
+                        dt = dropdown_open +
+                            '{% if perms.util.view_examination %}' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#modal_id" data-url="' + ul + '">View</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#time-table_modal_id" data-url="' + time_table_url + '">Time Table</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#fee-table_modal_id" data-url="' + fee_table_url + '">Fee Details</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#Notification-table_modal_id" data-url="' + notification_table_url + '">Notification Details</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgsa" data-url="' + extend_att_url + '">Extend Attendance Date</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgca" data-url="' + extend_ca_url + '">Extend CA Mark Entry Last Date</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgz" data-url="' + add_adm_yr_url + '">Add Admission Year</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target=".bd-example-modal-lgcf" data-url="' + reject_proj_url + '">Project Upload reject</a>' +
+                            '{% endif %}' +
+                            dropdown_close;
+                    } else if (exm.status == "PENDING") {
+                        bg = "warning";
+                        dt = dropdown_open +
+                            '{% if perms.util.view_examination %}' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#modal_id" data-url="' + ul + '">View</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#fee-table_modal_id" data-url="' + fee_table_url + '">Fee Details</a>' +
+                            '<a class="dropdown-item" href="javascript:void(0);" data-toggle="modal" data-target="#Notification-table_modal_id" data-url="' + notification_table_url + '">Notification Details</a>' +
+                            '{% endif %}' +
+                            '{% if perms.util.change_examination %}<a class="dropdown-item" href="' + edit_ul + '">Edit</a>{% endif %}' +
+                            '{% if perms.util.approve_examination %}<a class="dropdown-item" href="javascript:void(0);" data-target="#modal-id" data-toggle="modal" data-url="' + ul + '">Approve</a>{% endif %}' +
+                            '{% if perms.util.delete_examination %}<a class="dropdown-item delete_button" href="javascript:void(0);" data-value="' + exm_id + '">Delete</a>{% endif %}' +
+                            dropdown_close;
+                    } else {
+                        bg = "danger";
+                        dt = '<td class="text-center"></td>';
+                    }
+
+                    num++;
+                    $("#exam_data_body").append(
+                        '<tr>' +
+                        '<td data-toggle="modal" data-target=".bd-example-modal-lgs" class="text-center pointer" data-url="' + ul + '">' + num + '</td>' +
+                        '<td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="' + ul + '" class="pointer">' + exm.title + '</td>' +
+                        '<td data-toggle="modal" data-target=".bd-example-modal-lgs" data-url="' + ul + '" class="pointer">' + exm.code + '</td>' +
+                        '<td><div style="display: inline-flex;"><div class="t-dot bg-' + bg + ' mt-1"></div>&nbsp;&nbsp;' + exm.status + '</div></td>' +
+                        dt +
+                        '</tr>'
+                    );
+                });
+            } else {
+                $("#exam_data_body").html('<tr class="text-center"><td valign="top" colspan="5" class="dataTables_empty">No data available</td></tr>');
+            }
+        });
+    });
+</script>
+
+<script>
+    $('.bd-example-modal-lgsa').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        var token = '{{csrf_token}}';
+        $.ajax({
+            type: "POST",
+            headers: { "X-CSRFToken": token },
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                $("#examtd").html(res.data.examDetails.code + ":" + res.data.examDetails.title);
+                $("#programmetd").html(res.data.examDetails.prgmDetails[0].programme);
+                $("#datetd").html(res.data.enddate);
+                $("#extexamid").val(res.data.examDetails.id);
+                $("#extendend_date").val('').attr('type', 'text');
+            }
+        });
+    });
+
+    $("#extend-attendance-date").on("submit", function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'extend-date-attendance' %}",
+            type: "POST",
+            data: { "extdate": $("#extendend_date").val(), "examid": $("#extexamid").val() },
+            headers: { "X-CSRFToken": "{{csrf_token}}" },
+            dataType: 'json',
+            success: function () {
+                swal({ title: 'Done!', text: 'Successfully Extended Attendance Date', type: 'success', padding: '2em' });
+                location.reload();
+            },
+            error: function (res) {
+                swal({ title: "Oops!", type: 'error', text: res.message, padding: '2em' });
+            }
+        });
+    });
+</script>
+
+<script>
+    $('.bd-example-modal-lgca').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        var token = '{{csrf_token}}';
+        $.ajax({
+            type: "POST",
+            headers: { "X-CSRFToken": token },
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                $("#caexamtd").html(res.data.examDetails.code + ":" + res.data.examDetails.title);
+                $("#caprogrammetd").html(res.data.examDetails.prgmDetails[0].programme);
+                $("#cadatetd").html(res.data.enddate);
+                $("#caextexamid").val(res.data.examDetails.id);
+                $("#caextendend_date").val('').attr('type', 'text').attr('min', res.data.endateformat);
+            }
+        });
+    });
+
+    $("#extend-ca-date").on("submit", function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'extend-ca-mark-last-date' %}",
+            type: "POST",
+            data: { "extdate": $("#caextendend_date").val(), "examid": $("#caextexamid").val() },
+            headers: { "X-CSRFToken": "{{csrf_token}}" },
+            dataType: 'json',
+            success: function () {
+                swal({ title: 'Done!', text: 'Successfully Extended CA Mark Entry Last Date', type: 'success', padding: '2em' });
+                location.reload();
+            },
+            error: function (res) {
+                swal({ title: "Oops!", type: 'error', text: res.message, padding: '2em' });
+            }
+        });
+    });
+</script>
+
+<script>
+    $('.bd-example-modal-lgcf').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        var token = '{{csrf_token}}';
+        $.ajax({
+            type: "POST",
+            headers: { "X-CSRFToken": token },
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                if (res.data.flag == true) {
+                    $("#projextendstart_date").prop('disabled', true).val(res.data.startDate);
+                } else {
+                    $("#projextendstart_date").prop('disabled', false).val(res.data.startDateDefault).attr('min', res.data.startdateformat);
+                }
+                $("#projexamtd").html(res.data.examDetails.code + ":" + res.data.examDetails.title);
+                $("#projprogrammetd").html(res.data.examDetails.prgmDetails[0].programme);
+                $("#projdatetd").html(res.data.rejectionLastDate);
+                $("#projexamid").val(res.data.examDetails.id);
+                $("#projextendend_date").val('').attr('type', 'text').attr('min', res.data.endateformat);
+            }
+        });
+    });
+
+    $("#extend-project-date").on("submit", function (e) {
+        e.preventDefault();
+        var projstartdate = $("#projextendstart_date").val();
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(projstartdate)) {
+            var parts = projstartdate.split("/");
+            projstartdate = parts[2] + "-" + parts[1] + "-" + parts[0];
+        }
+        $.ajax({
+            url: "{% url 'extend-project-last-date' %}",
+            type: "POST",
+            data: { "projstartdate": projstartdate, "projenddate": $("#projextendend_date").val(), "examid": $("#projexamid").val() },
+            headers: { "X-CSRFToken": "{{csrf_token}}" },
+            dataType: 'json',
+            success: function () {
+                swal({ title: 'Done!', text: 'Successfully Extended Project Rejection Date', type: 'success', padding: '2em' });
+                location.reload();
+            },
+            error: function (res) {
+                swal({ title: "Oops!", type: 'error', text: res.message, padding: '2em' });
+            }
+        });
+    });
+</script>
+
+<script>
+    $('.bd-example-modal-lgz').on('shown.bs.modal', function (event) {
+        var url = $(event.relatedTarget).data("url");
+        var token = '{{csrf_token}}';
+        $.ajax({
+            type: "POST",
+            headers: { "X-CSRFToken": token },
+            url: url,
+            dataType: "json",
+            success: function (res) {
+                $("#ad_exam_name").html(res.data.examDetails.code + ":" + res.data.examDetails.title);
+                $("#ad_prgm").html(res.data.examDetails.prgmDetails[0].programme);
+                $("#ad_scheme").html(res.data.examDetails.prgmDetails[0].scheme);
+                $("#ad_sem").html(res.data.examDetails.prgmDetails[0].semester);
+                $("#exmid").val(res.data.examDetails.id);
+
+                $("#ad_year_of_admission").empty();
+                res.data.examDetails.admissionYr.forEach(function (yr) {
+                    $("#ad_year_of_admission").append(yr.admissionYear + " ");
+                });
+            }
+        });
+    });
+
+    $("#adyr-sub").on("submit", function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'update-admission-year' %}?format=json",
+            type: 'post',
+            data: { "admissionyear": $("#muladmsnyr").val(), "examid": $("#exmid").val() },
+            headers: { "X-CSRFToken": "{{csrf_token}}" },
+            dataType: 'json',
+            success: function (res) {
+                if (res.data.year === 'sucess') {
+                    swal({ title: 'Done!', text: res.data.message, type: 'success', padding: '2em' });
+                    location.reload();
+                } else {
+                    swal("", res.data.message, "warning");
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        var cascadeTree = {{ data.cascade_json|safe }};
+
+        $('#prgm_type, #prgm_group').change(function () {
+            var type = $('#prgm_type').val();
+            var group = $('#prgm_group').val();
+            $('#prgm_class').empty().append('<option value="" disabled selected></option>');
+            $('#prgm_list').empty().append('<option value="" disabled selected></option>');
+            $('#scheme_list').empty().append('<option value="" disabled selected></option>');
+            $('#sem_list').empty().append('<option value="" disabled selected></option>');
+            if (type && group && cascadeTree[type] && cascadeTree[type][group]) {
+                Object.keys(cascadeTree[type][group]).forEach(function (cls) {
+                    if (cls !== "NA") $('#prgm_class').append('<option value="' + cls + '">' + cls + '</option>');
+                });
+            }
+        });
+
+        $('#prgm_class').change(function () {
+            var type = $('#prgm_type').val();
+            var group = $('#prgm_group').val();
+            var cls = $(this).val();
+            $('#prgm_list').empty().append('<option value="" disabled selected></option>');
+            $('#scheme_list').empty().append('<option value="" disabled selected></option>');
+            $('#sem_list').empty().append('<option value="" disabled selected></option>');
+            if (type && group && cls && cascadeTree[type][group][cls]) {
+                Object.keys(cascadeTree[type][group][cls]).forEach(function (prog) {
+                    if (prog !== "NA") $('#prgm_list').append('<option value="' + prog + '">' + prog + '</option>');
+                });
+            }
+        });
+
+        $('#prgm_list').change(function () {
+            var type = $('#prgm_type').val();
+            var group = $('#prgm_group').val();
+            var cls = $('#prgm_class').val();
+            var prog = $(this).val();
+            $('#scheme_list').empty().append('<option value="" disabled selected></option>');
+            $('#sem_list').empty().append('<option value="" disabled selected></option>');
+            if (type && group && cls && prog && cascadeTree[type][group][cls][prog]) {
+                Object.keys(cascadeTree[type][group][cls][prog]).forEach(function (scheme) {
+                    if (scheme !== "NA") $('#scheme_list').append('<option value="' + scheme + '">' + scheme + '</option>');
+                });
+            }
+        });
+
+        $('#scheme_list').change(function () {
+            var type = $('#prgm_type').val();
+            var group = $('#prgm_group').val();
+            var cls = $('#prgm_class').val();
+            var prog = $('#prgm_list').val();
+            var scheme = $(this).val();
+            $('#sem_list').empty().append('<option value="" disabled selected></option>');
+            if (type && group && cls && prog && scheme && cascadeTree[type][group][cls][prog][scheme]) {
+                cascadeTree[type][group][cls][prog][scheme].forEach(function (sem) {
+                    if (sem !== "NA") $('#sem_list').append('<option value="' + sem + '">' + sem + '</option>');
+                });
+            }
+        });
+    });
+</script>
+{% endblock head %}

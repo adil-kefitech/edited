@@ -1,0 +1,495 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block additional_styles %}
+
+    <style>
+       
+        #con_data {
+            display: none;
+        }
+        #dbl1 {
+			display:none;
+		}
+        #dbl2 {
+			display:none;
+		}
+        #dblnext {
+			display:none;
+		}
+        .space {
+            padding: 5px 0px;
+        }
+        .foc {
+            top: -15px !important; 
+            font-size: 14px !important;
+            transform: translateY(0) !important;
+            left: 15px !important;
+            opacity: 1 !important;
+            color: #8f12a5 !important;
+        }
+        .foci {
+            border-bottom: 2px solid #8c12a2 !important;
+        }
+        #Yes_ {
+			display:none;
+		}
+        #No_ {
+			display:none;
+		}
+    </style>
+    <style>
+        #bundleCode {
+            display: none;
+        }
+    </style>
+    <!--  END CUSTOM STYLE FILE  -->
+    <!-- <style>
+        input[type=date]:required:invalid::-webkit-datetime-edit {
+            color: transparent;
+        }
+
+        input[type=date]:focus::-webkit-datetime-edit {
+            color: black !important;
+        }
+
+        input[type=month]:required:invalid::-webkit-datetime-edit {
+            color: transparent;
+        }
+
+        input[type=month]:focus::-webkit-datetime-edit {
+            color: black !important;
+        }
+    </style> -->
+    <!-- BEGIN PAGE LEVEL STYLES -->
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/datatables.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/dt-global_style.css' %}">
+    <!-- END PAGE LEVEL STYLES -->
+    <!-- BEGIN THEME GLOBAL STYLES -->
+    <link href="{% static 'plugins/animate/animate.css' %}" rel="stylesheet" type="text/css" />
+    <script src="{% static 'plugins/sweetalerts/promise-polyfill.js' %}"></script>
+    <link href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'plugins/sweetalerts/sweetalert.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/components/custom-sweetalert.css' %}" rel="stylesheet" type="text/css" />
+    <!-- END THEME GLOBAL STYLES -->
+    <!-- SweetAlert CSS -->
+    <link rel="stylesheet" href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Include SweetAlert JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <!-- jQuery (if used) -->
+   
+    {% endblock %}
+    {% block content %}
+
+        <!--  BEGIN CONTENT AREA  -->
+        <div id="content" class="main-content">
+            <div class="container">
+                <div class="container">
+                    <div class="row layout-top-spacing" id="cancel-row">
+                        <div class="d-flex justify-content-between w-100">
+                            <div id="date_time_picker" class=" layout-top-spacing">
+                                <div class="seperator-header mx-3">
+                                    <h4 class="">Additional Teacher Allocation View</h4>
+                                </div>
+                            </div>
+                            <div>
+                                <nav class="breadcrumb-one" aria-label="breadcrumb">
+                                    <ol class="breadcrumb bg-white mt-3">
+                                        <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+                                        <li class="breadcrumb-item active" aria-current="page"><span>Additional Teacher Allocation View</span>
+                                        </li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="container">
+                            <div class="pl-4">
+                                <div class="col-12 mb-4" style="margin: auto;">
+                                    <div class="filterz" id="filterz">
+                                        <div class="row form-sec">
+                                            <div class="col-4 mb-4 mt-2">
+                                                <div class="select">
+                                                    <select class="select-text" id="chairman" required>
+                                                        <option value="" disabled selected></option>
+                                                        {% for user_id in data.userobj%}
+                                                        <option value="{{user_id.id}}">{{user_id.name}}</option>
+                                                        {% endfor%}
+                                                    </select>
+                                                    <span class="select-highlight"></span>
+                                                    <span class="select-bar"></span>
+                                                    <label class="select-label">Coordinating Chairman</label>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-4 mb-4 mt-2">
+                                                <div class="select">
+                                                    <select class="select-text" required id="zonechairman" name="zonechairman">
+                                                    </select>
+                                                    <span class="select-highlight"></span>
+                                                    <span class="select-bar"></span>
+                                                    <label class="select-label">Zonal Chairman</label>
+                                                </div>
+                                            </div>
+                                          
+                                        </div>
+                                        <div class="col-12" style="text-align: right; padding: 0px;">
+                                            <button class="mt-1 btn btn-danger mb-1" type="reset" id="reset">Reset</button>
+                                            <button class="mt-1 btn btn-primary mb-1" type="button" id="submit">Submit</button>
+                                        </div>
+                                    </div>
+                                    <div class="row layout-top-spacing" id="dbl">
+                                        <div class="col-xl-12 col-lg-12 col-sm-12 pl-0 pr-0" id="detailTable">
+                                            
+                                            <div class="widget-content br-6">
+                                                <div class="table-responsive mb-4 mt-4" style="overflow-x: visible;">
+                                                    <table id="style-3" class="table style-3">
+                                                        <thead>
+                                                            <tr>
+                                                               
+
+                                                                <th class="text-center">Sl.No.</th>
+                                                                <th class="text-center">Examiner Name</th>
+                                                                <th class="text-center">Username</th>
+                                                                <th class="text-center">College</th>
+                                                                <th class="text-center">Course</th>
+                                                                <th class="text-center">Actions</th>
+                                                              
+                                                                
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="tab">
+                                                            
+                                                        </tbody>
+                                                        
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                       
+
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--  END CONTENT AREA  -->
+
+        {% endblock %}
+       
+        {% block head %}
+        <script src="{%static 'assets/js/custom.js'%}"></script>
+    
+        <script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+        <script src="{% static 'plugins/noUiSlider/nouislider.min.js' %}"></script>
+    
+        <script src="{% static 'plugins/noUiSlider/custom-nouiSlider.js' %}"></script>
+        <script src="{% static 'plugins/bootstrap-range-Slider/bootstrap-rangeSlider.js' %}"></script>
+    
+      
+    
+        <script>
+            $(document).ready(function () {
+                App.init();
+            });
+        </script>
+    
+        
+    
+    
+        <script>
+            function check() {
+                var x = document.getElementById("dbl");
+                x.style.display = "flex";
+            }
+            function checkz() {
+                var z = document.getElementById("dblz");
+                z.style.display = "block";
+            }
+        </script>
+    
+        <script>
+            var field = document.getElementById('city');
+            $('#done').on('click', function () {
+                field.required = false;
+            });
+            $('#done').on('blur', function () {
+                field.required = true;
+            });
+            
+        </script>
+    
+        <script>
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+        </script>
+    
+    
+    
+    <script>
+        // var e;
+        c1 = $('#style-1').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c1);
+    
+        c2 = $('#style-2').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            // "order": [[ 2, "desc" ]],
+            "bPaginate": false,
+            "bFilter": false,
+            "bInfo": false,
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c2);
+    
+        c21 = $('#style-21').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            // "order": [[ 2, "desc" ]],
+            "bPaginate": false,
+            "bFilter": false,
+            "bInfo": false,
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c21);
+    
+        c22 = $('#style-22').DataTable({
+            headerCallback: function (e, a, t, n, s) {
+                e.getElementsByTagName("th")[0].innerHTML = '<label class="new-control new-checkbox checkbox-outline-primary m-auto">\n<input type="checkbox" class="new-control-input chk-parent select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+            },
+            columnDefs: [{
+                targets: 0, width: "30px", className: "", orderable: !1, render: function (e, a, t, n) {
+                    return '<label class="new-control new-checkbox checkbox-outline-primary  m-auto">\n<input type="checkbox" class="new-control-input child-chk select-customers-info" id="customer-all-info">\n<span class="new-control-indicator"></span><span style="visibility:hidden">c</span>\n</label>'
+                }
+            }],
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            // "order": [[ 2, "desc" ]],
+            "bPaginate": false,
+            "bFilter": false,
+            "bInfo": false,
+            "lengthMenu": [10, 20, 50, 100],
+            "pageLength": 10
+        });
+    
+        multiCheck(c22);
+    
+        
+        c3 = $('#style-3').DataTable({
+            "oLanguage": {
+                "oPaginate": { "sPrevious": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>', "sNext": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' },
+                "sInfo": "Showing page _PAGE_ of _PAGES_",
+                "sSearch": '<svg xmlns="http://www.w3.org00/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
+                "sSearchPlaceholder": "Search...",
+                "sLengthMenu": "Results :  _MENU_",
+            },
+            "stripeClasses": [],
+            "lengthMenu": [10, 20, 30, 50],
+            "pageLength": 20
+        });
+    
+        multiCheck(c3);
+    
+    </script>
+    <script>
+         $("#chairman").change(function () {
+          var token = '{{csrf_token}}';
+          var chairman= $("#chairman option:selected").val();
+          var urls = "{% url 'extzone-view' %}?format=json"
+          $.ajax({
+              headers: { 'X-CSRFToken': token },
+              type: "POST",
+              url: urls,
+              data: {
+                  'chairman': chairman,
+              },
+              success: function (res) {
+                  $('#zonechairman').empty();
+                  
+                  $.each(res.data.userobj, function (i, value) {
+                      $('#zonechairman').append('<option value=""></option>');
+                      $('#zonechairman').append('<option value="' + value.id + '">' + value.name + '</option>');
+                  });
+              }
+          });
+      });
+    </script>
+ <script>
+    $(document).ready(function() {
+        $("#submit").click(function() {
+            var zonechairman = $("#zonechairman").val();
+            var token = '{{csrf_token}}';
+            var url = "{% url 'exttch-view' %}?format=json";
+
+            $.ajax({
+                headers: { "X-CSRFToken": token },
+                type: "post",
+                url: url,
+                dataType: "json",
+                data: {
+                    'zonechairman': zonechairman,
+                },
+                success: (res) => {
+                    var tbody = $("#tab");
+                    tbody.empty(); // Clear existing rows
+                    
+                    if (res.success) {
+                        var result = res.data.result;
+
+                        result.forEach(function(item, index) {
+                            var collegeNames = item.college ? item.college.join(', ') : 'N/A';
+                            var courseNames = item.corsnames ? item.corsnames.join(', ') : 'N/A';
+
+                            tbody.append(`
+                                <tr> 
+                                    <td class="text-center">${index + 1}</td>
+                                    <td class="text-center">${item.fullname}</td>
+
+                                    <td class="text-center">${item.username}</td>
+
+                                    <td class="text-center">${collegeNames}</td>
+                                    <td class="text-center">${courseNames}</td>
+                                    <td class="text-center">
+                                        <div class="dropdown custom-dropdown">
+                                            <a class="dropdown-toggle" href="#" role="button"
+                                                id="dropdownMenuLink5" data-toggle="dropdown"
+                                                aria-haspopup="true" aria-expanded="false">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                                    height="24" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round"
+                                                    class="feather feather-more-horizontal">
+                                                    <circle cx="12" cy="12" r="1"></circle>
+                                                    <circle cx="19" cy="12" r="1"></circle>
+                                                    <circle cx="5" cy="12" r="1"></circle>
+                                                </svg>
+                                            </a>
+                                            <div class="dropdown-menu widget-content"
+                                                aria-labelledby="dropdownMenuLink5"
+                                                style="will-change: transform;">
+                                                <a class="dropdown-item upload-link"
+                                                    href="javascript:void(0);">Delete</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="hidden" class="userid" value="${item.username}">
+                                    </td>
+                                </tr>
+                            `);
+                        });
+
+                        // Bind click event to Delete buttons
+                        tbody.on("click", ".upload-link", function () {
+                            var parentTr = $(this).closest("tr");
+                            var userids = parentTr.find(".userid").val();
+                            var token = '{{csrf_token}}';
+
+                            console.log("User ID for deletion:", userids);
+                            var apiURL = "{% url 'exttch-edit' %}?format=json";
+
+                            $.ajax({
+                                headers: { "X-CSRFToken": token },
+                                type: "post",
+                                url: apiURL,
+                                dataType: "json",
+                                data: {
+                                    userids: userids,
+                                },
+                                success: function(data) {
+                                    if (data.success) {
+                                        Swal.fire({
+                                            title: 'Done!',
+                                            text: "Deleted successfully",
+                                            type: 'success',
+                                            padding: '2em',
+                                        }).then(() => {
+                                            parentTr.remove();
+                                        });
+                                    } else {
+                                        Swal.fire({
+                                            title: "Oops!",
+                                            text: "Already deleted",
+                                            type: 'error',
+                                            padding: '2em'
+                                        });
+                                    }
+                                }
+                            });
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>
+    <script>
+        $("#reset").click(function (){
+            location.reload();
+        })
+    </script>
+    
+    
+    
+
+{% endblock %}

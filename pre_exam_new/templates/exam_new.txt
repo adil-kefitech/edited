@@ -1,0 +1,1927 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block additional_styles %}
+<!-- END PAGE LEVEL PLUGINS/CUSTOM STYLES -->
+<link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css" type="image/x-icon">
+<!-- BEGIN THEME GLOBAL STYLES -->
+<link href="{% static 'plugins/flatpickr/flatpickr.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'plugins/noUiSlider/nouislider.min.css' %}" rel="stylesheet" type="text/css">
+<!-- END THEME GLOBAL STYLES -->
+<!--  BEGIN CUSTOM STYLE FILE  -->
+<link href="{% static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/jquery-step/jquery.steps.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'assets/css/forms/theme-checkbox-radio.css' %}">
+<link href="{% static 'plugins/flatpickr/custom-flatpickr.css' %}" rel="stylesheet" type="text/css">
+<!-- <link href="{% static 'plugins/noUiSlider/custom-nouiSlider.css' %}" rel="stylesheet" type="text/css"> -->
+<link href="{% static 'plugins/bootstrap-range-Slider/bootstrap-slider.css' %}" rel="stylesheet" type="text/css">
+<style>
+    .select-text2 {
+        position: relative;
+        font-family: inherit;
+        background-color: transparent;
+        width: 100%;
+        padding: 10px 10px 10px 0;
+        font-size: 14px;
+        border-radius: 0;
+        border: none;
+        border-bottom: 2px solid red;
+    }
+
+    /* Remove focus */
+    .select-text2:focus {
+        outline: none;
+        border-bottom: 2px solid #8c12a2 !important;
+    }
+
+    /* Use custom arrow */
+    .select .select-text2 {
+        appearance: none;
+        -webkit-appearance: none
+    }
+
+    code {
+        user-select: none;
+    }
+</style>
+<style>
+    .input-text2 {
+        background-color: #fff !important;
+        border-bottom: 2px solid rgb(241, 6, 6) !important;
+    }
+
+    .input-text2:focus {
+        border-bottom: 2px solid #8c12a2 !important;
+    }
+</style>
+<!--  END CUSTOM STYLE FILE  -->
+<style>
+    input[type=date]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=date]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+
+    input[type=month]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=month]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+
+    input[type=time]:required:invalid::-webkit-datetime-edit {
+        color: transparent;
+    }
+
+    input[type=time]:focus::-webkit-datetime-edit {
+        color: black !important;
+    }
+</style>
+<!-- BEGIN PAGE LEVEL STYLES -->
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/datatables.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/table/datatable/dt-global_style.css' %}">
+<!-- END PAGE LEVEL STYLES -->
+<style>
+    .preview-th {
+        color: #000000;
+        font-weight: 700;
+        font-size: 13px;
+        border: none;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .preview-td {
+        color: #000000;
+        font-weight: 500;
+        font-size: 13px;
+        border: none;
+        letter-spacing: 2px;
+    }
+
+    .preview-head {
+        color: #87119c;
+        font-weight: 700;
+        font-size: 15px;
+        border: none;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+</style>
+<!--  BEGIN SWITCH STYLE FILE  -->
+<style>
+    .switch {
+        position: relative;
+        display: block;
+        vertical-align: top;
+        width: 100px;
+        height: 30px;
+        padding: 3px;
+        margin: 0;
+        background: linear-gradient(to bottom, #eeeeee, #FFFFFF 25px);
+        background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF 25px);
+        border-radius: 18px;
+        box-shadow: inset 0 -1px white, inset 0 1px 1px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        box-sizing: content-box;
+    }
+
+    .switch-input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        box-sizing: content-box;
+    }
+
+    .switch-label {
+        position: relative;
+        display: block;
+        height: inherit;
+        font-size: 10px;
+        text-transform: uppercase;
+        background: #eceeef;
+        border-radius: inherit;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.15);
+        box-sizing: content-box;
+    }
+
+    .switch-label:before,
+    .switch-label:after {
+        position: absolute;
+        top: 50%;
+        margin-top: -.5em;
+        line-height: 1;
+        -webkit-transition: inherit;
+        -moz-transition: inherit;
+        -o-transition: inherit;
+        transition: inherit;
+        box-sizing: content-box;
+    }
+
+    .switch-label:before {
+        content: attr(data-off);
+        right: 11px;
+        color: #FFFFFF;
+        text-shadow: 0 1px rgba(255, 255, 255, 0.5);
+    }
+
+    .switch-label:after {
+        content: attr(data-on);
+        left: 11px;
+        color: #FFFFFF;
+        text-shadow: 0 1px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+    }
+
+    .switch-input:checked~.switch-label {
+        background: #E1B42B;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch-input:checked~.switch-label:before {
+        opacity: 0;
+    }
+
+    .switch-input:checked~.switch-label:after {
+        opacity: 1;
+    }
+
+    .switch-handle {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(to bottom, #FFFFFF 40%, #f0f0f0);
+        background-image: -webkit-linear-gradient(top, #FFFFFF 40%, #f0f0f0);
+        border-radius: 100%;
+        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .switch-handle:before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -6px 0 0 -6px;
+        width: 12px;
+        height: 12px;
+        background: linear-gradient(to bottom, #eeeeee, #FFFFFF);
+        background-image: -webkit-linear-gradient(top, #eeeeee, #FFFFFF);
+        border-radius: 6px;
+        box-shadow: inset 0 1px rgba(0, 0, 0, 0.02);
+    }
+
+    .switch-input:checked~.switch-handle {
+        left: 74px;
+        box-shadow: -1px 1px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Switch Left Right
+    ==========================*/
+    .switch-left-right .switch-label {
+        overflow: hidden;
+    }
+
+    .switch-left-right .switch-label:before,
+    .switch-left-right .switch-label:after {
+        width: 20px;
+        height: 20px;
+        top: 4px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 11px 0 0 0;
+        text-indent: -37px;
+        border-radius: 20px;
+        box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.2), inset 0 0 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .switch-left-right .switch-label:before {
+        background: #87CEEB;
+        text-align: left;
+        padding-left: 80px;
+    }
+
+    .switch-left-right .switch-label:after {
+        text-align: left;
+        text-indent: 9px;
+        background: #FF7F50;
+        left: -100px;
+        opacity: 1;
+        width: 100%;
+    }
+
+    .switch-left-right .switch-input:checked~.switch-label:before {
+        opacity: 1;
+        left: 100px;
+    }
+
+    .switch-left-right .switch-input:checked~.switch-label:after {
+        left: 0;
+    }
+
+    .switch-left-right .switch-input:checked~.switch-label {
+        background: inherit;
+    }
+
+    #check_box_scroll {
+        display: flex;
+        align-items: center;
+    }
+
+    #asmission_year_improvement {
+        margin-left: 15px;
+        align-self: center;
+    }
+</style>
+<!--  END SWITCH STYLE FILE  -->
+<!-- BEGIN THEME GLOBAL STYLES -->
+<link href="{% static 'plugins/animate/animate.css' %}" rel="stylesheet" type="text/css" />
+<script src="{% static 'plugins/sweetalerts/promise-polyfill.js' %}"></script>
+<link href="{% static 'plugins/sweetalerts/sweetalert2.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'plugins/sweetalerts/sweetalert.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'assets/css/components/custom-sweetalert.css' %}" rel="stylesheet" type="text/css" />
+<!-- END THEME GLOBAL STYLES -->
+<!--  BEGIN CUSTOM STYLE FILE  -->
+<link href="{% static 'assets/css/scrollspyNav.css' %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" type="text/css" href="{% static 'plugins/select2/select2.min.css' %}">
+<!--  END CUSTOM STYLE FILE  -->
+{% endblock additional_styles %}
+{% block content %}
+<!--  BEGIN CONTENT AREA  -->
+<div class="layout-px-spacing" id="">
+    <div class="row layout-top-spacing" id="cancel-row">
+        <div class="d-flex justify-content-between w-100" id="pgm_type_div">
+            <div id="date_time_picker" class=" layout-top-spacing">
+                <div class="seperator-header mx-3">
+                    <h4 class="">Exam Configuration</h4>
+                </div>
+            </div>
+            <div>
+                <nav class="breadcrumb-one" aria-label="breadcrumb">
+                    <ol class="breadcrumb bg-white mt-3">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active" aria-current="page"><span>Exam Config</span>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+        <div class="container">
+            <div class="pl-4">
+                <form name="dform">
+                    <div class="col mb-4" style="margin: auto;">
+                        <div class="" id="dbl">
+                            <div class="row form-sec">
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" required id="pgm_type" name="programmeType">
+                                            <option value="" disabled selected></option>
+                                            {% for i in data.prg_typ %}
+                                            <option value="{{i.id}}">{{i.title}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" required id="programme_group"
+                                            name="programme_group">
+                                            <option value="" disabled selected></option>
+                                            {% for i in data.prg_grp %}
+                                            <option value="{{i.id}}">{{i.title}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme Group</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4">
+                                    <div class="select">
+                                        <select class="select-text" required id="programme_class"
+                                            name="programme_class">
+                                            <option value="" disabled selected></option>
+                                            {% for i in data.prg_cls %}
+                                            <option value="{{i.id}}">{{i.title}}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme Class</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row form-sec">
+                                <div class="col-4 mb-4 mt-2">
+                                    <div class="select">
+                                        <select class="select-text" required id="programme_title" name="programme">
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Programme</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4 mt-2">
+                                    <div class="select">
+                                        <select class="select-text" required id="prgm_scheme" name="scheme">
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Scheme</label>
+                                    </div>
+                                </div>
+                                <div class="col-4 mb-4 mt-2">
+                                    <div class="select">
+                                        <select class="select-text" required id="semester" name="semester"
+                                            data-url="{% url 'semester-wise-course-list' %}">
+                                        </select>
+                                        <span class="select-highlight"></span>
+                                        <span class="select-bar"></span>
+                                        <label class="select-label">Semester</label>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div id="warningMessage" class="row"
+                                style="display: none; background-color: gray; padding: 10px; margin-top: 10px; text-align: center;">
+                                <div class="col-12">
+                                    <h4 style="color: red;">Please select one of the options above to proceed.</h4>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 mb-2 mt-2">
+                                    <div class="d-flex align-items-center">
+                                        <label class="me-2" style="min-width: 480px; white-space: nowrap;">Admission
+                                            Years Considered For The Examination:<br><span
+                                                style="font-size: 0.7em;">(All admission years including regular,
+                                                improvement and supplementary)</span></label>
+                                        <select class="form-control tagging admission_year" multiple required
+                                            id="admission_year" name="admission_year"
+                                            style="flex-grow: 1; min-width: 220px;">
+                                        </select>
+                                        <code id="year_valid" style="float: right;"></code>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12 mb-2 mt-2">
+                                    <div class="d-flex align-items-center">
+                                        <label class="me-2" style="min-width: 450px; white-space: nowrap;">Admission
+                                            Year Considered For The Regular Chance:</label>
+                                        <select class="form-control tagging admission_regular" multiple required
+                                            id="admission_regular" name="admission_regular"
+                                            style="flex-grow: 1; min-width: 250px;">
+                                        </select>
+                                        <code id="year_valid" style="float: right;"></code>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" id="check_box_scroll">
+                                <div class="col-12 mt-3 mb-1" style="display: flex;flex-direction: column;">
+                                    <div class="d-flex align-items-center">
+                                        <label>Improvement available for this exam: </label>
+                                        <div>
+                                            <div class="n-chk mt-1 ml-2 mb-1">
+                                                <label class="new-control new-checkbox checkbox-primary">
+                                                    <input type="radio" name="improvement" class="new-control-input"
+                                                        value="yes" id="improvementyes">
+                                                    <span class="new-control-indicator"></span>
+                                                    <span style="color: #555555; font-weight: 500;">YES</span>
+                                                </label>
+                                                <label class="new-control new-checkbox checkbox-primary">
+                                                    <input type="radio" name="improvement" class="new-control-input"
+                                                        value="no" id="improvementno">
+                                                    <span class="new-control-indicator"></span>
+                                                    <span style="color: #555555; font-weight: 500;">NO</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Improvement Years Section -->
+                                    <div id="asmission_year_improvement" style="display: none">
+                                        <div class="d-flex align-items-center">
+                                            <label class="me-2" style="min-width: 450px; white-space: nowrap;">Admission
+                                                Year Considered For The Improvement:</label>
+                                            <div class="select">
+                                                <select class="select-text admission_improvement" required
+                                                    id="admission_improvement" name=" admission_improvement"
+                                                    style="flex-grow: 1; min-width: 250px;">
+
+                                                </select>
+                                                <span class="select-highlight"></span>
+                                                <span class="select-bar"></span>
+                                            </div>
+                                            <code id="" style="float: left;"></code>
+                                        </div>
+
+                                        <!-- <select class="form-control  admission_improvement"  required id="admission_improvement" name="admission_improvement">
+                                        <option value="" disabled selected></option>
+
+                                    </select> -->
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div class="row form-sec">
+                                <div class="col-8 mt-2 mb-3 ">
+                                    <input class="input-text" type="tel" id="notif_title" required="required">
+                                    <label>Notification Title</label>
+                                    <div class="cover"></div>
+                                </div>
+                                <div class="col-4 mt-2 mb-3">
+                                    <input class="input-text" type="tel" id="order_number" required="required">
+                                    <label>University Order ID</label>
+                                    <div class="cover"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8">
+                                    <div class="row form-sec">
+                                        <div class="col-6 mt-4 mb-4" style="background-color: #FFFFFF;">
+                                            <input class="input-text" onfocus="(this.type='date')"
+                                                onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                                id="notif_date" placeholder=" " required="required">
+                                            <label>Notification Date</label>
+                                            <div class="cover"></div>
+                                        </div>
+                                        <div class="col-6 mt-4 mb-4" style="background-color: #FFFFFF;">
+                                            <input class="input-text" onfocus="(this.type='date')"
+                                                onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                                id="attendance_upload_end_date" placeholder=" " required="required">
+                                            <label>Attendance Upload(Last Date)</label>
+                                            <div class="cover"></div>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                                <div class="col-4 mb-2 mt-2">
+                                    <code id="file_validate" style="float: right;"></code>
+                                    <div class="form-group mb-">
+                                        <label for="exampleFormControlFile1">Upload Document</label>
+                                        <input type="file" class="form-control-file" id="exampleFormControlFile1">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row form-sec">
+                                <div class="col-md-12 mb-4 mt-2">
+                                    <input class="input-text" type="tel" required="required" id="examTitle">
+                                    <label>Exam Name</label>
+                                    <div class="cover"></div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="row form-sec">
+                                        <div class="col-4 mt-5 mb-4">
+                                            <div class="select">
+                                                <select class="select-text" required id="month" name="month">
+                                                    <option value="" disabled selected></option>
+                                                    <option value='Janaury'>January</option>
+                                                    <option value='February'>February</option>
+                                                    <option value='March'>March</option>
+                                                    <option value='April'>April</option>
+                                                    <option value='May'>May</option>
+                                                    <option value='June'>June</option>
+                                                    <option value='July'>July</option>
+                                                    <option value='August'>August</option>
+                                                    <option value='September'>September</option>
+                                                    <option value='October'>October</option>
+                                                    <option value='November'>November</option>
+                                                    <option value='December'>December</option>
+                                                </select>
+                                                <span class="select-highlight"></span>
+                                                <span class="select-bar"></span>
+                                                <label class="select-label">Month</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mt-5 mb-4">
+                                            <div class="select">
+                                                <select class="select-text" required id="year" name="year">
+                                                    <option value="" disabled selected></option>
+                                                    {% for i in data.datelist %}
+                                                    <option value='{{i}}'> {{i}} </option>
+                                                    {% endfor %}
+                                                </select>
+                                                <span class="select-highlight"></span>
+                                                <span class="select-bar"></span>
+                                                <label class="select-label">Year</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4 mb-4 mt-5">
+                                            <div class="select">
+                                                <select class="select-text" required id="season" name="season"
+                                                    onChange="check()">
+                                                    <option value="" disabled selected></option>
+                                                </select>
+                                                <span class="select-highlight"></span>
+                                                <span class="select-bar"></span>
+                                                <label class="select-label">Season</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="row" id="check_box_scroll">
+                                <div class="row col-6  mt-3 mb-1">
+                                    <div class="col-md-4">
+                                        <label>Exam Type: </label>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="n-chk mt-1">
+                                            {% for i in data.exam_type_list %}
+                                            <label class="new-control new-checkbox checkbox-primary">
+                                                <input type="radio" name="examType" data-name="{{ i.name }}"
+                                                    class="new-control-input exam_type_class" value="{{ i.id }}"
+                                                    id="exam_type_id">
+                                                <span class="new-control-indicator"></span><span
+                                                    style="color: #555555; font-weight: 500;">&nbsp;{{ i.name }}</span>
+                                            </label>
+                                            {% endfor %}
+                                            <code id="check_valid2"></code>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row col-6 mt-3 ml-3 mb-1">
+                                    <div class="col-md-5">
+                                        <label>Question Paper Delivery: </label>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="n-chk mt-1">
+                                            {% for i in data.qp_delivery_list %}
+                                            <label class="new-control new-checkbox checkbox-primary">
+                                                <input type="radio" name="questionPaperDeliveryType"
+                                                    data-name="{{ i.name }}" class="new-control-input quest_paper_class"
+                                                    value="{{ i.id }}" id="quest_paper_id{{forloop.counter}}">
+                                                <span class="new-control-indicator"></span><span
+                                                    style="color: #555555; font-weight: 500;">&nbsp;{{ i.name }}</span>
+                                            </label>
+                                            {% endfor %}
+                                            <code id="check_valid1"></code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="">
+                                <h6 class="mb-3">Registration Dates</h6>
+                                <div class="row form-sec" id="without_fine">
+                                    <input type="text" hidden value="1" class="purposeId1" id="purposeId1">
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text startDate1" id="startDate1" name="startDate1"
+                                            type="text" onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>Without fine (Start Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text endDate1" id="endDate1" name="endDate1" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>Without fine (End Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-sec" id="with_fine">
+                                    <input type="text" hidden value="2" class="purposeId2" id="purposeId2">
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text startDate2" id="startDate2" name="startDate2"
+                                            type="text" onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With fine (Start Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text endDate2" id="endDate2" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With fine (End Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                </div>
+                                <div class="row form-sec" id="with_super_fine">
+                                    <input type="text" hidden value="3" class="purposeId3" id="purposeId3">
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text startDate3" id="startDate3" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With superfine (Start Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                    <div class="col-6 mb-4 mt-2">
+                                        <input class="input-text endDate3" id="endDate3" type="text"
+                                            onfocus="(this.type='date')"
+                                            onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                            required="required">
+                                        <label>With superfine (End Date)</label>
+                                        <div class="cover"></div>
+                                    </div>
+                                </div>
+                                <!-- <div class="row form-sec" id="with_penality_fine">
+                                <input type="text" hidden value="4" class="purposeId4" id="purposeId4">
+                                <div class="col-6 mb-4 mt-2">
+                                    <input class="input-text startDate4" type="text" onfocus="(this.type='date')"
+                                        onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                        id="startDate4" required="required">
+                                    <label>With Penalty (Start Date)</label>
+                                    <div class="cover"></div>
+                                </div>
+                                <div class="col-6 mb-4 mt-2">
+                                    <input class="input-text endDate4" id="endDate4" type="text"
+                                        onfocus="(this.type='date')"
+                                        onblur="(this.value == '' ? this.type='text' : this.type='date')"
+                                        required="required">
+                                    <label>With Penalty (End Date)</label>
+                                    <div class="cover"></div>
+                                </div>
+                            </div> -->
+                                <code id="dive_id"></code>
+
+                                <div class="col-12" style="text-align: center; ">
+                                    <input type="text" hidden id="prgm_sem">
+                                    <button class="mt-3 btn btn-danger mb-3" type="reset" id="clrBtn"
+                                        onclick="restFullBtn()">Reset</button>
+                                    <button class="mt-3 btn btn-primary mb-3" type="button" data-toggle="modal"
+                                        data-target=".bd-example-modal-lg-1_" id="preview_button">Preview</button>
+                                </div>
+                            </div>
+                            <!-- Begin modal -->
+                            <div class="modal fade bd-example-modal-lg-1" tabindex="-1" role="dialog"
+                                aria-labelledby="myLargeModalLabel" aria-hidden="true" id="preview_window">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-primary">
+                                            <div class="col row" style="text-align: center;">
+                                                <div class="col" style="padding: 1% 0px 1% 0px;">
+                                                    <span style="margin: auto; font-size: 18px;" id="exam"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <h6>Exam Details</h6>
+                                            <div class="table-responsive mb-1">
+                                                <table class="table">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="text-primary">Programme Type</td>
+                                                            <td id="programme_type"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Programme Group</td>
+                                                            <td id="prgm_group"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Programme Class</td>
+                                                            <td id="prgm_class"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Programme</td>
+                                                            <td id="programme"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Scheme</td>
+                                                            <td id="shm"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Semester</td>
+                                                            <td id="semstr"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Year of Admission</td>
+                                                            <td id="admi_year"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Notification Title</td>
+                                                            <td id="notif_title_data"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Date of Notification</td>
+                                                            <td id="not_date"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Last Date Of Attendance Upload</td>
+                                                            <td id="att_up_ate"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Month</td>
+                                                            <td id="mon"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Year</td>
+                                                            <td id="yr"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Season</td>
+                                                            <td id="ssn"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Exam Type</td>
+                                                            <td id="exam-type"></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-primary">Question Paper Delivery</td>
+                                                            <td id="qp_delivery"></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <!-- <h6>Fee</h6>
+                                    <div class="table-responsive mb-1">
+                                        <table class="table" id="feedata">
+
+                                        </table>
+                                    </div> -->
+
+                                            <h6>Important Dates</h6>
+                                            <div class="table-responsive mb-1">
+                                                <table class="table" id="exam_purpose">
+
+                                                </table>
+                                            </div>
+
+                                            <!-- <h6>Exam Schedule</h6>
+                                    <div class="table-responsive mb-1">
+                                        <table class="table" id="exam-schedule">
+
+                                        </table>
+                                    </div> -->
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn" id="back_button" data-dismiss="modal">Back to
+                                                Edit</button>
+                                            <button type="button" class="btn btn-primary" id=button1>Save</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End modal -->
+
+                        </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--  END CONTENT AREA  -->
+{% endblock content %}
+{% block head %}
+<script src="{%static 'assets/js/custom.js'%}"></script>
+<script>
+    if (typeof (Storage) !== "undefined") {
+        sessionStorage.setItem("Token", "{{data.token}}");
+    } else {
+    }
+</script>
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/noUiSlider/nouislider.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-range-Slider/bootstrap-rangeSlider.js' %}"></script>
+<!-- BEGIN PAGE LEVEL SCRIPTS -->
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/jquery-step/jquery.steps.min.js' %}"></script>
+<script src="{% static 'plugins/jquery-step/custom-jquery.steps.js' %}"></script>
+<script src="{% static 'assets/js/date.time.picker.js' %}"></script>
+<script src="{% static 'assets/js/jquery.dateFormat.js' %}"></script>
+<!-- END PAGE LEVEL SCRIPTS -->
+
+
+<script>
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    var prgmsemid
+
+    const csrftoken = getCookie('csrftoken');
+    var tablecount;
+
+
+
+    $('#semester').on('change', function (event) {
+
+        var url = "semester-wise-course-list?format=json"
+        var id = $('#programme_title').val()
+        var scheme_id = $('#prgm_scheme').val()
+        var semester_id = $('#semester').val()
+        var res = jQuery.ajax
+            ({
+                headers: { 'X-CSRFToken': csrftoken },
+                method: "POST",
+                data: {
+                    programmeId: id,
+                    schemeId: scheme_id,
+                    semesterId: semester_id
+                },
+                url: url,
+                dataType: "json",
+                success: course_renderlist,
+            });
+
+        function course_renderlist(res) {
+
+            if (res.success == false) {
+                swal({
+                    title: res.message,
+                    text: 'Do you want to continue?',
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes',
+                    padding: '2em',
+                }).then(function (result) {
+
+
+                    if (result.value) {
+                        var und = 0
+                        prgmsemid = res.data.prgmsem
+
+                        document.getElementById("prgm_sem").value = prgmsemid
+
+
+                    }
+                    else {
+                        var button = document.getElementById('clrBtn');
+                        button.click();
+
+                    }
+
+                });
+
+            }
+            else {
+                var und = 0
+                prgmsemid = res.data.prgmsem
+
+                document.getElementById("prgm_sem").value = prgmsemid
+            }
+        }
+    });
+
+</script>
+
+<script>
+    var token = '{{csrf_token}}'
+    $("#button1").one("click", function () {
+        purposeList = []
+        $(this).prop("disabled", true);
+
+        var sample_dict1 = { "purposeId": $("#purposeId1").val(), "startDate": $("#startDate1").val(), "endDate": $("#endDate1").val() }
+        var sample_dict2 = { "purposeId": $("#purposeId2").val(), "startDate": $("#startDate2").val(), "endDate": $("#endDate2").val() }
+        var sample_dict3 = { "purposeId": $("#purposeId3").val(), "startDate": $("#startDate3").val(), "endDate": $("#endDate3").val() }
+        //var sample_dict4 = { "purposeId": $("#purposeId4").val(), "startDate": $("#startDate4").val(), "endDate": $("#endDate4").val() }
+        purposeList = [sample_dict1, sample_dict2, sample_dict3]
+        scheduleList = []
+        exam_type_dic = {}
+        $('input[name="examType"]').each(function (index, element) {
+            name = $(this).data("name")
+            value = $(this).val()
+            exam_type_dic[name] = value;
+        });
+
+
+        var options = document.getElementById('admission_year').selectedOptions;
+        var values = Array.from(options).map(({ value }) => value);
+        console.log("admission_year//////", values)
+        admissionYearList = []
+
+        var options = document.getElementById('admission_regular').selectedOptions;
+        var regular_admission_values = Array.from(options).map(({ value }) => value);
+        console.log("admission_regularregularregular//////", regular_admission_values)
+        const myInput = document.getElementById('exampleFormControlFile1');
+
+        const formData = new FormData()
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+        formData.append('myFile', myInput.files[0])
+        formData.append('title', $('#examTitle').val())
+        formData.append('examType', $("input:radio[name=examType]:checked").val())
+        formData.append('questionPaperDeliveryType', $("input:radio[name=questionPaperDeliveryType]:checked").val())
+        formData.append('season', $('#season option:selected').val())
+        formData.append('admissionYearList', values)
+        formData.append('year', $('#year option:selected').val())
+        formData.append('month', $('#month option:selected').val())
+        formData.append('programme', $('#programme_title option:selected').val())
+        formData.append('programme_semester', $('#prgm_sem').val())
+        formData.append('scheme', $('#prgm_scheme option:selected').val())
+        formData.append('purposeList', JSON.stringify(purposeList))
+        formData.append('semester', $('#semester option:selected').val())
+        formData.append('notif_title', $('#notif_title').val())
+        formData.append('order_number', $('#order_number').val())
+        formData.append('attendance_upload_end_date', $('#attendance_upload_end_date').val())
+        formData.append('notif_date', $('#notif_date').val())
+        formData.append('admissionyear_regular_list', regular_admission_values)
+
+        // Conditionally append admissionimprovement if "YES" is selected
+        if (document.getElementById('improvementyes').checked) {
+            formData.append('admissionimprovement', $('#admission_improvement').val());
+        }
+        blockUI();
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'exam-creation' %}" + '?format=json',
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
+            enctype: 'multipart/form-data',
+            success: function (res) {
+                unblockUI();
+                if (res.success == true) {
+                    swal({
+                        title: 'Done!',
+                        text: res.message,
+                        type: 'success',
+                        padding: '2em',
+
+                    }).then(() => {
+
+                        var back_button = document.getElementById('back_button');
+                        back_button.click();
+                        var button = document.getElementById('clrBtn');
+                        button.click();
+                    });
+                }
+                else {
+                    Swal({
+                        "title": "Oops!",
+                        type: 'error',
+                        "text": res.message,
+                        padding: '2em'
+                    })
+                }
+
+            }
+        })
+
+
+    });
+</script>
+<!--+++++++++++++++++++++++++++++++++++ For Chain dropdown(Programme[Year wise]) start +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+<script>
+    $("#programme_class").change(function () {
+        $("#programme_title").empty();
+        $("#prgm_scheme").empty();
+        $("#semester").empty();
+        $("#admission_year").empty();
+        var prg_typ_id = $("#pgm_type option:selected").val();
+        var prg_grp_id = $("#programme_group option:selected").val();
+        var prg_cls_id = $("#programme_class option:selected").val();
+        var urls = "{% url 'prgm_type_group' %}"
+        $.ajax({
+            url: urls,
+            data: {
+                'prg_typ_id': prg_typ_id,
+                'prg_grp_id': prg_grp_id,
+                'prg_cls_id': prg_cls_id
+            },
+            success: function (data) {
+                $("#programme_title").html(data);
+            }
+        });
+    });
+
+    $("#pgm_type").change(function () {
+
+        $("#programme_group").prop('selectedIndex', 0);
+        $("#programme_class").prop('selectedIndex', 0);
+        $("#programme_title").empty();
+        $("#prgm_scheme").empty();
+        $("#semester").empty();
+        $("#admission_year").empty();
+
+    })
+    $("#programme_group").change(function () {
+
+        $("#programme_class").prop('selectedIndex', 0);
+        $("#programme_title").empty();
+        $("#prgm_scheme").empty();
+        $("#semester").empty();
+        $("#admission_year").empty();
+    })
+</script>
+<script>
+    $("#programme_title").change(function () {
+
+        var prgm_id = $("#programme_title option:selected").val();
+        var urls = "{% url 'prgmwise-scheme-syllabus-list' %}?format=json"
+        $.ajax({
+            headers: { 'X-CSRFToken': csrftoken },
+            type: "POST",
+            url: urls,
+            data: {
+                'programme_id': prgm_id,
+            },
+            success: function (res) {
+                $('#prgm_scheme').empty();
+                $("#semester").empty();
+                $.each(res.data.schemeList, function (i, value) {
+                    $('#prgm_scheme').append('<option value=""></option>');
+                    $('#prgm_scheme').append('<option value="' + value.id + '">' + value.name + '</option>');
+                });
+            }
+        });
+    });
+
+    $("#prgm_scheme").change(function () {
+
+        $("#semester").empty();
+        $("#admission_year").empty();
+        var prgm_id = $("#programme_title option:selected").val();
+        var scheme_id = $("#prgm_scheme option:selected").val()
+        var urls = "{% url 'prgmwise-scheme-admissionyear-list' %}?format=json"
+        $.ajax({
+            headers: { 'X-CSRFToken': csrftoken },
+            type: "POST",
+            url: urls,
+            data: {
+                'programme_id': prgm_id,
+                'scheme_id': scheme_id
+            },
+            success: function (res) {
+                $('#admission_year').empty();
+                $('#admission_improvement').empty();
+                $.each(res.data.schemeList, function (i, value) {
+                    const uniqueAdmissionyear = [...new Map(value.syllabusList.map(item => [item.admissionYearId, item])).values()];
+                    $('#admission_improvement').append('<option value="" disabled selected></option>')
+                    $.each(uniqueAdmissionyear, function (j, value1) {
+                        $('#admission_year').append('<option value="' + value1.admissionYearId + '" data-scheme="' + value.id + '">' + value1.admissionYear + '</option>');
+                        $('#admission_improvement').append('<option value="' + value1.admissionYearId + '">' + value1.admissionYear + '</option>');
+                        $('#admission_regular').append('<option value="' + value1.admissionYearId + '">' + value1.admissionYear + '</option>');
+
+
+                    });
+                });
+
+
+            }
+        });
+        $("#admission_year").empty();
+        var prgm_id = $("#programme_title option:selected").val()
+        var scheme_id = $("#prgm_scheme option:selected").val()
+        var urls = "{% url 'prgm-schemewise-semester-list'%}?format=json"
+        var res = jQuery.ajax({
+            type: "POST",
+            url: urls,
+            headers: { 'X-CSRFToken': csrftoken },
+            datatype: "json",
+            data: {
+                'programme_id': prgm_id,
+                'scheme_id': scheme_id
+            },
+            success: function (data) {
+                const array = data.data.schemeList
+                const key = 'semId';
+                $("#semester").empty()
+                $('#semester').append('<option value=""></option>');
+                $.each(array, function (j, value) {
+                    $("#semester").append('<option value="' + value.semId + '" data-prgsem="' + value.semId + '">' + value.semTitle + '</option>');
+                });
+            }
+        });
+    });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        var urls = "{% url 'get-all-exam-season' %}"
+        var res = jQuery.ajax;
+        $.ajax({
+            type: "GET",
+            url: urls,
+            dataType: "json",
+            success: function (res) {
+                $.each(res.data.seasonList, function (i, value) {
+                    $('#season').append('<option value="' + value.id + '">' + value.title + '</option>');
+                })
+            }
+        });
+    });
+</script>
+
+
+<!-- BEGIN THEME GLOBAL STYLE -->
+<script src="{% static 'plugins/sweetalerts/sweetalert2.min.js' %}"></script>
+<script src="{% static 'plugins/sweetalerts/custom-sweetalert.js' %}"></script>
+<!-- END THEME GLOBAL STYLE -->
+<!--  BEGIN CUSTOM SCRIPTS FILE  -->
+<script src="{% static 'assets/js/scrollspyNav.js' %}"></script>
+<script src="{% static 'plugins/select2/select2.min.js' %}"></script>
+<!-- <script src="{% static 'plugins/select2/custom-select2.js' %}"></script> -->
+<script>
+    $(".tagging").select2({
+        tags: true
+    });
+</script>
+<!--  BEGIN CUSTOM SCRIPTS FILE  -->
+<script>
+    var today = new Date()
+    // var today2 = '2021-09-15'
+    $(".startDate1").attr('min', today.toISOString().split("T")[0]);
+    $(".endDate1").attr('min', today.toISOString().split("T")[0]);
+    $(".startDate2").attr('min', today.toISOString().split("T")[0]);
+    $(".endDate2").attr('min', today.toISOString().split("T")[0]);
+    $(".startDate3").attr('min', today.toISOString().split("T")[0]);
+    $(".endDate3").attr('min', today.toISOString().split("T")[0]);
+
+    $("#preview_button").click(function () {
+        var pgm_type = document.getElementById('pgm_type').value
+        var programme_group = document.getElementById('programme_group').value
+        var programme_class = document.getElementById('programme_class').value
+        var programme_title = document.getElementById('programme_title').value
+        var prgm_scheme = document.getElementById('prgm_scheme').value
+        var semester = document.getElementById('semester').value
+        var admission_year = document.getElementById('admission_year').value
+        var month = document.getElementById('month').value
+        var year = document.getElementById('year').value
+        var examTitle = document.getElementById('examTitle').value
+        var season = document.getElementById('season').value
+        var notif_title = document.getElementById('notif_title').value
+        var order_number = document.getElementById('order_number').value
+        var notif_date = document.getElementById('notif_date').value
+        var attendance_upload_end_date = document.getElementById('attendance_upload_end_date').value
+
+        var purpose_1 = document.getElementById('purposeId1').value
+        var purpose_2 = document.getElementById('purposeId2').value
+        var purpose_3 = document.getElementById('purposeId3').value
+        //var purpose_4 = document.getElementById('purposeId4').value
+
+        var startDate1 = document.getElementById('startDate1').value
+        var startDate2 = document.getElementById('startDate2').value
+        var startDate3 = document.getElementById('startDate3').value
+        //var startDate4 = document.getElementById('startDate4').value
+
+        var endDate1 = document.getElementById('endDate1').value
+        var endDate2 = document.getElementById('endDate2').value
+        var endDate3 = document.getElementById('endDate3').value
+        //var endDate4 = document.getElementById('endDate4').value
+
+        var quest_paper_id = document.getElementsByClassName('quest_paper_class').value
+        var exam_type_id = document.getElementsByClassName('exam_type_class').value
+
+        purposeList = []
+
+        //==================FOR VALIDAION START======================================================
+
+        if (pgm_type.length < 1) {
+            document.getElementById("pgm_type").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (programme_group.length < 1) {
+            document.getElementById("programme_group").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (programme_class.length < 1) {
+            document.getElementById("programme_class").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (programme_title.length < 1) {
+            document.getElementById("programme_title").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (prgm_scheme.length < 1) {
+            document.getElementById("prgm_scheme").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (semester.length < 1) {
+            document.getElementById("semester").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (notif_title.length < 1) {
+            document.getElementById("notif_title").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+        else if (order_number.length < 1) {
+            document.getElementById("order_number").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        } else if (notif_date.length < 1) {
+            document.getElementById("notif_date").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        } else if (attendance_upload_end_date.length < 1) {
+            document.getElementById("attendance_upload_end_date").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if ($('#exampleFormControlFile1').get(0).files.length === 0) {
+            document.getElementById('pgm_type_div').scrollIntoView();
+            document.getElementById("file_validate").innerHTML = "* Please attach file";
+        }
+
+        else if (examTitle.length < 1) {
+            document.getElementById("examTitle").className = "input-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (month.length < 1) {
+            document.getElementById("file_validate").innerHTML = " ";
+            document.getElementById("month").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (year.length < 1) {
+            document.getElementById("year").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (season.length < 1) {
+            document.getElementById("season").className = "select-text2";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (admission_year.length < 1) {
+            document.getElementById("year_valid").innerHTML = "* This field is required";
+            document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+
+
+        else if (!$(".exam_type_class").is(':checked')) {
+            document.getElementById("check_valid2").innerHTML = "*This field is required";
+            // document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (!$(".quest_paper_class").is(':checked')) {
+            document.getElementById("check_valid1").innerHTML = "*This field is required";
+            // document.getElementById('pgm_type_div').scrollIntoView();
+        }
+
+        else if (startDate1.length < 1) {
+            document.getElementById("startDate1").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (endDate1.length < 1) {
+            document.getElementById("endDate1").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+        else if (purpose_2.length < 1) {
+            document.getElementById("purposeId2").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (startDate2.length < 1) {
+            document.getElementById("startDate2").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (endDate2.length < 1) {
+            document.getElementById("endDate2").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (purpose_3.length < 1) {
+            document.getElementById("purposeId3").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+
+        else if (startDate3.length < 1) {
+            document.getElementById("startDate3").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        else if (endDate3.length < 1) {
+            document.getElementById("endDate3").className = "input-text2";
+            document.getElementById("dive_id").innerHTML = "* This field is required";
+            document.getElementById('check_box_scroll').scrollIntoView();
+        }
+
+        //else if (purpose_4.length < 1) {
+        //document.getElementById("purposeId4").className = "input-text2";
+        //document.getElementById("dive_id").innerHTML = "* This field is required";
+        //document.getElementById('check_box_scroll').scrollIntoView();
+        //}
+
+        //else if (startDate4.length < 1) {
+        //document.getElementById("startDate4").className = "input-text2";
+        //document.getElementById("dive_id").innerHTML = "* This field is required";
+        //document.getElementById('check_box_scroll').scrollIntoView();
+        //}
+
+        //else if (endDate4.length < 1) {
+        //document.getElementById("endDate4").className = "input-text2";
+        //document.getElementById("dive_id").innerHTML = "* This field is required";
+        //document.getElementById('check_box_scroll').scrollIntoView();
+        //}
+
+
+        else {
+            // document.getElementById("course_valid").innerHTML = "";
+            $("#preview_window").modal("show");
+        }
+    })
+
+    $("#preview_window").on('shown.bs.modal', function () {
+        examTitle = $('#examTitle').val()
+
+        examTitle = $('#examTitle').val()
+        $('#exam').html(examTitle)
+
+        programmeGroup = $('#programme_group option:selected').text()
+        $('#prgm_group').html(programmeGroup)
+
+        programmeClass = $('#programme_class option:selected').text()
+        $('#prgm_class').html(programmeClass)
+
+        programme = $('#programme_title option:selected').text()
+        $('#programme').html(programme)
+
+        programmeType = $('#pgm_type option:selected').text()
+        $('#programme_type').html(programmeType)
+
+        scheme = $('#prgm_scheme option:selected').text()
+        $('#shm').html(scheme)
+
+        semester = $('#semester option:selected').text()
+        $('#semstr').html(semester)
+        $('#admi_year').empty()
+
+        $("#admission_year option:selected").each(function () {
+            var $this = $(this);
+            if ($this.length) {
+                var selText = $this.text();
+                $('#admi_year').append(selText, " ")
+            }
+        });
+        notif_title = $('#notif_title').val()
+        $('#notif_title_data').html(notif_title)
+
+        let notif_date = new Date($('#notif_date').val())
+        let notif_date_data = notif_date.getDate() + "-" + (notif_date.getMonth() + 1) + "-" + notif_date.getFullYear()
+
+        // notif_date = $('#notif_date').val()
+        $('#not_date').html(notif_date_data)
+
+        let upload_date = new Date($('#attendance_upload_end_date').val())
+        let upload_date_data = upload_date.getDate() + "-" + (upload_date.getMonth() + 1) + "-" + upload_date.getFullYear()
+        // notif_end_date = $('#attendance_upload_end_date').val()
+        $('#att_up_ate').html(upload_date_data)
+
+        month = $('#month option:selected').text()
+        $('#mon').html(month)
+
+        year = $('#year option:selected').text()
+        $('#yr').html(year)
+
+        season = $('#season option:selected').text()
+        $('#ssn').html(season)
+
+        examType = $("input:radio[name=examType]:checked").parent().text()
+        $('#exam-type').html(examType)
+
+        qpDelivery = $("input:radio[name=questionPaperDeliveryType]:checked").parent().text()
+        $('#qp_delivery').html(qpDelivery)
+        $("#exam_purpose").empty();
+        $("#exam_purpose").append('<thead><tr><th>Purpose</th><th>Start Date</th><th>End Date</th></tr><thead>');
+        var purposeId1 = document.getElementById("purposeId1");
+        var purposeId2 = document.getElementById("purposeId2");
+        var purposeId3 = document.getElementById("purposeId3");
+        //var purposeId4 = document.getElementById("purposeId4");
+
+        var text1 = "Exam Register"
+        var text2 = "Exam Register with fine"
+        var text3 = "Exam Register with super fine"
+        var text4 = "Exam Register with penality"
+
+        var sample_dict1 = { "purposeId": text1, "startDate": $("#startDate1").val(), "endDate": $("#endDate1").val() }
+        var sample_dict2 = { "purposeId": text2, "startDate": $("#startDate2").val(), "endDate": $("#endDate2").val() }
+        var sample_dict3 = { "purposeId": text3, "startDate": $("#startDate3").val(), "endDate": $("#endDate3").val() }
+        //var sample_dict4 = { "purposeId":text4, "startDate": $("#startDate4").val(), "endDate": $("#endDate4").val() }
+
+        const purposeList = [sample_dict1, sample_dict2, sample_dict3]
+        purposeList.forEach((element) => {
+            var start_datearray = element.startDate.split("-");
+            var new_startdate = start_datearray[2] + '-' + start_datearray[1] + '-' + start_datearray[0];
+            var end_datearray = element.endDate.split("-");
+            var new_enddate = end_datearray[2] + '-' + end_datearray[1] + '-' + end_datearray[0];
+            $('#exam_purpose').append('<tr><td>' + element.purposeId + '</td><td>' + new_startdate + '</td><td>' + new_enddate + '</td></tr>')
+        });
+        admissionYearList = []
+        var options = document.getElementById('admission_year').selectedOptions;
+        var values = Array.from(options).map(({ value }) => value);
+
+    });
+
+</script>
+
+<script>
+    $("#pgm_type").change(function () {
+        document.getElementById("pgm_type").className = "select-text";
+    })
+    $("#programme_group").change(function () {
+        document.getElementById("programme_group").className = "select-text";
+    })
+    $("#programme_class").change(function () {
+        document.getElementById("programme_class").className = "select-text";
+    })
+    $("#programme_title").change(function () {
+        document.getElementById("programme_title").className = "select-text";
+    })
+    $("#prgm_scheme").change(function () {
+        document.getElementById("prgm_scheme").className = "select-text";
+    })
+    $("#semester").change(function () {
+
+        document.getElementById("semester").className = "select-text";
+        $("#startDate1").val('');
+        $('#startDate1').attr('type', 'text');
+
+        $("#endDate1").val('');
+        $('#endDate1').attr('type', 'text');
+
+        $("#startDate2").val('');
+        $('#startDate2').attr('type', 'text');
+
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        //$("#startDate4").val('');
+        //$('#startDate4').attr('type', 'text');
+
+        //$("#endDate4").val('');
+        //$('#endDate4').attr('type', 'text');
+
+
+    })
+    $("#notif_title").change(function () {
+        document.getElementById("notif_title").className = "input-text";
+    })
+    $("#order_number").change(function () {
+        document.getElementById("order_number").className = "input-text";
+    })
+    $("#notif_date").change(function () {
+        document.getElementById("notif_date").className = "input-text";
+    })
+    $("#attendance_upload_end_date").change(function () {
+        document.getElementById("attendance_upload_end_date").className = "input-text";
+    })
+
+
+    $("#admission_year").change(function () {
+        document.getElementById("year_valid").innerHTML = "";
+    })
+    $("#month").change(function () {
+        document.getElementById("month").className = "select-text";
+    })
+    $("#year").change(function () {
+        document.getElementById("year").className = "select-text";
+    })
+    $("#examTitle").change(function () {
+        document.getElementById("examTitle").className = "input-text";
+    })
+    $("#season").change(function () {
+        document.getElementById("season").className = "select-text";
+    })
+    $(".quest_paper_class").change(function () {
+        document.getElementById("check_valid1").innerHTML = "";
+    })
+    $(".exam_type_class").change(function () {
+        document.getElementById("check_valid2").innerHTML = "";
+        examType = $(this).attr("data-name")
+        if (examType == "Online") {
+            var x = $(".quest_paper_class").attr("data-name")
+            document.getElementById("quest_paper_id1").checked = true;
+            $(".course_examType").attr("checked", true);
+            $(".quest_paper_class").prop('disabled', true);
+            document.getElementById("check_valid1").innerHTML = "";
+        }
+        else {
+            $(".quest_paper_class").prop('disabled', false);
+            $(".course_examType").attr("checked", false);
+        }
+    })
+    $(".purposeId1").change(function () {
+        document.getElementById("purposeId1").style.borderColor = "";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    $(".purposeId2").change(function () {
+        document.getElementById("purposeId2").style.borderColor = "";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    /*$(".purposeId3").change(function () {
+        document.getElementById("purposeId3").style.borderColor = "";
+        document.getElementById("dive_id").innerHTML = "";
+    })*/
+    $(".startDate1").change(function () {
+        var todaystartDate1 = $("#startDate1").val()
+        $(".endDate1").attr('min', todaystartDate1);
+        document.getElementById("startDate1").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    $(".startDate2").change(function () {
+        document.getElementById("startDate2").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+    })
+    /*$(".startDate3").change(function () {
+        document.getElementById("startDate3").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+    })*/
+    $(".endDate1").change(function () {
+        var today2 = $("#endDate1").val()
+        document.getElementById("endDate1").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+        $(".startDate2").attr('min', today2);
+        $(".endDate2").attr('min', today2);
+    })
+    $(".endDate2").change(function () {
+        var today3 = $("#endDate2").val()
+        document.getElementById("endDate2").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+        $(".startDate3").attr('min', today3);
+        $(".endDate3").attr('min', today3);
+    })
+    /*$(".endDate3").change(function () {
+        var select_date2 = $("#endDate3").val()
+        document.getElementById("endDate3").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+    })*/
+    /*$(".endDate4").change(function () {
+        document.getElementById("endDate4").className = "input-text";
+        document.getElementById("dive_id").innerHTML = "";
+        var select_date3 = new Date($("#endDate4").val())
+        select_date3.setDate(select_date3.getDate() + 1)
+        
+    })*/
+</script>
+
+<script>
+    var today = new Date()
+
+    var end_date_one = $("#endDate1").val()
+    var end_date_two = $("#endDate2").val()
+    $("#startDate2").attr('min', end_date_one);
+    $("#endDate2").attr('min', end_date_one);
+    $("#startDate3").attr('min', end_date_two);
+    $("#endDate3").attr('min', end_date_two);
+    $("#startDate1").change(function () {
+
+        $("#endDate1").val('');
+        $('#endDate1').attr('type', 'text');
+
+        $("#startDate2").val('');
+        $('#startDate2').attr('type', 'text');
+
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        /*$("#startDate4").val('');
+        $('#startDate4').attr('type', 'text');
+
+        $("#endDate4").val('');
+        $('#endDate4').attr('type', 'text');*/
+
+    })
+
+    $("#startDate2").change(function () {
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        /*$("#startDate4").val('');
+        $('#startDate4').attr('type', 'text');
+
+        $("#endDate4").val('');
+        $('#endDate4').attr('type', 'text');*/
+
+
+    })
+    /*$("#startDate3").change(function () {
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        $("#startDate4").val('');
+        $('#startDate4').attr('type', 'text');
+
+        $("#endDate4").val('');
+        $('#endDate4').attr('type', 'text');
+
+    })*/
+
+    /*$("#startDate4").change(function () {
+        $("#endDate4").val('');
+        $('#endDate4').attr('type', 'text');
+       
+    })*/
+    $(".endDate1").change(function () {
+        var today1 = new Date($("#endDate1").val())
+        today1.setDate(today1.getDate() + 1)
+        $('#startDate2').attr('type', 'date');
+        $("#startDate2").val(today1.toISOString().split('T')[0]);
+
+        $("#endDate2").val('');
+        $('#endDate2').attr('type', 'text');
+
+        $("#startDate3").val('');
+        $('#startDate3').attr('type', 'text');
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        /*$("#startDate4").val('');
+        $('#startDate4').attr('type', 'text');
+
+        $("#endDate4").val('');
+        $('#endDate4').attr('type', 'text');*/
+
+        $("#startDate2").attr('min', today1.toISOString().split('T')[0]);
+        $("#endDate2").attr('min', today1.toISOString().split('T')[0]);
+
+    })
+
+    $(".endDate2").change(function () {
+        var today2 = new Date($("#endDate2").val())
+        today2.setDate(today2.getDate() + 1)
+        $('#startDate3').attr('type', 'date');
+        $("#startDate3").val(today2.toISOString().split('T')[0]);
+
+        $("#endDate3").val('');
+        $('#endDate3').attr('type', 'text');
+
+        /*$("#startDate4").val('');
+        $('#startDate4').attr('type', 'text');
+
+        $("#endDate4").val('');
+        $('#endDate4').attr('type', 'text');*/
+
+        $("#startDate3").attr('min', today2.toISOString().split('T')[0]);
+        $("#endDate3").attr('min', today2.toISOString().split('T')[0]);
+        $(".course_start_date").val('');
+        $(".course_end_date").val('');
+        $(".course_start_time").val('');
+        $(".course_end_time").val('');
+        // $(".weekclassS").empty();
+        // $(".weekclassE").empty();
+    })
+
+    /*$(".endDate3").change(function () {
+        var today3 = new Date($("#endDate3").val())
+        today3.setDate(today3.getDate() + 1)
+        $('#startDate4').attr('type', 'date');
+        $("#startDate4").val(today3.toISOString().split('T')[0]);
+
+        $("#endDate4").val('');
+        $('#endDate4').attr('type', 'text');
+
+        $("#startDate4").attr('min', today3.toISOString().split('T')[0]);
+        $("#endDate4").attr('min', today3.toISOString().split('T')[0]);
+        $(".course_start_date").val('');
+        $(".course_end_date").val('');
+        $(".course_start_time").val('');
+        $(".course_end_time").val('');
+       
+    })*/
+
+    $("#notif_date").change(function () {
+        var notif_data = $(this).val()
+
+        $("#attendance_upload_end_date").attr('min', notif_data);
+
+    })
+
+
+</script>
+
+<script>
+    $("#admission_year").change(function () {
+        admissionYearList = []
+        var options = document.getElementById('admission_year').selectedOptions;
+        var values = Array.from(options).map(({ value }) => value);
+    })
+
+
+    function restFullBtn() {
+        $('#startDate1').attr('type', 'text');
+        $('#endDate1').attr('type', 'text');
+        $('#startDate2').attr('type', 'text');
+        $('#endDate2').attr('type', 'text');
+        $('#startDate3').attr('type', 'text');
+        $('#endDate3').attr('type', 'text');
+        $('#startDate4').attr('type', 'text');
+        $('#endDate4').attr('type', 'text');
+
+        $("#admission_year").empty();
+
+    }
+
+    $("#pgm_type").change(function () {
+        var prgtype = $("#pgm_type option:selected").val()
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax
+            ({
+                headers: { "X-CSRFToken": token },
+                type: "POST",
+                url: "{% url 'prg_group_list' %}?format=json",
+                dataType: "json",
+                data: {
+                    "prg_typ_id": prgtype,
+
+                },
+                success: renderlist
+
+            });
+        function renderlist(res) {
+            $("#programme_group").empty()
+            $("#programme_group").append('<option value=""></option>')
+            $.each(res.data.prggrp, function (j, value) {
+                $("#programme_group").append('<option value="' + value.id + '">' + value.title + '</option>');
+            });
+        }
+    })
+    $("#programme_group").change(function () {
+        var prggrp = $("#programme_group option:selected").val()
+        var prgtype = $("#pgm_type option:selected").val()
+
+        var token = '{{csrf_token}}'
+        var res = jQuery.ajax
+            ({
+                headers: { "X-CSRFToken": token },
+                type: "POST",
+                url: "{% url 'prg_class_list' %}?format=json",
+                dataType: "json",
+                data: {
+                    "prggrp": prggrp,
+                    "prg_typ_id": prgtype
+
+                },
+                success: renderlist
+            });
+        function renderlist(res) {
+            $("#programme_class").empty()
+            $("#programme_class").append('<option value=""></option>')
+            $.each(res.data.prgclass, function (j, value) {
+                $("#programme_class").append('<option value="' + value.id + '">' + value.title + '</option>');
+            });
+        }
+    })
+
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const yesRadio = document.getElementById("improvementyes");
+        const noRadio = document.getElementById("improvementno");
+        const improvementDiv = document.getElementById("asmission_year_improvement");
+
+        // Show the improvement div on YES and hide it on NO
+        yesRadio.addEventListener("change", () => {
+            if (yesRadio.checked) {
+                improvementDiv.style.display = "block";
+            }
+        });
+
+        noRadio.addEventListener("change", () => {
+            if (noRadio.checked) {
+                improvementDiv.style.display = "none";
+            }
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const radioYes = document.getElementById('improvementyes');
+        const radioNo = document.getElementById('improvementno');
+        const inputs = document.querySelectorAll('#notif_title, #order_number, #notif_date, #attendance_upload_end_date');
+        const warningMessage = document.getElementById('warningMessage');
+
+        // Function to enable or disable inputs
+        function toggleInputs(enable) {
+            inputs.forEach(input => {
+                input.disabled = !enable;
+            });
+        }
+
+        // Event listeners for radio buttons
+        radioYes.addEventListener('change', function () {
+            toggleInputs(true);
+            warningMessage.style.display = 'none';
+        });
+
+        radioNo.addEventListener('change', function () {
+            toggleInputs(true);
+            warningMessage.style.display = 'none';
+        });
+        inputs.forEach(input => {
+            input.addEventListener('click', function () {
+                if (!radioYes.checked && !radioNo.checked) {
+                    toggleInputs(false);
+                    warningMessage.style.display = 'block';
+                }
+            })
+        });
+
+        // Validate on form submission or other interactions
+        // document.addEventListener('click', function () {
+        //     if (!radioYes.checked && !radioNo.checked) {
+        //         toggleInputs(false);
+        //         warningMessage.style.display = 'block';
+        //     }
+        // });
+    });
+</script>
+
+
+{% endblock head %}
